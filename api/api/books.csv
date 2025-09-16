@@ -1,0 +1,7 @@
+Id,Title,Author,Genre,Year,Description,Price,Condition,SellerName,SellerEmail,CourseCode,Professor,IsAvailable,DatePosted,ImageUrl
+1,Calculus: Early Transcendentals,James Stewart,Mathematics,2020,Comprehensive calculus textbook with practice problems and solutions. Used for MATH 125.,85.00,Good,User1,1@ua.edu,MATH 125,Dr. Smith,True,2025-09-10 14:09:37,
+2,Introduction to Psychology,David Myers,Psychology,2021,"Psychology textbook in excellent condition. Barely used, no highlighting.",120.00,Excellent,User2,2@ua.edu,PSY 101,Dr. Williams,True,2025-09-13 14:09:37,
+3,Principles of Economics,N. Gregory Mankiw,Economics,2022,Micro and macroeconomics textbook. Some highlighting but in good condition.,95.00,Good,User1,1@ua.edu,EC 110,Dr. Brown,True,2025-09-08 14:09:37,
+4,Organic Chemistry,Paula Yurkanis Bruice,Chemistry,2020,Organic chemistry textbook with study guide. Used for CHEM 232.,150.00,Fair,User2,2@ua.edu,CHEM 232,Dr. Johnson,True,2025-09-14 14:09:37,
+5,American Government,"Ginsberg, Lowi, Weir",Political Science,2021,Political science textbook covering American government and politics.,75.00,Good,User1,1@ua.edu,POL 101,Dr. Anderson,True,2025-09-12 14:09:37,
+6,Fundamentals of Physics,"Halliday, Resnick, Walker",Physics,2020,Physics textbook with problem solutions manual included.,110.00,Excellent,User2,2@ua.edu,PH 101,Dr. Taylor,True,2025-09-11 14:09:37,

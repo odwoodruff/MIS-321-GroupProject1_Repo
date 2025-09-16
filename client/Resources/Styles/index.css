@@ -1,0 +1,566 @@
+/* Alabama Crimson Tide Book Marketplace */
+
+:root {
+  --crimson: #9e1b32;
+  --crimson-dark: #7a1426;
+  --crimson-light: #b52d47;
+  --white: #ffffff;
+  --gray-100: #f8f9fa;
+  --gray-200: #e9ecef;
+  --gray-300: #dee2e6;
+  --gray-400: #ced4da;
+  --gray-500: #adb5bd;
+  --gray-600: #6c757d;
+  --gray-700: #495057;
+  --gray-800: #343a40;
+  --gray-900: #212529;
+  --success: #28a745;
+  --warning: #ffc107;
+  --danger: #dc3545;
+  --info: #17a2b8;
+}
+
+body {
+  background-color: var(--gray-100);
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  color: var(--gray-800);
+}
+
+/* Header Styles */
+.marketplace-header {
+  background: linear-gradient(135deg, var(--crimson), var(--crimson-dark));
+  color: var(--white);
+  padding: 1rem 0;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.marketplace-title {
+  font-weight: 800;
+  font-size: 2.5rem;
+  margin: 0;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.marketplace-subtitle {
+  font-size: 1.1rem;
+  opacity: 0.9;
+  margin: 0.5rem 0 0 0;
+}
+
+/* Navigation Bar */
+.navbar-custom {
+  background-color: var(--white);
+  border-bottom: 3px solid var(--crimson);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-brand {
+  font-weight: 700;
+  color: var(--crimson) !important;
+  font-size: 1.5rem;
+}
+
+/* Search Bar */
+.search-container {
+  background-color: var(--white);
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  transition: transform 0.3s ease-in-out;
+}
+
+.search-container.hidden {
+  transform: translateY(-100%);
+}
+
+.search-input {
+  border: 2px solid var(--gray-300);
+  border-radius: 25px;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.search-input:focus {
+  border-color: var(--crimson);
+  box-shadow: 0 0 0 0.2rem rgba(158, 27, 50, 0.25);
+}
+
+.search-btn {
+  background: linear-gradient(135deg, var(--crimson), var(--crimson-dark));
+  border: none;
+  border-radius: 25px;
+  padding: 0.75rem 2rem;
+  color: var(--white);
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.search-btn:hover {
+  background: linear-gradient(135deg, var(--crimson-dark), var(--crimson));
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(158, 27, 50, 0.3);
+}
+
+/* Book List Items - Compact Row Style */
+.book-card {
+  background: var(--white);
+  border: 1px solid var(--gray-300);
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  position: relative;
+  margin-bottom: 0.5rem;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.book-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: var(--crimson);
+}
+
+.book-icon {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, var(--crimson), var(--crimson-dark));
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--white);
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.book-icon::before {
+  content: "📚";
+  font-size: 2rem;
+}
+
+.book-info {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.book-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.book-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--gray-800);
+  margin-bottom: 0.25rem;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.book-author {
+  color: var(--gray-600);
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.book-author strong {
+  color: var(--gray-700);
+  font-weight: 600;
+}
+
+.book-meta {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  font-size: 0.85rem;
+  color: var(--gray-600);
+}
+
+.book-meta strong {
+  color: var(--gray-700);
+  font-weight: 600;
+}
+
+.book-price {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--crimson);
+  margin-right: 1rem;
+  white-space: nowrap;
+}
+
+.book-condition {
+  display: inline-block;
+  background-color: var(--success);
+  color: var(--white);
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.book-seller {
+  font-size: 0.85rem;
+  color: var(--gray-600);
+  white-space: nowrap;
+}
+
+.book-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.btn-crimson {
+  background: linear-gradient(135deg, var(--crimson), var(--crimson-dark));
+  border: none;
+  color: var(--white);
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-crimson:hover {
+  background: linear-gradient(135deg, var(--crimson-dark), var(--crimson));
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(158, 27, 50, 0.3);
+}
+
+.btn-outline-crimson {
+  border: 2px solid var(--crimson);
+  color: var(--crimson);
+  background: transparent;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-outline-crimson:hover {
+  background-color: var(--crimson);
+  color: var(--white);
+  transform: translateY(-1px);
+}
+
+/* Form Styles */
+.form-container {
+  background: var(--white);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--gray-300);
+}
+
+.form-header {
+  background: linear-gradient(135deg, var(--crimson), var(--crimson-dark));
+  color: var(--white);
+  padding: 1rem 1.5rem;
+  border-radius: 8px 8px 0 0;
+  margin: 0;
+}
+
+.form-control {
+  border: 2px solid var(--gray-300);
+  border-radius: 6px;
+  padding: 0.75rem;
+  transition: all 0.3s ease;
+}
+
+.form-control:focus {
+  border-color: var(--crimson);
+  box-shadow: 0 0 0 0.2rem rgba(158, 27, 50, 0.25);
+}
+
+/* Alert Styles */
+.alert {
+  border-radius: 6px;
+  border: none;
+  font-weight: 500;
+}
+
+.alert-success {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.alert-warning {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.alert-danger {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+/* Stats Cards */
+.stats-card {
+  background: var(--white);
+  border-radius: 8px;
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid var(--crimson);
+}
+
+.stats-number {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--crimson);
+  margin-bottom: 0.5rem;
+}
+
+.stats-label {
+  color: var(--gray-600);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .marketplace-title {
+    font-size: 2rem;
+  }
+
+  .book-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .book-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  .book-details {
+    width: 100%;
+  }
+
+  .book-meta {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .book-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .search-container {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .book-card {
+    padding: 0.75rem;
+  }
+
+  .book-icon {
+    width: 50px;
+    height: 50px;
+  }
+
+  .book-title {
+    font-size: 1rem;
+  }
+
+  .book-price {
+    font-size: 1.1rem;
+  }
+
+  .book-actions {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .book-actions .btn {
+    width: 100%;
+  }
+}
+
+.form-control {
+  border-radius: 8px;
+  border: 2px solid #e9ecef;
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.form-control:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.input-group .form-control {
+  border-right: none;
+}
+
+.input-group .btn {
+  border-left: none;
+  border-radius: 0 8px 8px 0;
+}
+
+.alert {
+  border-radius: 8px;
+  border: none;
+  font-weight: 500;
+}
+
+.text-muted {
+  color: #6c757d !important;
+}
+
+.bi {
+  margin-right: 0.25rem;
+}
+
+/* Loading animation */
+.loading {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .display-4 {
+    font-size: 2rem;
+  }
+
+  .card-body {
+    padding: 1rem;
+  }
+
+  .btn-group .btn {
+    font-size: 0.875rem;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* User Menu Styles */
+#user-menu {
+  z-index: 1002;
+}
+
+#user-menu .btn {
+  opacity: 1 !important;
+  background-color: black !important;
+  border: 2px solid black !important;
+  color: white !important;
+  transition: all 0.3s ease;
+}
+
+#user-menu .btn:hover {
+  background-color: #333 !important;
+  border-color: #333 !important;
+  transform: translateY(-1px);
+}
+
+#user-menu .btn:focus {
+  background-color: #333 !important;
+  border-color: #333 !important;
+  box-shadow: 0 0 0 0.2rem rgba(0, 0, 0, 0.25) !important;
+}
+
+#user-menu .dropdown-menu {
+  border: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  z-index: 1001;
+}
+
+#user-menu .dropdown-item {
+  padding: 0.75rem 1rem;
+  transition: all 0.2s ease;
+}
+
+#user-menu .dropdown-item:hover {
+  background-color: var(--crimson);
+  color: white;
+}
+
+/* Notification Styles */
+.notification-item {
+  padding: 1rem;
+  border-bottom: 1px solid var(--gray-300);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.notification-item:hover {
+  background-color: var(--gray-100);
+}
+
+.notification-item.unread {
+  background-color: #e3f2fd;
+  border-left: 4px solid var(--crimson);
+}
+
+.notification-item.read {
+  opacity: 0.7;
+}
+
+.notification-content {
+  font-size: 0.9rem;
+}
+
+.badge {
+  font-size: 0.7rem;
+  margin-left: 0.5rem;
+}
+
+.notifications-container {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.notification-item:last-child {
+  border-bottom: none;
+}
