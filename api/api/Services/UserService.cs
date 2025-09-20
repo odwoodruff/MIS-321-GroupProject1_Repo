@@ -159,6 +159,22 @@ namespace api.Services
             return true;
         }
 
+        public bool SaveUser(User user)
+        {
+            var existingUser = _users.FirstOrDefault(u => u.Id == user.Id);
+            if (existingUser == null) return false;
+
+            // Update the user in the list
+            var index = _users.IndexOf(existingUser);
+            if (index >= 0)
+            {
+                _users[index] = user;
+                SaveUsersToFile();
+                return true;
+            }
+            return false;
+        }
+
         private string HashPassword(string password)
         {
             using (var sha256 = SHA256.Create())
@@ -178,11 +194,11 @@ namespace api.Services
             try
             {
                 var csv = new StringBuilder();
-                csv.AppendLine("Id,Username,Email,PasswordHash,FirstName,LastName,DateCreated,IsActive");
+                csv.AppendLine("Id,Username,Email,PasswordHash,FirstName,LastName,DateCreated,IsActive,AverageRating,RatingCount");
                 
                 foreach (var user in _users)
                 {
-                    csv.AppendLine($"{user.Id},{EscapeCsv(user.Username)},{EscapeCsv(user.Email)},{EscapeCsv(user.PasswordHash)},{EscapeCsv(user.FirstName)},{EscapeCsv(user.LastName)},{user.DateCreated:yyyy-MM-dd HH:mm:ss},{user.IsActive}");
+                    csv.AppendLine($"{user.Id},{EscapeCsv(user.Username)},{EscapeCsv(user.Email)},{EscapeCsv(user.PasswordHash)},{EscapeCsv(user.FirstName)},{EscapeCsv(user.LastName)},{user.DateCreated:yyyy-MM-dd HH:mm:ss},{user.IsActive},{user.AverageRating},{user.RatingCount}");
                 }
                 
                 File.WriteAllText(_dataFilePath, csv.ToString());
@@ -200,7 +216,7 @@ namespace api.Services
                 var fields = ParseCsvLine(csvLine);
                 if (fields.Length < 8) return null;
 
-                return new User
+                var user = new User
                 {
                     Id = int.Parse(fields[0]),
                     Username = fields[1],
@@ -211,6 +227,18 @@ namespace api.Services
                     DateCreated = DateTime.Parse(fields[6]),
                     IsActive = bool.Parse(fields[7])
                 };
+
+                // Handle optional rating fields for backward compatibility
+                if (fields.Length >= 9)
+                {
+                    user.AverageRating = double.Parse(fields[8]);
+                }
+                if (fields.Length >= 10)
+                {
+                    user.RatingCount = int.Parse(fields[9]);
+                }
+
+                return user;
             }
             catch
             {

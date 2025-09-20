@@ -10,10 +10,12 @@ namespace api.Controllers
     public class BookController : ControllerBase
     {
         private readonly BookService _bookService;
+        private readonly RatingService _ratingService;
 
-        public BookController(BookService bookService)
+        public BookController(BookService bookService, RatingService ratingService)
         {
             _bookService = bookService;
+            _ratingService = ratingService;
         }
 
         // GET: api/Book
@@ -73,5 +75,88 @@ namespace api.Controllers
             
             return NoContent();
         }
+
+        // POST: api/Book/rate
+        [HttpPost("rate")]
+        public ActionResult<Rating> RateUser([FromBody] RateUserRequest request)
+        {
+            if (request == null || request.RaterId <= 0 || request.RatedUserId <= 0 || request.BookId <= 0)
+                return BadRequest("Invalid rating request");
+
+            var rating = _ratingService.CreateRating(
+                request.RaterId, 
+                request.RatedUserId, 
+                request.BookId, 
+                request.Score, 
+                request.Comment ?? ""
+            );
+
+            if (rating == null)
+                return BadRequest("Unable to create rating. User may have already rated this person for this book.");
+
+            return Ok(rating);
+        }
+
+        // GET: api/Book/ratings/user/{userId}
+        [HttpGet("ratings/user/{userId}")]
+        public ActionResult<List<Rating>> GetUserRatings(int userId)
+        {
+            var ratings = _ratingService.GetRatingsForUser(userId);
+            return Ok(ratings);
+        }
+
+        // GET: api/Book/ratings/by/{userId}
+        [HttpGet("ratings/by/{userId}")]
+        public ActionResult<List<Rating>> GetRatingsByUser(int userId)
+        {
+            var ratings = _ratingService.GetRatingsByUser(userId);
+            return Ok(ratings);
+        }
+
+        // PUT: api/Book/ratings/{id}
+        [HttpPut("ratings/{id}")]
+        public IActionResult UpdateRating(int id, [FromBody] UpdateRatingRequest request)
+        {
+            if (request == null || request.Score < 1 || request.Score > 5)
+                return BadRequest("Invalid rating update request");
+
+            if (!_ratingService.UpdateRating(id, request.Score, request.Comment ?? ""))
+                return NotFound();
+
+            return NoContent();
+        }
+
+        // DELETE: api/Book/ratings/{id}
+        [HttpDelete("ratings/{id}")]
+        public IActionResult DeleteRating(int id)
+        {
+            if (!_ratingService.DeleteRating(id))
+                return NotFound();
+
+            return NoContent();
+        }
+
+        // GET: api/Book/ratings/all (Admin only)
+        [HttpGet("ratings/all")]
+        public ActionResult<List<Rating>> GetAllRatings()
+        {
+            var allRatings = _ratingService.GetAllRatings();
+            return Ok(allRatings);
+        }
+    }
+
+    public class RateUserRequest
+    {
+        public int RaterId { get; set; }
+        public int RatedUserId { get; set; }
+        public int BookId { get; set; }
+        public int Score { get; set; }
+        public string? Comment { get; set; }
+    }
+
+    public class UpdateRatingRequest
+    {
+        public int Score { get; set; }
+        public string? Comment { get; set; }
     }
 }

@@ -22,5 +22,7 @@ namespace api.Models
         public bool IsAvailable { get; set; } = true;
         public DateTime DatePosted { get; set; } = DateTime.Now;
         public string ImageUrl { get; set; } = string.Empty;
+        public double SellerRating { get; set; } = 0.0;
+        public int SellerRatingCount { get; set; } = 0;
     }
 }

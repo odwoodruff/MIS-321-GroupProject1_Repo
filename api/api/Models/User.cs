@@ -12,5 +12,7 @@ namespace api.Models
         public string LastName { get; set; } = string.Empty;
         public DateTime DateCreated { get; set; } = DateTime.Now;
         public bool IsActive { get; set; } = true;
+        public double AverageRating { get; set; } = 0.0;
+        public int RatingCount { get; set; } = 0;
     }
 }

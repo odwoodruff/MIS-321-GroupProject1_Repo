@@ -1,0 +1,11 @@
+{
+  "printWidth": 100,
+  "indentSize": 4,
+  "useTabs": false,
+  "endOfLine": "lf",
+  "include": "**/*.cs",
+  "exclude": [
+    "**/bin/**",
+    "**/obj/**"
+  ]
+}

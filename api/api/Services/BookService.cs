@@ -8,9 +8,13 @@ namespace api.Services
         private readonly List<Book> _books;
         private int _nextId = 1;
         private readonly string _dataFilePath = "books.csv";
+        private readonly UserService _userService;
+        private readonly RatingService _ratingService;
 
-        public BookService()
+        public BookService(UserService userService, RatingService ratingService)
         {
+            _userService = userService;
+            _ratingService = ratingService;
             _books = new List<Book>();
             LoadBooksFromFile();
         }
@@ -152,7 +156,25 @@ namespace api.Services
 
         public List<Book> GetBooks()
         {
-            return _books.ToList();
+            var booksWithRatings = new List<Book>();
+            
+            foreach (var book in _books)
+            {
+                var bookWithRating = book;
+                
+                // Find the seller user by email
+                var seller = _userService.GetUserByEmail(book.SellerEmail);
+                if (seller != null)
+                {
+                    // Add seller rating information to the book
+                    bookWithRating.SellerRating = seller.AverageRating;
+                    bookWithRating.SellerRatingCount = seller.RatingCount;
+                }
+                
+                booksWithRatings.Add(bookWithRating);
+            }
+            
+            return booksWithRatings;
         }
 
         public Book? GetBook(int id)
@@ -205,9 +227,9 @@ namespace api.Services
         public List<Book> SearchBooks(string searchTerm)
         {
             if (string.IsNullOrEmpty(searchTerm))
-                return _books.ToList();
+                return GetBooks();
 
-            return _books.Where(b => 
+            var filteredBooks = _books.Where(b => 
                 b.Title.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
                 b.Author.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
                 b.Genre.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
@@ -215,6 +237,26 @@ namespace api.Services
                 b.Professor.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
                 b.SellerName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
             ).ToList();
+
+            var booksWithRatings = new List<Book>();
+            
+            foreach (var book in filteredBooks)
+            {
+                var bookWithRating = book;
+                
+                // Find the seller user by email
+                var seller = _userService.GetUserByEmail(book.SellerEmail);
+                if (seller != null)
+                {
+                    // Add seller rating information to the book
+                    bookWithRating.SellerRating = seller.AverageRating;
+                    bookWithRating.SellerRatingCount = seller.RatingCount;
+                }
+                
+                booksWithRatings.Add(bookWithRating);
+            }
+            
+            return booksWithRatings;
         }
 
         private void SaveBooksToFile()
