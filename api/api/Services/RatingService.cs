@@ -1,47 +1,21 @@
 using api.Models;
-using System.Text;
+using api.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace api.Services
 {
     public class RatingService
     {
-        private readonly List<Rating> _ratings;
-        private int _nextId = 1;
-        private readonly string _dataFilePath = "ratings.csv";
+        private readonly ApplicationDbContext _context;
         private readonly UserService _userService;
 
-        public RatingService(UserService userService)
+        public RatingService(ApplicationDbContext context, UserService userService)
         {
-            _ratings = new List<Rating>();
+            _context = context;
             _userService = userService;
-            LoadRatingsFromFile();
         }
 
-        private void LoadRatingsFromFile()
-        {
-            try
-            {
-                if (File.Exists(_dataFilePath))
-                {
-                    var lines = File.ReadAllLines(_dataFilePath);
-                    foreach (var line in lines.Skip(1)) // Skip header
-                    {
-                        var rating = ParseRatingFromCsv(line);
-                        if (rating != null)
-                        {
-                            _ratings.Add(rating);
-                            _nextId = Math.Max(_nextId, rating.Id + 1);
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error loading ratings: {ex.Message}");
-            }
-        }
-
-        public Rating? CreateRating(int raterId, int ratedUserId, int bookId, int score, string comment = "")
+        public async Task<Rating?> CreateRatingAsync(int raterId, int ratedUserId, int bookId, int score, string comment = "")
         {
             // Validate score
             if (score < 1 || score > 5)
@@ -50,14 +24,14 @@ namespace api.Services
             }
 
             // Check if user already rated this person for this book
-            if (_ratings.Any(r => r.RaterId == raterId && r.RatedUserId == ratedUserId && r.BookId == bookId && r.IsActive))
+            if (await _context.Ratings.AnyAsync(r => r.RaterId == raterId && r.RatedUserId == ratedUserId && r.BookId == bookId && r.IsActive))
             {
                 return null; // Already rated
             }
 
             // Validate users exist
-            var rater = _userService.GetUser(raterId);
-            var ratedUser = _userService.GetUser(ratedUserId);
+            var rater = await _userService.GetUserAsync(raterId);
+            var ratedUser = await _userService.GetUserAsync(ratedUserId);
             
             if (rater == null || ratedUser == null)
             {
@@ -66,7 +40,6 @@ namespace api.Services
 
             var rating = new Rating
             {
-                Id = _nextId++,
                 RaterId = raterId,
                 RatedUserId = ratedUserId,
                 BookId = bookId,
@@ -76,31 +49,36 @@ namespace api.Services
                 IsActive = true
             };
 
-            _ratings.Add(rating);
-            SaveRatingsToFile();
-            UpdateUserRating(ratedUserId);
+            _context.Ratings.Add(rating);
+            await _context.SaveChangesAsync();
+            await UpdateUserRatingAsync(ratedUserId);
             
             return rating;
         }
 
-        public List<Rating> GetRatingsForUser(int userId)
+        public async Task<List<Rating>> GetRatingsForUserAsync(int userId)
         {
-            return _ratings.Where(r => r.RatedUserId == userId && r.IsActive).ToList();
+            return await _context.Ratings
+                .Where(r => r.RatedUserId == userId && r.IsActive)
+                .ToListAsync();
         }
 
-        public List<Rating> GetRatingsByUser(int userId)
+        public async Task<List<Rating>> GetRatingsByUserAsync(int userId)
         {
-            return _ratings.Where(r => r.RaterId == userId && r.IsActive).ToList();
+            return await _context.Ratings
+                .Where(r => r.RaterId == userId && r.IsActive)
+                .ToListAsync();
         }
 
-        public Rating? GetRating(int id)
+        public async Task<Rating?> GetRatingAsync(int id)
         {
-            return _ratings.FirstOrDefault(r => r.Id == id && r.IsActive);
+            return await _context.Ratings
+                .FirstOrDefaultAsync(r => r.Id == id && r.IsActive);
         }
 
-        public bool UpdateRating(int id, int score, string comment = "")
+        public async Task<bool> UpdateRatingAsync(int id, int score, string comment = "")
         {
-            var rating = _ratings.FirstOrDefault(r => r.Id == id && r.IsActive);
+            var rating = await _context.Ratings.FirstOrDefaultAsync(r => r.Id == id && r.IsActive);
             if (rating == null || score < 1 || score > 5)
             {
                 return false;
@@ -108,30 +86,33 @@ namespace api.Services
 
             rating.Score = score;
             rating.Comment = comment;
-            SaveRatingsToFile();
-            UpdateUserRating(rating.RatedUserId);
+            await _context.SaveChangesAsync();
+            await UpdateUserRatingAsync(rating.RatedUserId);
             
             return true;
         }
 
-        public bool DeleteRating(int id)
+        public async Task<bool> DeleteRatingAsync(int id)
         {
-            var rating = _ratings.FirstOrDefault(r => r.Id == id && r.IsActive);
+            var rating = await _context.Ratings.FirstOrDefaultAsync(r => r.Id == id && r.IsActive);
             if (rating == null)
             {
                 return false;
             }
 
             rating.IsActive = false;
-            SaveRatingsToFile();
-            UpdateUserRating(rating.RatedUserId);
+            await _context.SaveChangesAsync();
+            await UpdateUserRatingAsync(rating.RatedUserId);
             
             return true;
         }
 
-        public double GetAverageRatingForUser(int userId)
+        public async Task<double> GetAverageRatingForUserAsync(int userId)
         {
-            var userRatings = _ratings.Where(r => r.RatedUserId == userId && r.IsActive);
+            var userRatings = await _context.Ratings
+                .Where(r => r.RatedUserId == userId && r.IsActive)
+                .ToListAsync();
+                
             if (!userRatings.Any())
             {
                 return 0.0;
@@ -140,111 +121,74 @@ namespace api.Services
             return userRatings.Average(r => r.Score);
         }
 
+        public async Task<int> GetRatingCountForUserAsync(int userId)
+        {
+            return await _context.Ratings
+                .CountAsync(r => r.RatedUserId == userId && r.IsActive);
+        }
+
+        public async Task<List<Rating>> GetAllRatingsAsync()
+        {
+            return await _context.Ratings
+                .Where(r => r.IsActive)
+                .ToListAsync();
+        }
+
+        private async Task UpdateUserRatingAsync(int userId)
+        {
+            var user = await _userService.GetUserAsync(userId);
+            if (user != null)
+            {
+                user.AverageRating = await GetAverageRatingForUserAsync(userId);
+                user.RatingCount = await GetRatingCountForUserAsync(userId);
+                await _userService.SaveUserAsync(user);
+            }
+        }
+
+        // Legacy synchronous methods for backward compatibility
+        public Rating? CreateRating(int raterId, int ratedUserId, int bookId, int score, string comment = "")
+        {
+            return CreateRatingAsync(raterId, ratedUserId, bookId, score, comment).Result;
+        }
+
+        public List<Rating> GetRatingsForUser(int userId)
+        {
+            return GetRatingsForUserAsync(userId).Result;
+        }
+
+        public List<Rating> GetRatingsByUser(int userId)
+        {
+            return GetRatingsByUserAsync(userId).Result;
+        }
+
+        public Rating? GetRating(int id)
+        {
+            return GetRatingAsync(id).Result;
+        }
+
+        public bool UpdateRating(int id, int score, string comment = "")
+        {
+            return UpdateRatingAsync(id, score, comment).Result;
+        }
+
+        public bool DeleteRating(int id)
+        {
+            return DeleteRatingAsync(id).Result;
+        }
+
+        public double GetAverageRatingForUser(int userId)
+        {
+            return GetAverageRatingForUserAsync(userId).Result;
+        }
+
         public int GetRatingCountForUser(int userId)
         {
-            return _ratings.Count(r => r.RatedUserId == userId && r.IsActive);
+            return GetRatingCountForUserAsync(userId).Result;
         }
 
         public List<Rating> GetAllRatings()
         {
-            return _ratings.Where(r => r.IsActive).ToList();
-        }
-
-        private void UpdateUserRating(int userId)
-        {
-            var user = _userService.GetUser(userId);
-            if (user != null)
-            {
-                user.AverageRating = GetAverageRatingForUser(userId);
-                user.RatingCount = GetRatingCountForUser(userId);
-                _userService.SaveUser(user);
-            }
-        }
-
-        private void SaveRatingsToFile()
-        {
-            try
-            {
-                var csv = new StringBuilder();
-                csv.AppendLine("Id,RaterId,RatedUserId,BookId,Score,Comment,DateCreated,IsActive");
-                
-                foreach (var rating in _ratings)
-                {
-                    csv.AppendLine($"{rating.Id},{rating.RaterId},{rating.RatedUserId},{rating.BookId},{rating.Score},{EscapeCsv(rating.Comment)},{rating.DateCreated:yyyy-MM-dd HH:mm:ss},{rating.IsActive}");
-                }
-                
-                File.WriteAllText(_dataFilePath, csv.ToString());
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error saving ratings to file: {ex.Message}");
-            }
-        }
-
-        private Rating? ParseRatingFromCsv(string csvLine)
-        {
-            try
-            {
-                var fields = ParseCsvLine(csvLine);
-                if (fields.Length < 8) return null;
-
-                return new Rating
-                {
-                    Id = int.Parse(fields[0]),
-                    RaterId = int.Parse(fields[1]),
-                    RatedUserId = int.Parse(fields[2]),
-                    BookId = int.Parse(fields[3]),
-                    Score = int.Parse(fields[4]),
-                    Comment = fields[5],
-                    DateCreated = DateTime.Parse(fields[6]),
-                    IsActive = bool.Parse(fields[7])
-                };
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
-        private string[] ParseCsvLine(string line)
-        {
-            var fields = new List<string>();
-            var currentField = new StringBuilder();
-            bool inQuotes = false;
-
-            for (int i = 0; i < line.Length; i++)
-            {
-                char c = line[i];
-
-                if (c == '"')
-                {
-                    inQuotes = !inQuotes;
-                }
-                else if (c == ',' && !inQuotes)
-                {
-                    fields.Add(currentField.ToString());
-                    currentField.Clear();
-                }
-                else
-                {
-                    currentField.Append(c);
-                }
-            }
-
-            fields.Add(currentField.ToString());
-            return fields.ToArray();
-        }
-
-        private string EscapeCsv(string value)
-        {
-            if (string.IsNullOrEmpty(value)) return "";
-            
-            if (value.Contains(",") || value.Contains("\"") || value.Contains("\n"))
-            {
-                return $"\"{value.Replace("\"", "\"\"")}\"";
-            }
-            
-            return value;
+            return GetAllRatingsAsync().Result;
         }
     }
 }

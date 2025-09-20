@@ -1,169 +1,33 @@
 using api.Models;
-using System.Text;
+using api.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace api.Services
 {
     public class BookService
     {
-        private readonly List<Book> _books;
-        private int _nextId = 1;
-        private readonly string _dataFilePath = "books.csv";
+        private readonly ApplicationDbContext _context;
         private readonly UserService _userService;
         private readonly RatingService _ratingService;
 
-        public BookService(UserService userService, RatingService ratingService)
+        public BookService(ApplicationDbContext context, UserService userService, RatingService ratingService)
         {
+            _context = context;
             _userService = userService;
             _ratingService = ratingService;
-            _books = new List<Book>();
-            LoadBooksFromFile();
         }
 
-        private void LoadBooksFromFile()
+        public async Task<List<Book>> GetBooksAsync()
         {
-            try
-            {
-                if (File.Exists(_dataFilePath))
-                {
-                    var lines = File.ReadAllLines(_dataFilePath);
-                    foreach (var line in lines.Skip(1)) // Skip header
-                    {
-                        var book = ParseBookFromCsv(line);
-                        if (book != null)
-                        {
-                            _books.Add(book);
-                            _nextId = Math.Max(_nextId, book.Id + 1);
-                        }
-                    }
-                }
-                else
-                {
-                    // Create sample data if file doesn't exist
-                    CreateSampleData();
-                    SaveBooksToFile();
-                }
-            }
-            catch (Exception ex)
-            {
-                // If file reading fails, create sample data
-                CreateSampleData();
-                SaveBooksToFile();
-            }
-        }
-
-        private void CreateSampleData()
-        {
-            _books.AddRange(new List<Book>
-            {
-                new Book { 
-                    Id = _nextId++, 
-                    Title = "Calculus: Early Transcendentals", 
-                    Author = "James Stewart", 
-                    Genre = "Mathematics", 
-                    Year = 2020, 
-                    Description = "Comprehensive calculus textbook with practice problems and solutions. Used for MATH 125.", 
-                    Price = 85.00m,
-                    Condition = "Good",
-                    SellerName = "Sarah Johnson",
-                    SellerEmail = "sjohnson@crimson.ua.edu",
-                    CourseCode = "MATH 125",
-                    Professor = "Dr. Smith",
-                    IsAvailable = true,
-                    DatePosted = DateTime.Now.AddDays(-5)
-                },
-                new Book { 
-                    Id = _nextId++, 
-                    Title = "Introduction to Psychology", 
-                    Author = "David Myers", 
-                    Genre = "Psychology", 
-                    Year = 2021, 
-                    Description = "Psychology textbook in excellent condition. Barely used, no highlighting.", 
-                    Price = 120.00m,
-                    Condition = "Excellent",
-                    SellerName = "Mike Chen",
-                    SellerEmail = "mchen@crimson.ua.edu",
-                    CourseCode = "PSY 101",
-                    Professor = "Dr. Williams",
-                    IsAvailable = true,
-                    DatePosted = DateTime.Now.AddDays(-2)
-                },
-                new Book { 
-                    Id = _nextId++, 
-                    Title = "Principles of Economics", 
-                    Author = "N. Gregory Mankiw", 
-                    Genre = "Economics", 
-                    Year = 2022, 
-                    Description = "Micro and macroeconomics textbook. Some highlighting but in good condition.", 
-                    Price = 95.00m,
-                    Condition = "Good",
-                    SellerName = "Emily Davis",
-                    SellerEmail = "edavis@crimson.ua.edu",
-                    CourseCode = "EC 110",
-                    Professor = "Dr. Brown",
-                    IsAvailable = true,
-                    DatePosted = DateTime.Now.AddDays(-7)
-                },
-                new Book { 
-                    Id = _nextId++, 
-                    Title = "Organic Chemistry", 
-                    Author = "Paula Yurkanis Bruice", 
-                    Genre = "Chemistry", 
-                    Year = 2020, 
-                    Description = "Organic chemistry textbook with study guide. Used for CHEM 232.", 
-                    Price = 150.00m,
-                    Condition = "Fair",
-                    SellerName = "Alex Rodriguez",
-                    SellerEmail = "arodriguez@crimson.ua.edu",
-                    CourseCode = "CHEM 232",
-                    Professor = "Dr. Johnson",
-                    IsAvailable = true,
-                    DatePosted = DateTime.Now.AddDays(-1)
-                },
-                new Book { 
-                    Id = _nextId++, 
-                    Title = "American Government", 
-                    Author = "Ginsberg, Lowi, Weir", 
-                    Genre = "Political Science", 
-                    Year = 2021, 
-                    Description = "Political science textbook covering American government and politics.", 
-                    Price = 75.00m,
-                    Condition = "Good",
-                    SellerName = "Taylor Wilson",
-                    SellerEmail = "twilson@crimson.ua.edu",
-                    CourseCode = "POL 101",
-                    Professor = "Dr. Anderson",
-                    IsAvailable = true,
-                    DatePosted = DateTime.Now.AddDays(-3)
-                },
-                new Book { 
-                    Id = _nextId++, 
-                    Title = "Fundamentals of Physics", 
-                    Author = "Halliday, Resnick, Walker", 
-                    Genre = "Physics", 
-                    Year = 2020, 
-                    Description = "Physics textbook with problem solutions manual included.", 
-                    Price = 110.00m,
-                    Condition = "Excellent",
-                    SellerName = "Jordan Lee",
-                    SellerEmail = "jlee@crimson.ua.edu",
-                    CourseCode = "PH 101",
-                    Professor = "Dr. Taylor",
-                    IsAvailable = true,
-                    DatePosted = DateTime.Now.AddDays(-4)
-                }
-            });
-        }
-
-        public List<Book> GetBooks()
-        {
+            var books = await _context.Books.ToListAsync();
             var booksWithRatings = new List<Book>();
             
-            foreach (var book in _books)
+            foreach (var book in books)
             {
                 var bookWithRating = book;
                 
                 // Find the seller user by email
-                var seller = _userService.GetUserByEmail(book.SellerEmail);
+                var seller = await _userService.GetUserByEmailAsync(book.SellerEmail);
                 if (seller != null)
                 {
                     // Add seller rating information to the book
@@ -177,22 +41,21 @@ namespace api.Services
             return booksWithRatings;
         }
 
-        public Book? GetBook(int id)
+        public async Task<Book?> GetBookAsync(int id)
         {
-            return _books.FirstOrDefault(b => b.Id == id);
+            return await _context.Books.FirstOrDefaultAsync(b => b.Id == id);
         }
 
-        public Book CreateBook(Book book)
+        public async Task<Book> CreateBookAsync(Book book)
         {
-            book.Id = _nextId++;
-            _books.Add(book);
-            SaveBooksToFile();
+            _context.Books.Add(book);
+            await _context.SaveChangesAsync();
             return book;
         }
 
-        public bool UpdateBook(int id, Book book)
+        public async Task<bool> UpdateBookAsync(int id, Book book)
         {
-            var existingBook = _books.FirstOrDefault(b => b.Id == id);
+            var existingBook = await _context.Books.FirstOrDefaultAsync(b => b.Id == id);
             if (existingBook == null)
                 return false;
 
@@ -209,34 +72,35 @@ namespace api.Services
             existingBook.Professor = book.Professor;
             existingBook.IsAvailable = book.IsAvailable;
 
-            SaveBooksToFile();
+            await _context.SaveChangesAsync();
             return true;
         }
 
-        public bool DeleteBook(int id)
+        public async Task<bool> DeleteBookAsync(int id)
         {
-            var book = _books.FirstOrDefault(b => b.Id == id);
+            var book = await _context.Books.FirstOrDefaultAsync(b => b.Id == id);
             if (book == null)
                 return false;
 
-            _books.Remove(book);
-            SaveBooksToFile();
+            _context.Books.Remove(book);
+            await _context.SaveChangesAsync();
             return true;
         }
 
-        public List<Book> SearchBooks(string searchTerm)
+        public async Task<List<Book>> SearchBooksAsync(string searchTerm)
         {
             if (string.IsNullOrEmpty(searchTerm))
-                return GetBooks();
+                return await GetBooksAsync();
 
-            var filteredBooks = _books.Where(b => 
-                b.Title.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                b.Author.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                b.Genre.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                b.CourseCode.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                b.Professor.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                b.SellerName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
-            ).ToList();
+            var filteredBooks = await _context.Books
+                .Where(b => 
+                    b.Title.Contains(searchTerm) ||
+                    b.Author.Contains(searchTerm) ||
+                    b.Genre.Contains(searchTerm) ||
+                    b.CourseCode.Contains(searchTerm) ||
+                    b.Professor.Contains(searchTerm) ||
+                    b.SellerName.Contains(searchTerm))
+                .ToListAsync();
 
             var booksWithRatings = new List<Book>();
             
@@ -245,7 +109,7 @@ namespace api.Services
                 var bookWithRating = book;
                 
                 // Find the seller user by email
-                var seller = _userService.GetUserByEmail(book.SellerEmail);
+                var seller = await _userService.GetUserByEmailAsync(book.SellerEmail);
                 if (seller != null)
                 {
                     // Add seller rating information to the book
@@ -259,98 +123,35 @@ namespace api.Services
             return booksWithRatings;
         }
 
-        private void SaveBooksToFile()
+        // Legacy synchronous methods for backward compatibility
+        public List<Book> GetBooks()
         {
-            try
-            {
-                var csv = new StringBuilder();
-                csv.AppendLine("Id,Title,Author,Genre,Year,Description,Price,Condition,SellerName,SellerEmail,CourseCode,Professor,IsAvailable,DatePosted,ImageUrl");
-                
-                foreach (var book in _books)
-                {
-                    csv.AppendLine($"{book.Id},{EscapeCsv(book.Title)},{EscapeCsv(book.Author)},{EscapeCsv(book.Genre)},{book.Year},{EscapeCsv(book.Description)},{book.Price},{EscapeCsv(book.Condition)},{EscapeCsv(book.SellerName)},{EscapeCsv(book.SellerEmail)},{EscapeCsv(book.CourseCode)},{EscapeCsv(book.Professor)},{book.IsAvailable},{book.DatePosted:yyyy-MM-dd HH:mm:ss},{EscapeCsv(book.ImageUrl)}");
-                }
-                
-                File.WriteAllText(_dataFilePath, csv.ToString());
-            }
-            catch (Exception ex)
-            {
-                // Log error or handle gracefully
-                Console.WriteLine($"Error saving books to file: {ex.Message}");
-            }
+            return GetBooksAsync().Result;
         }
 
-        private Book? ParseBookFromCsv(string csvLine)
+        public Book? GetBook(int id)
         {
-            try
-            {
-                var fields = ParseCsvLine(csvLine);
-                if (fields.Length < 15) return null;
-
-                return new Book
-                {
-                    Id = int.Parse(fields[0]),
-                    Title = fields[1],
-                    Author = fields[2],
-                    Genre = fields[3],
-                    Year = int.Parse(fields[4]),
-                    Description = fields[5],
-                    Price = decimal.Parse(fields[6]),
-                    Condition = fields[7],
-                    SellerName = fields[8],
-                    SellerEmail = fields[9],
-                    CourseCode = fields[10],
-                    Professor = fields[11],
-                    IsAvailable = bool.Parse(fields[12]),
-                    DatePosted = DateTime.Parse(fields[13]),
-                    ImageUrl = fields[14]
-                };
-            }
-            catch
-            {
-                return null;
-            }
+            return GetBookAsync(id).Result;
         }
 
-        private string[] ParseCsvLine(string line)
+        public Book CreateBook(Book book)
         {
-            var fields = new List<string>();
-            var currentField = new StringBuilder();
-            bool inQuotes = false;
-
-            for (int i = 0; i < line.Length; i++)
-            {
-                char c = line[i];
-
-                if (c == '"')
-                {
-                    inQuotes = !inQuotes;
-                }
-                else if (c == ',' && !inQuotes)
-                {
-                    fields.Add(currentField.ToString());
-                    currentField.Clear();
-                }
-                else
-                {
-                    currentField.Append(c);
-                }
-            }
-
-            fields.Add(currentField.ToString());
-            return fields.ToArray();
+            return CreateBookAsync(book).Result;
         }
 
-        private string EscapeCsv(string value)
+        public bool UpdateBook(int id, Book book)
         {
-            if (string.IsNullOrEmpty(value)) return "";
-            
-            if (value.Contains(",") || value.Contains("\"") || value.Contains("\n"))
-            {
-                return $"\"{value.Replace("\"", "\"\"")}\"";
-            }
-            
-            return value;
+            return UpdateBookAsync(id, book).Result;
+        }
+
+        public bool DeleteBook(int id)
+        {
+            return DeleteBookAsync(id).Result;
+        }
+
+        public List<Book> SearchBooks(string searchTerm)
+        {
+            return SearchBooksAsync(searchTerm).Result;
         }
     }
 }

@@ -1,0 +1,2 @@
+{"Timestamp":"2025-09-20T23:38:03.2574016Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-20T23:38:03.6828456Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":200,"DurationMs":437,"UserId":null,"Severity":"Info"}
