@@ -1,6 +1,9 @@
 using api.Services;
 using api.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +17,8 @@ builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<RatingService>();
 builder.Services.AddScoped<DataMigrationService>();
 builder.Services.AddScoped<ValidationService>();
+builder.Services.AddScoped<EmailVerificationService>();
+builder.Services.AddScoped<JwtService>();
 builder.Services.AddSingleton<LoggingService>();
 builder.Services.AddScoped<BackupService>();
 builder.Services.AddSingleton<RateLimitingService>();
@@ -23,25 +28,60 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Add CORS
+// Add CORS with restricted origins
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("OpenPolicy",
+    options.AddPolicy("RestrictedPolicy",
     builder =>
     {
-        builder.AllowAnyOrigin()
+        builder.WithOrigins("http://localhost:3000", "https://localhost:3000", 
+                           "http://127.0.0.1:3000", "https://127.0.0.1:3000",
+                           "http://localhost:8080", "https://localhost:8080",
+                           "http://127.0.0.1:8080", "https://127.0.0.1:8080",
+                           "null")
                .AllowAnyMethod()
-               .AllowAnyHeader();
+               .AllowAnyHeader()
+               .AllowCredentials();
     });
+});
+
+// Add JWT Authentication
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"] ?? "BookTradingApp",
+            ValidAudience = builder.Configuration["Jwt:Audience"] ?? "BookTradingApp",
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? "YourSuperSecretKeyThatIsAtLeast32CharactersLong123456789"))
+        };
+    });
+
+// Add Authorization
+builder.Services.AddAuthorization();
+
+// Add CSRF protection
+builder.Services.AddAntiforgery(options =>
+{
+    options.HeaderName = "X-CSRF-TOKEN";
+    options.SuppressXFrameOptionsHeader = false;
 });
 
 var app = builder.Build();
 
-// Run data migration on startup
+// Ensure database is created and run data migration on startup
 using (var scope = app.Services.CreateScope())
 {
     try
     {
+        var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        await context.Database.EnsureCreatedAsync();
+        
         var migrationService = scope.ServiceProvider.GetRequiredService<DataMigrationService>();
         await migrationService.MigrateCsvToSqliteAsync();
     }
@@ -64,8 +104,9 @@ app.UseHttpsRedirection();
 // Add security middleware
 app.UseMiddleware<api.Middleware.SecurityMiddleware>();
 
-app.UseCors("OpenPolicy");
+app.UseCors("RestrictedPolicy");
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

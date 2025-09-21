@@ -205,13 +205,50 @@ body {
 
 .book-condition {
   display: inline-block;
-  background-color: var(--success);
   color: var(--white);
   padding: 0.2rem 0.6rem;
   border-radius: 12px;
   font-size: 0.75rem;
   font-weight: 600;
   white-space: nowrap;
+  cursor: help;
+  transition: all 0.2s ease;
+}
+
+.book-condition:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.condition-excellent {
+  background: linear-gradient(135deg, #28a745, #20c997);
+  border: 1px solid #1e7e34;
+}
+
+.condition-very-good {
+  background: linear-gradient(135deg, #20c997, #17a2b8);
+  border: 1px solid #1abc9c;
+}
+
+.condition-good {
+  background: linear-gradient(135deg, #17a2b8, #6f42c1);
+  border: 1px solid #138496;
+}
+
+.condition-fair {
+  background: linear-gradient(135deg, #ffc107, #fd7e14);
+  color: #212529;
+  border: 1px solid #e0a800;
+}
+
+.condition-poor {
+  background: linear-gradient(135deg, #dc3545, #e83e8c);
+  border: 1px solid #bd2130;
+}
+
+.condition-unknown {
+  background: linear-gradient(135deg, #6c757d, #495057);
+  border: 1px solid #545b62;
 }
 
 .book-seller {

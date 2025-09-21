@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 using api.Models;
 using api.Services;
 
@@ -13,14 +15,19 @@ namespace api.Controllers
         private readonly RatingService _ratingService;
         private readonly ValidationService _validationService;
         private readonly LoggingService _loggingService;
+        private readonly EmailVerificationService _emailVerificationService;
+        private readonly JwtService _jwtService;
 
         public BookController(BookService bookService, RatingService ratingService, 
-            ValidationService validationService, LoggingService loggingService)
+            ValidationService validationService, LoggingService loggingService,
+            EmailVerificationService emailVerificationService, JwtService jwtService)
         {
             _bookService = bookService;
             _ratingService = ratingService;
             _validationService = validationService;
             _loggingService = loggingService;
+            _emailVerificationService = emailVerificationService;
+            _jwtService = jwtService;
         }
 
         // GET: api/Book
@@ -65,15 +72,23 @@ namespace api.Controllers
 
         // POST: api/Book
         [HttpPost]
-        public ActionResult<Book> CreateBook([FromBody] Book book)
+        [Authorize]
+        public async Task<ActionResult<Book>> CreateBook([FromBody] CreateBookRequest request)
         {
             try
             {
-                if (book == null)
+                if (request == null || request.Book == null)
                 {
                     _loggingService.LogSecurityEvent("InputValidation", "Null book object provided", null, GetClientIpAddress());
                     return BadRequest("Book data is required");
                 }
+
+                // Get current user from JWT token
+                var userEmail = _jwtService.GetUserEmailFromToken(User);
+                if (string.IsNullOrEmpty(userEmail))
+                    return Unauthorized("Invalid token");
+
+                var book = request.Book;
 
                 // Validate book data
                 var validationErrors = ValidateBook(book);
@@ -84,14 +99,17 @@ namespace api.Controllers
                     return BadRequest($"Validation errors: {string.Join(", ", validationErrors)}");
                 }
 
+                // Ensure the seller email matches the authenticated user
+                book.SellerEmail = userEmail;
+
                 // Sanitize input
                 book.Title = ValidationService.SanitizeInput(book.Title);
                 book.Author = ValidationService.SanitizeInput(book.Author);
                 book.Description = ValidationService.SanitizeInput(book.Description);
                 book.SellerName = ValidationService.SanitizeInput(book.SellerName);
 
-                var createdBook = _bookService.CreateBook(book);
-                _loggingService.LogUserAction("BookCreated", null, $"Book '{book.Title}' created");
+                var createdBook = await _bookService.CreateBookAsync(book);
+                _loggingService.LogUserAction("BookCreated", null, $"Book '{book.Title}' created by {userEmail}");
                 
                 return CreatedAtAction(nameof(GetBook), new { id = createdBook.Id }, createdBook);
             }
@@ -104,67 +122,166 @@ namespace api.Controllers
 
         // PUT: api/Book/5
         [HttpPut("{id}")]
-        public IActionResult UpdateBook(int id, [FromBody] Book book)
+        [Authorize]
+        public async Task<IActionResult> UpdateBook(int id, [FromBody] Book book)
         {
-            if (book == null || string.IsNullOrEmpty(book.Title) || string.IsNullOrEmpty(book.Author))
-                return BadRequest("Title and Author are required");
+            try
+            {
+                if (book == null || string.IsNullOrEmpty(book.Title) || string.IsNullOrEmpty(book.Author))
+                    return BadRequest("Title and Author are required");
 
-            if (!_bookService.UpdateBook(id, book))
-                return NotFound();
-            
-            return NoContent();
+                // Get current user from JWT token
+                var userEmail = _jwtService.GetUserEmailFromToken(User);
+                if (string.IsNullOrEmpty(userEmail))
+                    return Unauthorized("Invalid token");
+
+                // Get the existing book to check ownership
+                var existingBook = await _bookService.GetBookAsync(id);
+                if (existingBook == null)
+                    return NotFound();
+
+                // Check if user owns the book or is admin
+                if (existingBook.SellerEmail != userEmail && !IsAdminUser(userEmail))
+                {
+                    _loggingService.LogSecurityEvent("UnauthorizedAccess", 
+                        $"User {userEmail} attempted to update book {id} owned by {existingBook.SellerEmail}", 
+                        null, GetClientIpAddress());
+                    return Unauthorized("You can only update your own books");
+                }
+
+                // Ensure the seller email matches the authenticated user (unless admin)
+                if (!IsAdminUser(userEmail))
+                {
+                    book.SellerEmail = userEmail;
+                }
+
+                if (!await _bookService.UpdateBookAsync(id, book))
+                    return NotFound();
+                
+                _loggingService.LogUserAction("BookUpdated", null, $"Book {id} updated by {userEmail}");
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                _loggingService.LogError("Error updating book", ex);
+                return StatusCode(500, "An error occurred while updating the book");
+            }
         }
 
         // DELETE: api/Book/5
         [HttpDelete("{id}")]
-        public IActionResult DeleteBook(int id)
+        [Authorize]
+        public async Task<IActionResult> DeleteBook(int id)
         {
-            if (!_bookService.DeleteBook(id))
-                return NotFound();
-            
-            return NoContent();
+            try
+            {
+                // Get current user from JWT token
+                var userEmail = _jwtService.GetUserEmailFromToken(User);
+                if (string.IsNullOrEmpty(userEmail))
+                    return Unauthorized("Invalid token");
+
+                // Get the existing book to check ownership
+                var existingBook = await _bookService.GetBookAsync(id);
+                if (existingBook == null)
+                    return NotFound();
+
+                // Check if user owns the book or is admin
+                if (existingBook.SellerEmail != userEmail && !IsAdminUser(userEmail))
+                {
+                    _loggingService.LogSecurityEvent("UnauthorizedAccess", 
+                        $"User {userEmail} attempted to delete book {id} owned by {existingBook.SellerEmail}", 
+                        null, GetClientIpAddress());
+                    return Unauthorized("You can only delete your own books");
+                }
+
+                if (!await _bookService.DeleteBookAsync(id))
+                    return NotFound();
+                
+                _loggingService.LogUserAction("BookDeleted", null, $"Book {id} deleted by {userEmail}");
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                _loggingService.LogError("Error deleting book", ex);
+                return StatusCode(500, "An error occurred while deleting the book");
+            }
         }
 
         // POST: api/Book/rate
         [HttpPost("rate")]
-        public ActionResult<Rating> RateUser([FromBody] RateUserRequest request)
+        [Authorize]
+        public async Task<ActionResult<Rating>> RateUser([FromBody] RateUserRequest request)
         {
-            if (request == null || request.RaterId <= 0 || request.RatedUserId <= 0 || request.BookId <= 0)
-                return BadRequest("Invalid rating request");
+            try
+            {
+                if (request == null || request.RatedUserId <= 0 || request.BookId <= 0)
+                    return BadRequest("Invalid rating request");
 
-            var rating = _ratingService.CreateRating(
-                request.RaterId, 
-                request.RatedUserId, 
-                request.BookId, 
-                request.Score, 
-                request.Comment ?? ""
-            );
+                // Get current user from JWT token
+                var raterId = _jwtService.GetUserIdFromToken(User);
+                if (raterId <= 0)
+                    return Unauthorized("Invalid token");
 
-            if (rating == null)
-                return BadRequest("Unable to create rating. User may have already rated this person for this book.");
+                // Debug logging
+                _loggingService.LogUserAction("RatingAttempt", raterId.ToString(), 
+                    $"Attempting to rate: RaterId={raterId}, RatedUserId={request.RatedUserId}, BookId={request.BookId}, Score={request.Score}");
 
-            return Ok(rating);
+                var rating = _ratingService.CreateRating(
+                    raterId, 
+                    request.RatedUserId, 
+                    request.BookId, 
+                    request.Score, 
+                    request.Comment ?? ""
+                );
+
+                if (rating == null)
+                {
+                    _loggingService.LogUserAction("RatingFailed", raterId.ToString(), 
+                        $"Rating failed: RaterId={raterId}, RatedUserId={request.RatedUserId}, BookId={request.BookId}, Score={request.Score}");
+                    return BadRequest("Unable to create rating. User may have already rated this person for this book.");
+                }
+
+                _loggingService.LogUserAction("RatingCreated", raterId.ToString(), 
+                    $"User {raterId} rated user {request.RatedUserId} for book {request.BookId}");
+                return Ok(rating);
+            }
+            catch (Exception ex)
+            {
+                _loggingService.LogError("Error creating rating", ex);
+                return StatusCode(500, "An error occurred while creating the rating");
+            }
         }
 
-        // GET: api/Book/ratings/user/{userId}
-        [HttpGet("ratings/user/{userId}")]
-        public ActionResult<List<Rating>> GetUserRatings(int userId)
+        // GET: api/Book/ratings/my-ratings
+        [HttpGet("ratings/my-ratings")]
+        [Authorize]
+        public async Task<ActionResult<List<Rating>>> GetMyRatings()
         {
+            var userId = _jwtService.GetUserIdFromToken(User);
+            if (userId <= 0)
+                return Unauthorized("Invalid token");
+
             var ratings = _ratingService.GetRatingsForUser(userId);
             return Ok(ratings);
         }
 
-        // GET: api/Book/ratings/by/{userId}
-        [HttpGet("ratings/by/{userId}")]
-        public ActionResult<List<Rating>> GetRatingsByUser(int userId)
+        // GET: api/Book/ratings/ratings-for-me
+        [HttpGet("ratings/ratings-for-me")]
+        [Authorize]
+        public async Task<ActionResult<List<Rating>>> GetRatingsForMe()
         {
+            var userId = _jwtService.GetUserIdFromToken(User);
+            if (userId <= 0)
+                return Unauthorized("Invalid token");
+
             var ratings = _ratingService.GetRatingsByUser(userId);
             return Ok(ratings);
         }
 
         // PUT: api/Book/ratings/{id}
         [HttpPut("ratings/{id}")]
-        public IActionResult UpdateRating(int id, [FromBody] UpdateRatingRequest request)
+        [Authorize]
+        public async Task<IActionResult> UpdateRating(int id, [FromBody] UpdateRatingRequest request)
         {
             if (request == null || request.Score < 1 || request.Score > 5)
                 return BadRequest("Invalid rating update request");
@@ -177,12 +294,19 @@ namespace api.Controllers
 
         // DELETE: api/Book/ratings/{id}
         [HttpDelete("ratings/{id}")]
-        public IActionResult DeleteRating(int id)
+        [Authorize]
+        public async Task<IActionResult> DeleteRating(int id)
         {
             if (!_ratingService.DeleteRating(id))
                 return NotFound();
 
             return NoContent();
+        }
+
+        // Helper method to check if user is admin
+        private bool IsAdminUser(string email)
+        {
+            return email == "ccsmith33@crimson.ua.edu" || email == "admin@crimson.ua.edu";
         }
 
         // GET: api/Book/ratings/all (Admin only)
@@ -241,7 +365,6 @@ namespace api.Controllers
 
     public class RateUserRequest
     {
-        public int RaterId { get; set; }
         public int RatedUserId { get; set; }
         public int BookId { get; set; }
         public int Score { get; set; }
@@ -252,5 +375,10 @@ namespace api.Controllers
     {
         public int Score { get; set; }
         public string? Comment { get; set; }
+    }
+
+    public class CreateBookRequest
+    {
+        public Book Book { get; set; } = new Book();
     }
 }

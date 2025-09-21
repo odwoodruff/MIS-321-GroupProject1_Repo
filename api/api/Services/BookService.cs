@@ -19,7 +19,9 @@ namespace api.Services
 
         public async Task<List<Book>> GetBooksAsync()
         {
-            var books = await _context.Books.ToListAsync();
+            var books = await _context.Books
+                .Where(b => b.IsActive)
+                .ToListAsync();
             var booksWithRatings = new List<Book>();
             
             foreach (var book in books)
@@ -43,7 +45,7 @@ namespace api.Services
 
         public async Task<Book?> GetBookAsync(int id)
         {
-            return await _context.Books.FirstOrDefaultAsync(b => b.Id == id);
+            return await _context.Books.FirstOrDefaultAsync(b => b.Id == id && b.IsActive);
         }
 
         public async Task<Book> CreateBookAsync(Book book)
@@ -55,7 +57,7 @@ namespace api.Services
 
         public async Task<bool> UpdateBookAsync(int id, Book book)
         {
-            var existingBook = await _context.Books.FirstOrDefaultAsync(b => b.Id == id);
+            var existingBook = await _context.Books.FirstOrDefaultAsync(b => b.Id == id && b.IsActive);
             if (existingBook == null)
                 return false;
 
@@ -78,11 +80,12 @@ namespace api.Services
 
         public async Task<bool> DeleteBookAsync(int id)
         {
-            var book = await _context.Books.FirstOrDefaultAsync(b => b.Id == id);
+            var book = await _context.Books.FirstOrDefaultAsync(b => b.Id == id && b.IsActive);
             if (book == null)
                 return false;
 
-            _context.Books.Remove(book);
+            // Soft delete - mark as inactive instead of removing
+            book.IsActive = false;
             await _context.SaveChangesAsync();
             return true;
         }
@@ -93,13 +96,13 @@ namespace api.Services
                 return await GetBooksAsync();
 
             var filteredBooks = await _context.Books
-                .Where(b => 
+                .Where(b => b.IsActive && (
                     b.Title.Contains(searchTerm) ||
                     b.Author.Contains(searchTerm) ||
                     b.Genre.Contains(searchTerm) ||
                     b.CourseCode.Contains(searchTerm) ||
                     b.Professor.Contains(searchTerm) ||
-                    b.SellerName.Contains(searchTerm))
+                    b.SellerName.Contains(searchTerm)))
                 .ToListAsync();
 
             var booksWithRatings = new List<Book>();
@@ -152,6 +155,17 @@ namespace api.Services
         public List<Book> SearchBooks(string searchTerm)
         {
             return SearchBooksAsync(searchTerm).Result;
+        }
+
+        // Admin method to get all books including inactive ones
+        public async Task<List<Book>> GetAllBooksAsync()
+        {
+            return await _context.Books.ToListAsync();
+        }
+
+        public List<Book> GetAllBooks()
+        {
+            return GetAllBooksAsync().Result;
         }
     }
 }

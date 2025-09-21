@@ -60,5 +60,7 @@ namespace api.Models
         public double SellerRating { get; set; } = 0.0;
         
         public int SellerRatingCount { get; set; } = 0;
+        
+        public bool IsActive { get; set; } = true;
     }
 }

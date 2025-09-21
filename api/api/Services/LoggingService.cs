@@ -22,9 +22,9 @@ namespace api.Services
             {
                 Timestamp = DateTime.UtcNow,
                 EventType = eventType,
-                Message = message,
-                UserId = userId,
-                IpAddress = ipAddress,
+                Message = SanitizeMessage(message),
+                UserId = SanitizeUserId(userId),
+                IpAddress = SanitizeIpAddress(ipAddress),
                 Severity = GetSeverityLevel(eventType)
             };
 
@@ -34,7 +34,7 @@ namespace api.Services
             File.AppendAllText(_logFilePath, logMessage + Environment.NewLine);
             
             // Log to console/application insights
-            _logger.LogWarning("Security Event: {EventType} - {Message}", eventType, message);
+            _logger.LogWarning("Security Event: {EventType} - {Message}", eventType, SanitizeMessage(message));
         }
 
         public void LogError(string message, Exception? exception = null, string? userId = null)
@@ -103,6 +103,53 @@ namespace api.Services
                 "InputValidation" => "Warning",
                 _ => "Info"
             };
+        }
+
+        private string SanitizeMessage(string message)
+        {
+            if (string.IsNullOrEmpty(message))
+                return message;
+
+            // Remove email addresses
+            message = System.Text.RegularExpressions.Regex.Replace(message, 
+                @"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b", "[EMAIL_REDACTED]");
+
+            // Remove potential passwords or tokens
+            message = System.Text.RegularExpressions.Regex.Replace(message, 
+                @"(password|token|key|secret)\s*[:=]\s*[^\s,}]+", "$1: [REDACTED]");
+
+            // Remove potential credit card numbers
+            message = System.Text.RegularExpressions.Regex.Replace(message, 
+                @"\b\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}\b", "[CARD_REDACTED]");
+
+            return message;
+        }
+
+        private string? SanitizeUserId(string? userId)
+        {
+            if (string.IsNullOrEmpty(userId))
+                return userId;
+
+            // Only log the first 4 characters of user ID for privacy
+            return userId.Length > 4 ? userId.Substring(0, 4) + "***" : userId;
+        }
+
+        private string? SanitizeIpAddress(string? ipAddress)
+        {
+            if (string.IsNullOrEmpty(ipAddress))
+                return ipAddress;
+
+            // Mask the last octet of IPv4 addresses
+            if (System.Net.IPAddress.TryParse(ipAddress, out var ip) && ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+            {
+                var parts = ipAddress.Split('.');
+                if (parts.Length == 4)
+                {
+                    return $"{parts[0]}.{parts[1]}.{parts[2]}.xxx";
+                }
+            }
+
+            return ipAddress;
         }
     }
 }

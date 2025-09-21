@@ -12,6 +12,7 @@ namespace api.Data
         public DbSet<Book> Books { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<Rating> Ratings { get; set; }
+        public DbSet<EmailVerification> EmailVerifications { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -49,6 +50,16 @@ namespace api.Data
                 // Add unique constraints
                 entity.HasIndex(e => e.Username).IsUnique();
                 entity.HasIndex(e => e.Email).IsUnique();
+            });
+
+            // Configure EmailVerification entity
+            modelBuilder.Entity<EmailVerification>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Email).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.VerificationCode).IsRequired().HasMaxLength(6);
+                entity.HasIndex(e => e.Email);
+                entity.HasIndex(e => new { e.Email, e.VerificationCode });
             });
 
             // Configure Rating entity

@@ -3,13 +3,51 @@ const CONFIG = {
   API_BASE_URL: "http://localhost:5032/api/Book",
   USER_API_URL: "http://localhost:5032/api/User",
   RATING_API_URL: "http://localhost:5032/api/Book",
+  AUTH_API_URL: "http://localhost:5032/api/Auth",
+  DEV_API_URL: "http://localhost:5032/api/Dev",
 };
+
+// Helper function to get headers with JWT token
+function getAuthHeaders() {
+  const headers = {
+    "Content-Type": "application/json",
+  };
+
+  if (authToken) {
+    headers["Authorization"] = `Bearer ${authToken}`;
+  }
+
+  return headers;
+}
+
+// Helper function to get user ID by email
+async function getUserIdByEmail(email) {
+  try {
+    const response = await fetch(`${CONFIG.DEV_API_URL}/existing-users`, {
+      method: "GET",
+      headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      console.error("Failed to fetch users");
+      return null;
+    }
+
+    const users = await response.json();
+    const user = users.find((u) => u.email === email);
+    return user ? user.id : null;
+  } catch (error) {
+    console.error("Error looking up user by email:", error);
+    return null;
+  }
+}
 
 // Global state
 let books = [];
 let editingBookId = null;
 let currentSearchTerm = "";
 let currentUser = null;
+let authToken = null; // JWT token for authentication
 let notifications = [];
 let ratings = [];
 let contactedSellers = new Set(); // Track which sellers the user has contacted
@@ -44,6 +82,14 @@ async function handleOnLoad() {
 
     setupAuthEventListeners();
     setupScrollBehavior();
+
+    // Add development helper if in development mode
+    if (
+      window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1"
+    ) {
+      addDevelopmentHelper();
+    }
   } catch (error) {
     console.error("Error during initialization:", error);
     // Render app even if books fail to load
@@ -58,8 +104,11 @@ async function handleOnLoad() {
 // Authentication Functions
 function checkAuthStatus() {
   const savedUser = localStorage.getItem("currentUser");
-  if (savedUser) {
+  const savedToken = localStorage.getItem("authToken");
+
+  if (savedUser && savedToken) {
     currentUser = JSON.parse(savedUser);
+    authToken = savedToken;
     updateAuthUI();
   }
 }
@@ -144,38 +193,172 @@ async function handleLogin() {
   }
 
   try {
-    // For now, we'll create a simple user object based on the email
-    // In a real app, you'd validate this with your backend
-    const emailParts = email.split("@")[0];
-    const firstName = emailParts.split(".")[0] || emailParts;
+    // Send verification code
+    const response = await fetch(`${CONFIG.AUTH_API_URL}/send-verification`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email }),
+    });
 
-    currentUser = {
-      id: Math.floor(Math.random() * 1000) + 1, // Simple ID generation (1-1000)
-      firstName: firstName,
-      lastName: "Student", // Default last name
-      email: email,
-      username: emailParts,
-    };
+    const result = await response.json();
 
-    localStorage.setItem("currentUser", JSON.stringify(currentUser));
-    updateAuthUI();
-    // Load notifications and contacted sellers for the user
-    loadNotifications();
-    loadContactedSellers();
-    // Re-render the app to show edit/delete buttons for admin
-    renderApp();
-    showAlert("Login successful! Welcome to Roll Tide Books!", "success");
-    bootstrap.Modal.getInstance(document.getElementById("loginModal")).hide();
-    document.getElementById("loginForm").reset();
+    if (response.ok) {
+      showVerificationModal(email, result.verificationCode);
+      showAlert("Verification code sent to your email", "success");
+    } else {
+      showAlert(result.message || "Failed to send verification code", "danger");
+    }
   } catch (error) {
     console.error("Login error:", error);
     showAlert("Login failed. Please try again.", "danger");
   }
 }
 
+function showVerificationModal(email, verificationCode = null) {
+  // Hide login modal
+  bootstrap.Modal.getInstance(document.getElementById("loginModal")).hide();
+
+  // Create verification modal
+  const modalHtml = `
+    <div class="modal fade" id="verificationModal" tabindex="-1" aria-labelledby="verificationModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="verificationModalLabel">Verify Your Email</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p>We've sent a 6-digit verification code to <strong>${email}</strong></p>
+            ${
+              verificationCode
+                ? `
+              <div class="alert alert-info">
+                <strong>Development Mode:</strong> Your verification code is <code>${verificationCode}</code>
+              </div>
+            `
+                : ""
+            }
+              <div class="mb-3">
+                <label for="verificationCode" class="form-label">Verification Code</label>
+                <input type="text" class="form-control" id="verificationCode" 
+                       placeholder="Enter 6-digit code" maxlength="6" pattern="[0-9]{6}">
+              </div>
+            <div class="text-center">
+              <button type="button" class="btn btn-outline-secondary" onclick="resendVerificationCode('${email}')">
+                Resend Code
+              </button>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-primary" onclick="verifyEmailCode('${email}')">Verify</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Remove existing modal if any
+  const existingModal = document.getElementById("verificationModal");
+  if (existingModal) {
+    existingModal.remove();
+  }
+
+  // Add modal to body
+  document.body.insertAdjacentHTML("beforeend", modalHtml);
+
+  // Show modal
+  const modal = new bootstrap.Modal(
+    document.getElementById("verificationModal")
+  );
+  modal.show();
+}
+
+async function resendVerificationCode(email) {
+  try {
+    const response = await fetch(`${CONFIG.AUTH_API_URL}/send-verification`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email }),
+    });
+
+    const result = await response.json();
+
+    if (response.ok) {
+      showAlert("Verification code resent", "success");
+    } else {
+      showAlert(
+        result.message || "Failed to resend verification code",
+        "danger"
+      );
+    }
+  } catch (error) {
+    console.error("Resend error:", error);
+    showAlert("Failed to resend verification code", "danger");
+  }
+}
+
+async function verifyEmailCode(email) {
+  const code = document.getElementById("verificationCode").value.trim();
+
+  if (!code || code.length !== 6) {
+    showAlert("Please enter a valid 6-digit verification code", "warning");
+    return;
+  }
+
+  try {
+    const response = await fetch(`${CONFIG.AUTH_API_URL}/verify`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, code }),
+    });
+
+    const result = await response.json();
+
+    if (response.ok) {
+      // Store user data and JWT token
+      currentUser = result.user;
+      authToken = result.token;
+      localStorage.setItem("currentUser", JSON.stringify(currentUser));
+      localStorage.setItem("authToken", authToken);
+
+      // Update UI
+      updateAuthUI();
+      loadNotifications();
+      loadContactedSellers();
+      renderApp();
+
+      // Hide verification modal
+      bootstrap.Modal.getInstance(
+        document.getElementById("verificationModal")
+      ).hide();
+
+      showAlert("Email verified! Welcome to Roll Tide Books!", "success");
+
+      // Refresh the page after successful verification
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+    } else {
+      showAlert(result.message || "Invalid verification code", "danger");
+    }
+  } catch (error) {
+    console.error("Verification error:", error);
+    showAlert("Verification failed. Please try again.", "danger");
+  }
+}
+
 function handleLogout() {
   currentUser = null;
+  authToken = null;
   localStorage.removeItem("currentUser");
+  localStorage.removeItem("authToken");
   updateAuthUI();
   // Re-render the app to hide edit/delete buttons
   renderApp();
@@ -228,58 +411,10 @@ async function loadBooks() {
     console.log("Books loaded:", books);
   } catch (error) {
     console.error("Error loading books:", error);
-    console.log("Trying alternative ports...");
-
-    // Try alternative ports
-    const alternativePorts = [5032, 5000, 5001, 7000, 7001];
-    let foundWorkingPort = false;
-
-    for (const port of alternativePorts) {
-      try {
-        const testUrl = `http://localhost:${port}/api/Book`;
-        console.log("Trying port:", port, "URL:", testUrl);
-        const testResponse = await fetch(testUrl);
-        if (testResponse.ok) {
-          console.log("Found working port:", port);
-          CONFIG.API_BASE_URL = testUrl;
-          CONFIG.USER_API_URL = `http://localhost:${port}/api/User`;
-          CONFIG.RATING_API_URL = `http://localhost:${port}/api/Book`;
-          foundWorkingPort = true;
-          break;
-        }
-      } catch (e) {
-        console.log("Port", port, "not available");
-      }
-    }
-
-    if (foundWorkingPort) {
-      // Retry with the working port
-      await loadBooks();
-      return;
-    }
-
-    // Set some sample data if API is not available
-    books = [
-      {
-        id: 1,
-        title: "Sample Book",
-        author: "Sample Author",
-        genre: "Fiction",
-        year: 2023,
-        description: "A sample book for testing",
-        price: 25.0,
-        condition: "Good",
-        sellerName: "Sample Seller",
-        sellerEmail: "sample@crimson.ua.edu",
-        courseCode: "SAMPLE 101",
-        professor: "Dr. Sample",
-        isAvailable: true,
-        datePosted: new Date().toISOString(),
-      },
-    ];
+    books = [];
     showAlert(
-      "API not available - showing sample data. Please start the API server on port 5144, 5032, 5000, or 5001.",
-      "warning"
+      "Failed to load books. Please check if the API server is running on localhost:5032.",
+      "danger"
     );
   }
 }
@@ -288,13 +423,17 @@ async function addBook(bookData) {
   try {
     const response = await fetch(CONFIG.API_BASE_URL, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify(bookData),
     });
 
-    if (!response.ok) throw new Error("Failed to add book");
+    if (!response.ok) {
+      if (response.status === 401) {
+        showAlert("Please sign in to add a book", "warning");
+        return;
+      }
+      throw new Error("Failed to add book");
+    }
     await loadBooks();
     renderApp();
     showAlert("Book added successfully!", "success");
@@ -308,13 +447,17 @@ async function updateBook(id, bookData) {
   try {
     const response = await fetch(`${CONFIG.API_BASE_URL}/${id}`, {
       method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify(bookData),
     });
 
-    if (!response.ok) throw new Error("Failed to update book");
+    if (!response.ok) {
+      if (response.status === 401) {
+        showAlert("Please sign in to update a book", "warning");
+        return;
+      }
+      throw new Error("Failed to update book");
+    }
     await loadBooks();
     renderApp();
     showAlert("Book updated successfully!", "success");
@@ -328,9 +471,16 @@ async function deleteBook(id) {
   try {
     const response = await fetch(`${CONFIG.API_BASE_URL}/${id}`, {
       method: "DELETE",
+      headers: getAuthHeaders(),
     });
 
-    if (!response.ok) throw new Error("Failed to delete book");
+    if (!response.ok) {
+      if (response.status === 401) {
+        showAlert("Please sign in to delete a book", "warning");
+        return;
+      }
+      throw new Error("Failed to delete book");
+    }
     await loadBooks();
     renderApp();
     showAlert("Book deleted successfully!", "success");
@@ -404,19 +554,24 @@ function saveContactedSellers() {
   );
 }
 
-async function submitRating(raterId, ratedUserId, bookId, score, comment = "") {
+async function submitRating(ratedUserId, bookId, score, comment = "") {
   try {
+    console.log("Rating request:", {
+      ratedUserId,
+      bookId,
+      score,
+      comment,
+      currentUser: currentUser,
+    });
+
     const response = await fetch(`${CONFIG.RATING_API_URL}/rate`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify({
-        raterId: raterId,
-        ratedUserId: ratedUserId,
-        bookId: bookId,
-        score: score,
-        comment: comment,
+        RatedUserId: ratedUserId,
+        BookId: bookId,
+        Score: score,
+        Comment: comment,
       }),
     });
 
@@ -435,7 +590,7 @@ async function submitRating(raterId, ratedUserId, bookId, score, comment = "") {
   }
 }
 
-function showRatingModal(bookId, sellerName, sellerEmail) {
+async function showRatingModal(bookId, sellerName, sellerEmail) {
   if (!currentUser) {
     showAlert("Please sign in to rate a seller", "warning");
     return;
@@ -450,17 +605,13 @@ function showRatingModal(bookId, sellerName, sellerEmail) {
     return;
   }
 
-  // Find the seller's user ID (in a real app, you'd get this from the API)
-  // For now, generate a simple ID based on the seller email
-  const sellerUserId =
-    (Math.abs(
-      sellerEmail.split("").reduce((a, b) => {
-        a = (a << 5) - a + b.charCodeAt(0);
-        return a & a;
-      }, 0)
-    ) %
-      1000) +
-    1;
+  // Get the seller's user ID by looking up their email
+  const sellerUserId = await getUserIdByEmail(sellerEmail);
+
+  if (!sellerUserId) {
+    showAlert("Cannot rate this seller - seller account not found", "warning");
+    return;
+  }
 
   const modalHTML = `
     <div class="modal fade" id="ratingModal" tabindex="-1" aria-labelledby="ratingModalLabel" aria-hidden="true">
@@ -570,13 +721,13 @@ async function handleRatingSubmit(bookId, sellerUserId) {
     return;
   }
 
-  const rating = await submitRating(
-    currentUser.id,
-    sellerUserId,
-    bookId,
-    score,
-    comment
-  );
+  // Check if user is trying to rate themselves
+  if (currentUser && currentUser.id === sellerUserId) {
+    showAlert("You cannot rate yourself", "warning");
+    return;
+  }
+
+  const rating = await submitRating(sellerUserId, bookId, score, comment);
 
   if (rating) {
     // Close modal
@@ -881,34 +1032,125 @@ async function createSampleRatings() {
   }
 
   try {
-    // Create some sample ratings
-    const sampleRatings = [
+    // First, clear all existing ratings to avoid conflicts
+    const clearResponse = await fetch(
+      `${CONFIG.API_BASE_URL}/Dev/clear-all-ratings`,
       {
-        raterId: 1,
-        ratedUserId: 2,
-        bookId: 1,
-        score: 5,
-        comment: "Great seller, book was in excellent condition!",
+        method: "POST",
+        headers: getAuthHeaders(),
+      }
+    );
+
+    if (!clearResponse.ok) {
+      console.warn("Could not clear existing ratings, continuing anyway...");
+    }
+
+    // Using dummy user IDs (1000-1999 range) to avoid conflicts with real users
+
+    // Create dummy users and get their actual assigned IDs
+    const dummyUserData = [
+      {
+        username: "dummy_user_1",
+        email: "dummy1@example.com",
+        firstName: "Dummy",
+        lastName: "User1",
       },
       {
-        raterId: 2,
-        ratedUserId: 1,
-        bookId: 2,
-        score: 4,
-        comment: "Fast response and easy transaction.",
+        username: "dummy_user_2",
+        email: "dummy2@example.com",
+        firstName: "Dummy",
+        lastName: "User2",
       },
       {
-        raterId: 3,
-        ratedUserId: 1,
-        bookId: 3,
-        score: 3,
-        comment: "Book was okay, some highlighting as described.",
+        username: "dummy_user_3",
+        email: "dummy3@example.com",
+        firstName: "Dummy",
+        lastName: "User3",
+      },
+      {
+        username: "dummy_user_4",
+        email: "dummy4@example.com",
+        firstName: "Dummy",
+        lastName: "User4",
+      },
+      {
+        username: "dummy_user_5",
+        email: "dummy5@example.com",
+        firstName: "Dummy",
+        lastName: "User5",
       },
     ];
 
+    const dummyUserIds = [];
+
+    // Create dummy users and collect their actual IDs
+    for (const userData of dummyUserData) {
+      const createUserResponse = await fetch(
+        `${CONFIG.API_BASE_URL}/Dev/create-dummy-user`,
+        {
+          method: "POST",
+          headers: getAuthHeaders(),
+          body: JSON.stringify(userData),
+        }
+      );
+
+      if (createUserResponse.ok) {
+        const result = await createUserResponse.json();
+        dummyUserIds.push(result.userId);
+        console.log(
+          `Created dummy user: ${userData.username} with ID ${result.userId}`
+        );
+      } else {
+        console.warn(
+          `Could not create dummy user ${userData.username}, continuing...`
+        );
+      }
+    }
+
+    if (dummyUserIds.length < 2) {
+      showAlert(
+        "Could not create enough dummy users for sample ratings",
+        "warning"
+      );
+      return;
+    }
+    const sampleRatings = [];
+    const usedCombinations = new Set();
+
+    // Generate 6 random ratings between dummy users
+    for (let i = 0; i < 6; i++) {
+      let raterId, ratedUserId, bookId;
+      let combination;
+
+      // Ensure we don't create duplicate combinations
+      do {
+        raterId = dummyUserIds[Math.floor(Math.random() * dummyUserIds.length)];
+        ratedUserId =
+          dummyUserIds[Math.floor(Math.random() * dummyUserIds.length)];
+        bookId = Math.floor(Math.random() * 5) + 1; // Books 1-5
+        combination = `${raterId}-${ratedUserId}-${bookId}`;
+      } while (raterId === ratedUserId || usedCombinations.has(combination));
+
+      usedCombinations.add(combination);
+
+      sampleRatings.push({
+        ratedUserId: ratedUserId,
+        bookId: bookId,
+        score: Math.floor(Math.random() * 5) + 1, // 1-5 stars
+        comment: [
+          "Great seller, book was in excellent condition!",
+          "Fast response and easy transaction.",
+          "Book was okay, some highlighting as described.",
+          "Perfect condition, would buy again!",
+          "Good communication, book as described.",
+          "Quick delivery, satisfied with purchase.",
+        ][Math.floor(Math.random() * 6)],
+      });
+    }
+
+    // Submit all sample ratings
     for (const ratingData of sampleRatings) {
       await submitRating(
-        ratingData.raterId,
         ratingData.ratedUserId,
         ratingData.bookId,
         ratingData.score,
@@ -980,6 +1222,9 @@ function renderApp() {
       </div>
     </div>
   `;
+
+  // Initialize tooltips after rendering
+  setTimeout(initializeTooltips, 100);
 }
 
 function renderBooks() {
@@ -1015,6 +1260,7 @@ function renderBooks() {
 }
 
 function renderBookCard(book) {
+  const conditionInfo = getConditionInfo(book.condition);
   return `
     <div class="book-card">
       <div class="book-icon"></div>
@@ -1055,7 +1301,14 @@ function renderBookCard(book) {
           </div>
         </div>
         <div class="book-price">$${(book.price || 0).toFixed(2)}</div>
-        <div class="book-condition">${book.condition || "Unknown"}</div>
+        <div class="book-condition ${conditionInfo.class}" 
+             data-bs-toggle="tooltip" 
+             data-bs-placement="top" 
+             title="${conditionInfo.description}">
+          <i class="bi ${conditionInfo.icon}"></i> ${
+    book.condition || "Unknown"
+  }
+        </div>
         <div class="book-actions">
           <button class="btn btn-crimson btn-sm" onclick="contactSeller(${
             book.id
@@ -1208,17 +1461,27 @@ function renderBookForm() {
               <select class="form-control" id="book-condition" required>
                 <option value="Excellent" ${
                   book && book.condition === "Excellent" ? "selected" : ""
-                }>Excellent</option>
+                }>⭐ Excellent - Like new, minimal wear</option>
+                <option value="Very Good" ${
+                  book && book.condition === "Very Good"
+                    ? "selected"
+                    : !book
+                    ? "selected"
+                    : ""
+                }>🌟 Very Good - Minor wear, clean pages</option>
                 <option value="Good" ${
                   book && book.condition === "Good" ? "selected" : ""
-                }>Good</option>
+                }>✅ Good - Light wear, some highlighting</option>
                 <option value="Fair" ${
                   book && book.condition === "Fair" ? "selected" : ""
-                }>Fair</option>
+                }>⚠️ Fair - Moderate wear, significant highlighting</option>
                 <option value="Poor" ${
                   book && book.condition === "Poor" ? "selected" : ""
-                }>Poor</option>
+                }>❌ Poor - Heavy wear, extensive damage</option>
               </select>
+              <div class="form-text">
+                <small class="text-muted">Choose the condition that best describes your book's state</small>
+              </div>
             </div>
             <div class="col-md-4 mb-3">
               <label for="book-year" class="form-label">Year</label>
@@ -1353,19 +1616,21 @@ async function handleBookSubmit(event) {
   const sellerEmail = currentUser ? currentUser.email : "";
 
   const bookData = {
-    title,
-    author,
-    price,
-    condition,
-    year,
-    courseCode,
-    professor,
-    sellerName,
-    sellerEmail,
-    description,
-    genre: "Textbook",
-    isAvailable: true,
-    datePosted: new Date().toISOString(),
+    book: {
+      title,
+      author,
+      price,
+      condition,
+      year,
+      courseCode,
+      professor,
+      sellerName,
+      sellerEmail,
+      description,
+      genre: "Textbook",
+      isAvailable: true,
+      datePosted: new Date().toISOString(),
+    },
   };
 
   if (editingBookId) {
@@ -1508,6 +1773,48 @@ function escapeHtml(text) {
   const div = document.createElement("div");
   div.textContent = text;
   return div.innerHTML;
+}
+
+function getConditionInfo(condition) {
+  const conditions = {
+    Excellent: {
+      class: "condition-excellent",
+      icon: "bi-star-fill",
+      description:
+        "Like new - minimal wear, clean pages, no markings or highlighting",
+    },
+    "Very Good": {
+      class: "condition-very-good",
+      icon: "bi-star",
+      description: "Minor wear - clean pages, minimal highlighting or notes",
+    },
+    Good: {
+      class: "condition-good",
+      icon: "bi-check-circle-fill",
+      description:
+        "Light wear - some highlighting or notes, minor cover wear, pages intact",
+    },
+    Fair: {
+      class: "condition-fair",
+      icon: "bi-exclamation-triangle-fill",
+      description:
+        "Moderate wear - significant highlighting, cover damage, but readable",
+    },
+    Poor: {
+      class: "condition-poor",
+      icon: "bi-exclamation-circle-fill",
+      description:
+        "Heavy wear - extensive damage, missing pages, or difficult to read",
+    },
+  };
+
+  return (
+    conditions[condition] || {
+      class: "condition-unknown",
+      icon: "bi-question-circle-fill",
+      description: "Condition not specified",
+    }
+  );
 }
 
 function showAlert(message, type) {
@@ -1822,4 +2129,113 @@ function renderNotificationsPage() {
       </div>
     </div>
   `;
+}
+
+function initializeTooltips() {
+  // Initialize Bootstrap tooltips for condition badges
+  const tooltipTriggerList = [].slice.call(
+    document.querySelectorAll('[data-bs-toggle="tooltip"]')
+  );
+  tooltipTriggerList.map(function (tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl);
+  });
+}
+
+// Development Helper Functions
+function addDevelopmentHelper() {
+  // Add development panel to the page
+  const devPanel = document.createElement("div");
+  devPanel.id = "dev-panel";
+  devPanel.innerHTML = `
+    <div style="position: fixed; top: 10px; right: 10px; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 5px; padding: 10px; z-index: 9999; font-size: 12px; max-width: 300px;">
+      <h6 style="margin: 0 0 10px 0; color: #495057;">🔧 Development Helper</h6>
+      <div style="margin-bottom: 10px;">
+        <button onclick="verifyAllExistingUsers()" class="btn btn-sm btn-primary" style="margin-right: 5px;">Verify All Users</button>
+        <button onclick="showExistingUsers()" class="btn btn-sm btn-info">Show Users</button>
+      </div>
+      <div style="margin-bottom: 10px;">
+        <input type="email" id="dev-email" placeholder="Enter email to verify" style="width: 100%; margin-bottom: 5px; padding: 2px 5px; font-size: 11px;">
+        <button onclick="verifySingleUser()" class="btn btn-sm btn-success" style="width: 100%;">Verify This User</button>
+      </div>
+      <div style="font-size: 10px; color: #6c757d;">
+        <strong>Existing Users:</strong><br>
+        • admin@crimson.ua.edu<br>
+        • alex.johnson@ua.edu<br>
+        • sarah.williams@ua.edu
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(devPanel);
+}
+
+async function verifyAllExistingUsers() {
+  try {
+    const response = await fetch(
+      `${CONFIG.DEV_API_URL}/verify-all-existing-users`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+
+    const result = await response.json();
+
+    if (response.ok) {
+      showAlert(`✅ ${result.message}`, "success");
+    } else {
+      showAlert(`❌ ${result.message}`, "danger");
+    }
+  } catch (error) {
+    console.error("Error verifying all users:", error);
+    showAlert("❌ Failed to verify users", "danger");
+  }
+}
+
+async function verifySingleUser() {
+  const email = document.getElementById("dev-email").value.trim();
+
+  if (!email) {
+    showAlert("Please enter an email address", "warning");
+    return;
+  }
+
+  try {
+    const response = await fetch(`${CONFIG.DEV_API_URL}/verify-existing-user`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
+
+    const result = await response.json();
+
+    if (response.ok) {
+      showAlert(`✅ User ${email} verified successfully`, "success");
+      document.getElementById("dev-email").value = "";
+    } else {
+      showAlert(`❌ ${result.message}`, "danger");
+    }
+  } catch (error) {
+    console.error("Error verifying user:", error);
+    showAlert("❌ Failed to verify user", "danger");
+  }
+}
+
+async function showExistingUsers() {
+  try {
+    const response = await fetch(`${CONFIG.DEV_API_URL}/existing-users`);
+    const users = await response.json();
+
+    if (response.ok) {
+      const userList = users
+        .map((u) => `${u.email} (${u.firstName} ${u.lastName})`)
+        .join("<br>");
+      showAlert(`<strong>Existing Users:</strong><br>${userList}`, "info");
+    } else {
+      showAlert("❌ Failed to load users", "danger");
+    }
+  } catch (error) {
+    console.error("Error loading users:", error);
+    showAlert("❌ Failed to load users", "danger");
+  }
 }
