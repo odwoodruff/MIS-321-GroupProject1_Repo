@@ -3,28 +3,34 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using api.Models;
+using api.Models.Configuration;
+using Microsoft.Extensions.Options;
 
 namespace api.Services
 {
     public class JwtService
     {
-        private readonly IConfiguration _configuration;
-        private readonly string _secretKey;
-        private readonly string _issuer;
-        private readonly string _audience;
+        private readonly JwtSettings _jwtSettings;
 
-        public JwtService(IConfiguration configuration)
+        public JwtService(IOptions<JwtSettings> jwtSettings)
         {
-            _configuration = configuration;
-            _secretKey = _configuration["Jwt:Key"] ?? "YourSuperSecretKeyThatIsAtLeast32CharactersLong123456789";
-            _issuer = _configuration["Jwt:Issuer"] ?? "BookTradingApp";
-            _audience = _configuration["Jwt:Audience"] ?? "BookTradingApp";
+            _jwtSettings = jwtSettings.Value;
+            
+            if (string.IsNullOrEmpty(_jwtSettings.Key))
+            {
+                throw new InvalidOperationException("JWT Key is not configured");
+            }
+            
+            if (_jwtSettings.Key.Length < 32)
+            {
+                throw new InvalidOperationException("JWT Key must be at least 32 characters long");
+            }
         }
 
         public string GenerateToken(User user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_secretKey);
+            var key = Encoding.ASCII.GetBytes(_jwtSettings.Key);
 
             var claims = new List<Claim>
             {
@@ -38,9 +44,9 @@ namespace api.Services
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddHours(24), // Token expires in 24 hours
-                Issuer = _issuer,
-                Audience = _audience,
+                Expires = DateTime.UtcNow.AddMinutes(_jwtSettings.ExpiryMinutes),
+                Issuer = _jwtSettings.Issuer,
+                Audience = _jwtSettings.Audience,
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
 
@@ -53,16 +59,16 @@ namespace api.Services
             try
             {
                 var tokenHandler = new JwtSecurityTokenHandler();
-                var key = Encoding.ASCII.GetBytes(_secretKey);
+                var key = Encoding.ASCII.GetBytes(_jwtSettings.Key);
 
                 var validationParameters = new TokenValidationParameters
                 {
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(key),
                     ValidateIssuer = true,
-                    ValidIssuer = _issuer,
+                    ValidIssuer = _jwtSettings.Issuer,
                     ValidateAudience = true,
-                    ValidAudience = _audience,
+                    ValidAudience = _jwtSettings.Audience,
                     ValidateLifetime = true,
                     ClockSkew = TimeSpan.Zero
                 };

@@ -34,6 +34,18 @@ namespace api.Data
                 entity.Property(e => e.Professor).HasMaxLength(100);
                 entity.Property(e => e.ImageUrl).HasMaxLength(500);
                 entity.Property(e => e.SellerRating).HasColumnType("decimal(3,1)");
+                
+                // Add indexes for performance
+                entity.HasIndex(e => e.SellerEmail);
+                entity.HasIndex(e => e.Title);
+                entity.HasIndex(e => e.Author);
+                entity.HasIndex(e => e.Condition);
+                entity.HasIndex(e => e.Price);
+                entity.HasIndex(e => e.IsAvailable);
+                entity.HasIndex(e => new { e.IsAvailable, e.Condition });
+                entity.HasIndex(e => new { e.SellerEmail, e.IsAvailable });
+                entity.HasIndex(e => new { e.Title, e.Author });
+                entity.HasIndex(e => new { e.Condition, e.Price });
             });
 
             // Configure User entity
@@ -58,7 +70,10 @@ namespace api.Data
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Email).IsRequired().HasMaxLength(100);
                 entity.Property(e => e.VerificationCode).IsRequired().HasMaxLength(6);
+                
+                // Add indexes for performance
                 entity.HasIndex(e => e.Email);
+                entity.HasIndex(e => e.VerificationCode);
                 entity.HasIndex(e => new { e.Email, e.VerificationCode });
             });
 
@@ -83,6 +98,11 @@ namespace api.Data
                     .WithMany()
                     .HasForeignKey(e => e.BookId)
                     .OnDelete(DeleteBehavior.Restrict);
+                
+                // Add indexes for performance
+                entity.HasIndex(e => e.BookId);
+                entity.HasIndex(e => e.RaterId);
+                entity.HasIndex(e => e.RatedUserId);
                 
                 // Add unique constraint to prevent duplicate ratings
                 entity.HasIndex(e => new { e.RaterId, e.RatedUserId, e.BookId })

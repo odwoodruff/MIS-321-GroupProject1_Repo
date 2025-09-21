@@ -17,10 +17,12 @@ namespace api.Controllers
         private readonly LoggingService _loggingService;
         private readonly EmailVerificationService _emailVerificationService;
         private readonly JwtService _jwtService;
+        private readonly AdminService _adminService;
 
         public BookController(BookService bookService, RatingService ratingService, 
             ValidationService validationService, LoggingService loggingService,
-            EmailVerificationService emailVerificationService, JwtService jwtService)
+            EmailVerificationService emailVerificationService, JwtService jwtService,
+            AdminService adminService)
         {
             _bookService = bookService;
             _ratingService = ratingService;
@@ -28,11 +30,12 @@ namespace api.Controllers
             _loggingService = loggingService;
             _emailVerificationService = emailVerificationService;
             _jwtService = jwtService;
+            _adminService = adminService;
         }
 
         // GET: api/Book
         [HttpGet]
-        public ActionResult<List<Book>> GetBooks([FromQuery] string? search = null)
+        public async Task<ActionResult<List<Book>>> GetBooks([FromQuery] string? search = null)
         {
             try
             {
@@ -47,9 +50,9 @@ namespace api.Controllers
                     }
 
                     var sanitizedSearch = ValidationService.SanitizeSearchTerm(search);
-                    return Ok(_bookService.SearchBooks(sanitizedSearch));
+                    return Ok(await _bookService.SearchBooksAsync(sanitizedSearch));
                 }
-                return Ok(_bookService.GetBooks());
+                return Ok(await _bookService.GetBooksAsync());
             }
             catch (Exception ex)
             {
@@ -60,9 +63,9 @@ namespace api.Controllers
 
         // GET: api/Book/5
         [HttpGet("{id}")]
-        public ActionResult<Book> GetBook(int id)
+        public async Task<ActionResult<Book>> GetBook(int id)
         {
-            var book = _bookService.GetBook(id);
+                var book = await _bookService.GetBookAsync(id);
             
             if (book == null)
                 return NotFound();
@@ -141,7 +144,7 @@ namespace api.Controllers
                     return NotFound();
 
                 // Check if user owns the book or is admin
-                if (existingBook.SellerEmail != userEmail && !IsAdminUser(userEmail))
+                if (existingBook.SellerEmail != userEmail && !_adminService.IsAdminUser(userEmail))
                 {
                     _loggingService.LogSecurityEvent("UnauthorizedAccess", 
                         $"User {userEmail} attempted to update book {id} owned by {existingBook.SellerEmail}", 
@@ -150,7 +153,7 @@ namespace api.Controllers
                 }
 
                 // Ensure the seller email matches the authenticated user (unless admin)
-                if (!IsAdminUser(userEmail))
+                if (!_adminService.IsAdminUser(userEmail))
                 {
                     book.SellerEmail = userEmail;
                 }
@@ -186,7 +189,7 @@ namespace api.Controllers
                     return NotFound();
 
                 // Check if user owns the book or is admin
-                if (existingBook.SellerEmail != userEmail && !IsAdminUser(userEmail))
+                if (existingBook.SellerEmail != userEmail && !_adminService.IsAdminUser(userEmail))
                 {
                     _loggingService.LogSecurityEvent("UnauthorizedAccess", 
                         $"User {userEmail} attempted to delete book {id} owned by {existingBook.SellerEmail}", 
@@ -303,11 +306,6 @@ namespace api.Controllers
             return NoContent();
         }
 
-        // Helper method to check if user is admin
-        private bool IsAdminUser(string email)
-        {
-            return email == "ccsmith33@crimson.ua.edu" || email == "admin@crimson.ua.edu";
-        }
 
         // GET: api/Book/ratings/all (Admin only)
         [HttpGet("ratings/all")]

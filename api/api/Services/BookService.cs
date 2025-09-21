@@ -126,46 +126,13 @@ namespace api.Services
             return booksWithRatings;
         }
 
-        // Legacy synchronous methods for backward compatibility
-        public List<Book> GetBooks()
-        {
-            return GetBooksAsync().Result;
-        }
-
-        public Book? GetBook(int id)
-        {
-            return GetBookAsync(id).Result;
-        }
-
-        public Book CreateBook(Book book)
-        {
-            return CreateBookAsync(book).Result;
-        }
-
-        public bool UpdateBook(int id, Book book)
-        {
-            return UpdateBookAsync(id, book).Result;
-        }
-
-        public bool DeleteBook(int id)
-        {
-            return DeleteBookAsync(id).Result;
-        }
-
-        public List<Book> SearchBooks(string searchTerm)
-        {
-            return SearchBooksAsync(searchTerm).Result;
-        }
+        // Note: Legacy synchronous methods removed to avoid async/sync pattern confusion
+        // All methods should use the async versions for consistency
 
         // Admin method to get all books including inactive ones
         public async Task<List<Book>> GetAllBooksAsync()
         {
             return await _context.Books.ToListAsync();
-        }
-
-        public List<Book> GetAllBooks()
-        {
-            return GetAllBooksAsync().Result;
         }
     }
 }

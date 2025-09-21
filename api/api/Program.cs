@@ -1,11 +1,16 @@
 using api.Services;
 using api.Data;
+using api.Models.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure settings
+builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
+builder.Services.Configure<AdminSettings>(builder.Configuration.GetSection("AdminSettings"));
 
 // Add Entity Framework
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -19,6 +24,7 @@ builder.Services.AddScoped<DataMigrationService>();
 builder.Services.AddScoped<ValidationService>();
 builder.Services.AddScoped<EmailVerificationService>();
 builder.Services.AddScoped<JwtService>();
+builder.Services.AddScoped<AdminService>();
 builder.Services.AddSingleton<LoggingService>();
 builder.Services.AddScoped<BackupService>();
 builder.Services.AddSingleton<RateLimitingService>();
@@ -49,16 +55,17 @@ builder.Services.AddCors(options =>
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
+        var jwtSettings = builder.Configuration.GetSection("Jwt").Get<JwtSettings>();
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"] ?? "BookTradingApp",
-            ValidAudience = builder.Configuration["Jwt:Audience"] ?? "BookTradingApp",
+            ValidIssuer = jwtSettings?.Issuer ?? "BookTradingApp",
+            ValidAudience = jwtSettings?.Audience ?? "BookTradingApp",
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? "YourSuperSecretKeyThatIsAtLeast32CharactersLong123456789"))
+                Encoding.UTF8.GetBytes(jwtSettings?.Key ?? throw new InvalidOperationException("JWT Key is not configured")))
         };
     });
 
@@ -100,6 +107,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Add global exception handling middleware
+app.UseMiddleware<api.Middleware.GlobalExceptionMiddleware>();
 
 // Add security middleware
 app.UseMiddleware<api.Middleware.SecurityMiddleware>();
