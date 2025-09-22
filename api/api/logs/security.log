@@ -542,3 +542,303 @@
 {"Timestamp":"2025-09-21T03:13:21.0748016Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":200,"DurationMs":424,"UserId":null,"Severity":"Info"}
 {"Timestamp":"2025-09-21T03:13:21.0876199Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book/ratings/all","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
 {"Timestamp":"2025-09-21T03:13:21.1935833Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book/ratings/all","StatusCode":200,"DurationMs":105,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-21T03:50:39.4428445Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-21T03:50:39.9655599Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":200,"DurationMs":525,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-21T03:50:39.9855988Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book/ratings/all","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-21T03:50:40.1052162Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book/ratings/all","StatusCode":200,"DurationMs":119,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-21T03:54:11.037433Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-21T03:54:11.0686039Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":200,"DurationMs":31,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-21T03:54:11.0777437Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book/ratings/all","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-21T03:54:11.0827727Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book/ratings/all","StatusCode":200,"DurationMs":5,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-21T04:02:49.8528795Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-21T04:02:50.3202368Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":200,"DurationMs":469,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-21T04:02:50.3343716Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book/ratings/all","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-21T04:02:50.4724308Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book/ratings/all","StatusCode":200,"DurationMs":138,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-21T04:03:22.8024034Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-21T04:03:23.2115888Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":200,"DurationMs":411,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-21T04:03:23.2238043Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book/ratings/all","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-21T04:03:23.3406547Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book/ratings/all","StatusCode":200,"DurationMs":116,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-21T04:05:07.2544516Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-21T04:05:07.6374652Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":200,"DurationMs":391,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-21T04:05:07.6520725Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book/ratings/all","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-21T04:05:07.7694604Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book/ratings/all","StatusCode":200,"DurationMs":117,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-21T04:05:49.7147119Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-21T04:05:50.1212906Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":200,"DurationMs":420,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-21T04:05:50.1331054Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book/ratings/all","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-21T04:05:50.2512142Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book/ratings/all","StatusCode":200,"DurationMs":118,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-21T04:09:28.4322073Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-21T04:09:28.5036042Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":200,"DurationMs":73,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-21T04:09:28.5164153Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-21T04:09:28.9088047Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":200,"DurationMs":392,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-21T04:09:28.9192959Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book/ratings/all","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-21T04:09:29.0406484Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book/ratings/all","StatusCode":200,"DurationMs":121,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-21T04:10:16.8235348Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-21T04:10:16.8256577Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":200,"DurationMs":2,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-21T04:10:16.8368236Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-21T04:10:16.8784939Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":200,"DurationMs":41,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-21T04:10:16.8877644Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book/ratings/all","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-21T04:10:16.8939418Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book/ratings/all","StatusCode":200,"DurationMs":6,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-21T04:10:28.2756486Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-21T04:10:28.3752529Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":200,"DurationMs":102,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-21T04:10:28.4395459Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-21T04:10:28.9133393Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":200,"DurationMs":473,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-21T04:10:28.9224654Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book/ratings/all","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-21T04:10:29.0230904Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book/ratings/all","StatusCode":200,"DurationMs":100,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:28:47.1053413Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:28:47.1687973Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":200,"DurationMs":64,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:28:47.1791675Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:28:47.4797025Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":200,"DurationMs":300,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:28:47.4854162Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book/ratings/all","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:28:47.564205Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book/ratings/all","StatusCode":200,"DurationMs":78,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:29:47.8893821Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Book/10","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:29:47.890669Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Book/10","StatusCode":204,"DurationMs":1,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:29:47.8928353Z","EventType":"ApiCall","Method":"PUT","Endpoint":"/api/Book/10","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:29:47.9334707Z","EventType":"ApiCall","Method":"PUT","Endpoint":"/api/Book/10","StatusCode":401,"DurationMs":40,"UserId":null,"Severity":"Warning"}
+{"Timestamp":"2025-09-22T13:30:00.0710984Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Book/11","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:30:00.0717573Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Book/11","StatusCode":204,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:30:00.0737353Z","EventType":"ApiCall","Method":"PUT","Endpoint":"/api/Book/11","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:30:00.0761178Z","EventType":"ApiCall","Method":"PUT","Endpoint":"/api/Book/11","StatusCode":401,"DurationMs":2,"UserId":null,"Severity":"Warning"}
+{"Timestamp":"2025-09-22T13:30:08.1284416Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Book/9","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:30:08.1292842Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Book/9","StatusCode":204,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:30:08.1311141Z","EventType":"ApiCall","Method":"PUT","Endpoint":"/api/Book/9","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:30:08.1337802Z","EventType":"ApiCall","Method":"PUT","Endpoint":"/api/Book/9","StatusCode":401,"DurationMs":2,"UserId":null,"Severity":"Warning"}
+{"Timestamp":"2025-09-22T13:30:17.1851482Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Book/12","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:30:17.1859083Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Book/12","StatusCode":204,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:30:17.2029231Z","EventType":"ApiCall","Method":"PUT","Endpoint":"/api/Book/12","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:30:17.205643Z","EventType":"ApiCall","Method":"PUT","Endpoint":"/api/Book/12","StatusCode":401,"DurationMs":2,"UserId":null,"Severity":"Warning"}
+{"Timestamp":"2025-09-22T13:30:26.1001085Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Book/10","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:30:26.1007091Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Book/10","StatusCode":204,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:30:26.102401Z","EventType":"ApiCall","Method":"PUT","Endpoint":"/api/Book/10","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:30:26.1033336Z","EventType":"ApiCall","Method":"PUT","Endpoint":"/api/Book/10","StatusCode":401,"DurationMs":0,"UserId":null,"Severity":"Warning"}
+{"Timestamp":"2025-09-22T13:30:36.3961701Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Book/1","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:30:36.3983624Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Book/1","StatusCode":204,"DurationMs":2,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:30:36.4002615Z","EventType":"ApiCall","Method":"PUT","Endpoint":"/api/Book/1","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:30:36.4011726Z","EventType":"ApiCall","Method":"PUT","Endpoint":"/api/Book/1","StatusCode":401,"DurationMs":0,"UserId":null,"Severity":"Warning"}
+{"Timestamp":"2025-09-22T13:30:37.7388315Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:30:37.741288Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":200,"DurationMs":2,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:30:37.7472735Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:30:37.7616745Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":200,"DurationMs":14,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:30:37.7652341Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book/ratings/all","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:30:37.7690809Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book/ratings/all","StatusCode":200,"DurationMs":3,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:30:43.9978948Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Book/1","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:30:43.9989348Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Book/1","StatusCode":204,"DurationMs":1,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:30:44.0012283Z","EventType":"ApiCall","Method":"PUT","Endpoint":"/api/Book/1","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:30:44.0021657Z","EventType":"ApiCall","Method":"PUT","Endpoint":"/api/Book/1","StatusCode":401,"DurationMs":0,"UserId":null,"Severity":"Warning"}
+{"Timestamp":"2025-09-22T13:34:08.8192972Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:34:08.860047Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":200,"DurationMs":42,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:34:08.8668952Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:34:09.0905095Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":200,"DurationMs":223,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:34:09.0946255Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book/ratings/all","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:34:09.163371Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book/ratings/all","StatusCode":200,"DurationMs":68,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:34:15.8741659Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Book/1","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:34:15.8754512Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Book/1","StatusCode":204,"DurationMs":1,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:34:15.8780297Z","EventType":"ApiCall","Method":"PUT","Endpoint":"/api/Book/1","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:34:15.9229612Z","EventType":"ApiCall","Method":"PUT","Endpoint":"/api/Book/1","StatusCode":401,"DurationMs":44,"UserId":null,"Severity":"Warning"}
+{"Timestamp":"2025-09-22T13:34:17.4354587Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:34:17.4369186Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":200,"DurationMs":1,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:34:17.4468824Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:34:17.4598072Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":200,"DurationMs":12,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:34:17.4629401Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book/ratings/all","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:34:17.4665063Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book/ratings/all","StatusCode":200,"DurationMs":3,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:35:37.1336478Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:35:37.1742407Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":200,"DurationMs":41,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:35:37.1792103Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:35:37.400913Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":200,"DurationMs":221,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:35:39.2042867Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:35:39.2076718Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":200,"DurationMs":3,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:35:39.211942Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:35:39.2735846Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":200,"DurationMs":61,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:35:45.7907183Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Auth/send-verification","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:35:45.7927588Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Auth/send-verification","StatusCode":204,"DurationMs":2,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:35:45.7947143Z","EventType":"ApiCall","Method":"POST","Endpoint":"/api/Auth/send-verification","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:35:45.9757866Z","EventType":"UserAction","Action":"VerificationCodeGenerated","UserId":null,"Details":"Verification code generated for alex.johnson@ua.edu","Severity":"Info"}
+{"Timestamp":"2025-09-22T13:35:45.9782057Z","EventType":"UserAction","Action":"EmailSent","UserId":null,"Details":"Verification code 858004 sent to alex.johnson@ua.edu","Severity":"Info"}
+{"Timestamp":"2025-09-22T13:35:46.0973731Z","EventType":"UserAction","Action":"VerificationCodeRequested","UserId":null,"Details":"Verification code requested for alex.johnson@ua.edu","Severity":"Info"}
+{"Timestamp":"2025-09-22T13:35:46.1053759Z","EventType":"ApiCall","Method":"POST","Endpoint":"/api/Auth/send-verification","StatusCode":200,"DurationMs":310,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:35:51.5670935Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Auth/verify","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:35:51.5678727Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Auth/verify","StatusCode":204,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:35:51.5693697Z","EventType":"ApiCall","Method":"POST","Endpoint":"/api/Auth/verify","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:35:51.5911019Z","EventType":"UserAction","Action":"EmailVerified","UserId":null,"Details":"Email verified for alex.johnson@ua.edu","Severity":"Info"}
+{"Timestamp":"2025-09-22T13:35:51.5963977Z","EventType":"UserAction","Action":"UserLogin","UserId":"2","Details":"User alex.johnson@ua.edu logged in successfully","Severity":"Info"}
+{"Timestamp":"2025-09-22T13:35:51.6168425Z","EventType":"ApiCall","Method":"POST","Endpoint":"/api/Auth/verify","StatusCode":200,"DurationMs":47,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:35:53.1584418Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:35:53.1592641Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":200,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:35:53.1649209Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:35:53.1710439Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":200,"DurationMs":6,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:35:58.3850662Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Book/1","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:35:58.3859506Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Book/1","StatusCode":204,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:35:58.3884916Z","EventType":"ApiCall","Method":"PUT","Endpoint":"/api/Book/1","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:35:58.4494187Z","EventType":"ApiCall","Method":"PUT","Endpoint":"/api/Book/1","StatusCode":400,"DurationMs":60,"UserId":null,"Severity":"Warning"}
+{"Timestamp":"2025-09-22T13:35:59.614905Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:35:59.6162152Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":200,"DurationMs":1,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:35:59.6277013Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:35:59.6318188Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":200,"DurationMs":4,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:36:00.2552129Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:36:00.2559033Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":200,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:36:00.265683Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:36:00.2683646Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":200,"DurationMs":2,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:36:28.2161281Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:36:28.2545201Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":200,"DurationMs":39,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:36:28.2630759Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:36:28.4881205Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":200,"DurationMs":225,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:36:40.3584256Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Auth/send-verification","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:36:40.3602273Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Auth/send-verification","StatusCode":204,"DurationMs":1,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:36:40.3639358Z","EventType":"ApiCall","Method":"POST","Endpoint":"/api/Auth/send-verification","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:36:40.5881632Z","EventType":"UserAction","Action":"VerificationCodeGenerated","UserId":null,"Details":"Verification code generated for ccsmith33@crimson.ua.edu","Severity":"Info"}
+{"Timestamp":"2025-09-22T13:36:40.5903293Z","EventType":"UserAction","Action":"EmailSent","UserId":null,"Details":"Verification code 497030 sent to ccsmith33@crimson.ua.edu","Severity":"Info"}
+{"Timestamp":"2025-09-22T13:36:40.6927848Z","EventType":"UserAction","Action":"VerificationCodeRequested","UserId":null,"Details":"Verification code requested for ccsmith33@crimson.ua.edu","Severity":"Info"}
+{"Timestamp":"2025-09-22T13:36:40.7017288Z","EventType":"ApiCall","Method":"POST","Endpoint":"/api/Auth/send-verification","StatusCode":200,"DurationMs":337,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:36:45.162494Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Auth/verify","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:36:45.1631995Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Auth/verify","StatusCode":204,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:36:45.1657727Z","EventType":"ApiCall","Method":"POST","Endpoint":"/api/Auth/verify","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:36:45.1908252Z","EventType":"UserAction","Action":"EmailVerified","UserId":null,"Details":"Email verified for ccsmith33@crimson.ua.edu","Severity":"Info"}
+{"Timestamp":"2025-09-22T13:36:45.1979043Z","EventType":"UserAction","Action":"UserLogin","UserId":"64","Details":"User ccsmith33@crimson.ua.edu logged in successfully","Severity":"Info"}
+{"Timestamp":"2025-09-22T13:36:45.2199239Z","EventType":"ApiCall","Method":"POST","Endpoint":"/api/Auth/verify","StatusCode":200,"DurationMs":54,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:36:46.7990658Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:36:46.7998972Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":200,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:36:46.8054574Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:36:46.8135685Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":200,"DurationMs":8,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:36:46.8182205Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book/ratings/all","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:36:46.8396428Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book/ratings/all","StatusCode":200,"DurationMs":21,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:37:03.2936537Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Book/1","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:37:03.2942116Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Book/1","StatusCode":204,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:37:03.2974264Z","EventType":"ApiCall","Method":"PUT","Endpoint":"/api/Book/1","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:37:03.3533567Z","EventType":"ApiCall","Method":"PUT","Endpoint":"/api/Book/1","StatusCode":400,"DurationMs":55,"UserId":null,"Severity":"Warning"}
+{"Timestamp":"2025-09-22T13:38:39.9718565Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:38:40.0105662Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":200,"DurationMs":39,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:38:40.0209059Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:38:40.2615762Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":200,"DurationMs":240,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:38:40.2676023Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book/ratings/all","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:38:40.3456811Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book/ratings/all","StatusCode":200,"DurationMs":78,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:38:48.0496244Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Book/1","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:38:48.050818Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Book/1","StatusCode":204,"DurationMs":1,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:38:48.0559039Z","EventType":"ApiCall","Method":"PUT","Endpoint":"/api/Book/1","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:38:48.1570464Z","EventType":"UserAction","Action":"BookUpdateAttempt","UserId":null,"Details":"Admin ccsmith33@crimson.ua.edu attempting to update book 1. New price: 90, Original price: 85","Severity":"Info"}
+{"Timestamp":"2025-09-22T13:38:48.2406053Z","EventType":"UserAction","Action":"BookUpdated","UserId":null,"Details":"Book 1 updated by ccsmith33@crimson.ua.edu. New price: 90","Severity":"Info"}
+{"Timestamp":"2025-09-22T13:38:48.2414985Z","EventType":"ApiCall","Method":"PUT","Endpoint":"/api/Book/1","StatusCode":204,"DurationMs":185,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:38:48.2480633Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:38:48.25327Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":200,"DurationMs":5,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:39:10.6781915Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Book/10","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:39:10.6789627Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Book/10","StatusCode":204,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:39:10.6837973Z","EventType":"ApiCall","Method":"PUT","Endpoint":"/api/Book/10","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:39:10.6898447Z","EventType":"UserAction","Action":"BookUpdateAttempt","UserId":null,"Details":"Admin ccsmith33@crimson.ua.edu attempting to update book 10. New price: 126.22, Original price: 126.223873471144","Severity":"Info"}
+{"Timestamp":"2025-09-22T13:39:10.6966642Z","EventType":"UserAction","Action":"BookUpdated","UserId":null,"Details":"Book 10 updated by ccsmith33@crimson.ua.edu. New price: 126.22","Severity":"Info"}
+{"Timestamp":"2025-09-22T13:39:10.6971885Z","EventType":"ApiCall","Method":"PUT","Endpoint":"/api/Book/10","StatusCode":204,"DurationMs":13,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:39:10.7005899Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:39:10.7045963Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":200,"DurationMs":4,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:39:18.0769314Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Book/9","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:39:18.0776024Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Book/9","StatusCode":204,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:39:18.0798991Z","EventType":"ApiCall","Method":"PUT","Endpoint":"/api/Book/9","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:39:18.0879472Z","EventType":"UserAction","Action":"BookUpdateAttempt","UserId":null,"Details":"Admin ccsmith33@crimson.ua.edu attempting to update book 9. New price: 90.01, Original price: 90.0102691954321","Severity":"Info"}
+{"Timestamp":"2025-09-22T13:39:18.0952044Z","EventType":"UserAction","Action":"BookUpdated","UserId":null,"Details":"Book 9 updated by ccsmith33@crimson.ua.edu. New price: 90.01","Severity":"Info"}
+{"Timestamp":"2025-09-22T13:39:18.0960994Z","EventType":"ApiCall","Method":"PUT","Endpoint":"/api/Book/9","StatusCode":204,"DurationMs":16,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:39:18.0999721Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:39:18.1041432Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":200,"DurationMs":4,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:39:27.3560273Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Book/11","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:39:27.3570756Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Book/11","StatusCode":204,"DurationMs":1,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:39:27.3628499Z","EventType":"ApiCall","Method":"PUT","Endpoint":"/api/Book/11","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:39:27.3658276Z","EventType":"UserAction","Action":"BookUpdateAttempt","UserId":null,"Details":"Admin ccsmith33@crimson.ua.edu attempting to update book 11. New price: 87.53, Original price: 87.529451169782","Severity":"Info"}
+{"Timestamp":"2025-09-22T13:39:27.3726082Z","EventType":"UserAction","Action":"BookUpdated","UserId":null,"Details":"Book 11 updated by ccsmith33@crimson.ua.edu. New price: 87.53","Severity":"Info"}
+{"Timestamp":"2025-09-22T13:39:27.3731097Z","EventType":"ApiCall","Method":"PUT","Endpoint":"/api/Book/11","StatusCode":204,"DurationMs":10,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:39:27.3766614Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:39:27.3806371Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":200,"DurationMs":3,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:39:41.1320997Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Book/12","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:39:41.1328243Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Book/12","StatusCode":204,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:39:41.135158Z","EventType":"ApiCall","Method":"PUT","Endpoint":"/api/Book/12","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:39:41.1441425Z","EventType":"UserAction","Action":"BookUpdateAttempt","UserId":null,"Details":"Admin ccsmith33@crimson.ua.edu attempting to update book 12. New price: 160.34, Original price: 160.341839239167","Severity":"Info"}
+{"Timestamp":"2025-09-22T13:39:41.147097Z","EventType":"UserAction","Action":"BookUpdated","UserId":null,"Details":"Book 12 updated by ccsmith33@crimson.ua.edu. New price: 160.34","Severity":"Info"}
+{"Timestamp":"2025-09-22T13:39:41.1475057Z","EventType":"ApiCall","Method":"PUT","Endpoint":"/api/Book/12","StatusCode":204,"DurationMs":12,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:39:41.1515558Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:39:41.1537002Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":200,"DurationMs":2,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:39:50.7931048Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Book/13","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:39:50.7936937Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Book/13","StatusCode":204,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:39:50.795335Z","EventType":"ApiCall","Method":"PUT","Endpoint":"/api/Book/13","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:39:50.7986925Z","EventType":"UserAction","Action":"BookUpdateAttempt","UserId":null,"Details":"Admin ccsmith33@crimson.ua.edu attempting to update book 13. New price: 79.33, Original price: 79.3274926243199","Severity":"Info"}
+{"Timestamp":"2025-09-22T13:39:50.8050631Z","EventType":"UserAction","Action":"BookUpdated","UserId":null,"Details":"Book 13 updated by ccsmith33@crimson.ua.edu. New price: 79.33","Severity":"Info"}
+{"Timestamp":"2025-09-22T13:39:50.8057338Z","EventType":"ApiCall","Method":"PUT","Endpoint":"/api/Book/13","StatusCode":204,"DurationMs":10,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:39:50.8092998Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:39:50.8119175Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":200,"DurationMs":2,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:39:59.8233286Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Book/14","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:39:59.8241858Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Book/14","StatusCode":204,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:39:59.8286261Z","EventType":"ApiCall","Method":"PUT","Endpoint":"/api/Book/14","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:39:59.8383511Z","EventType":"UserAction","Action":"BookUpdateAttempt","UserId":null,"Details":"Admin ccsmith33@crimson.ua.edu attempting to update book 14. New price: 111.03, Original price: 111.030240085475","Severity":"Info"}
+{"Timestamp":"2025-09-22T13:39:59.8450664Z","EventType":"UserAction","Action":"BookUpdated","UserId":null,"Details":"Book 14 updated by ccsmith33@crimson.ua.edu. New price: 111.03","Severity":"Info"}
+{"Timestamp":"2025-09-22T13:39:59.8459103Z","EventType":"ApiCall","Method":"PUT","Endpoint":"/api/Book/14","StatusCode":204,"DurationMs":17,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:39:59.8492648Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:39:59.8524173Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":200,"DurationMs":3,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:40:14.4748634Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Book/17","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:40:14.4754118Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Book/17","StatusCode":204,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:40:14.4772557Z","EventType":"ApiCall","Method":"PUT","Endpoint":"/api/Book/17","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:40:14.4799398Z","EventType":"UserAction","Action":"BookUpdateAttempt","UserId":null,"Details":"Admin ccsmith33@crimson.ua.edu attempting to update book 17. New price: 130.64, Original price: 130.640499613863","Severity":"Info"}
+{"Timestamp":"2025-09-22T13:40:14.486326Z","EventType":"UserAction","Action":"BookUpdated","UserId":null,"Details":"Book 17 updated by ccsmith33@crimson.ua.edu. New price: 130.64","Severity":"Info"}
+{"Timestamp":"2025-09-22T13:40:14.4867773Z","EventType":"ApiCall","Method":"PUT","Endpoint":"/api/Book/17","StatusCode":204,"DurationMs":9,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:40:14.4918758Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:40:14.4944498Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":200,"DurationMs":2,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:41:00.9058682Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Book/9","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:41:00.9063406Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Book/9","StatusCode":204,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:41:00.9079666Z","EventType":"ApiCall","Method":"PUT","Endpoint":"/api/Book/9","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:41:00.9104275Z","EventType":"UserAction","Action":"BookUpdateAttempt","UserId":null,"Details":"Admin ccsmith33@crimson.ua.edu attempting to update book 9. New price: 90.01, Original price: 90.01","Severity":"Info"}
+{"Timestamp":"2025-09-22T13:41:00.9126615Z","EventType":"UserAction","Action":"BookUpdated","UserId":null,"Details":"Book 9 updated by ccsmith33@crimson.ua.edu. New price: 90.01","Severity":"Info"}
+{"Timestamp":"2025-09-22T13:41:00.9130335Z","EventType":"ApiCall","Method":"PUT","Endpoint":"/api/Book/9","StatusCode":204,"DurationMs":5,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:41:00.9172691Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:41:00.9190232Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":200,"DurationMs":1,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:41:28.5915419Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Book/11","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:41:28.5923984Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Book/11","StatusCode":204,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:41:28.5986809Z","EventType":"ApiCall","Method":"PUT","Endpoint":"/api/Book/11","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:41:28.607067Z","EventType":"UserAction","Action":"BookUpdateAttempt","UserId":null,"Details":"Admin ccsmith33@crimson.ua.edu attempting to update book 11. New price: 87.53, Original price: 87.53","Severity":"Info"}
+{"Timestamp":"2025-09-22T13:41:28.6123536Z","EventType":"UserAction","Action":"BookUpdated","UserId":null,"Details":"Book 11 updated by ccsmith33@crimson.ua.edu. New price: 87.53","Severity":"Info"}
+{"Timestamp":"2025-09-22T13:41:28.6127376Z","EventType":"ApiCall","Method":"PUT","Endpoint":"/api/Book/11","StatusCode":204,"DurationMs":14,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:41:28.6185009Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:41:28.6202461Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":200,"DurationMs":1,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:41:47.3939402Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Book/15","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:41:47.3946197Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Book/15","StatusCode":204,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:41:47.3975253Z","EventType":"ApiCall","Method":"PUT","Endpoint":"/api/Book/15","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:41:47.4012175Z","EventType":"UserAction","Action":"BookUpdateAttempt","UserId":null,"Details":"Admin ccsmith33@crimson.ua.edu attempting to update book 15. New price: 91.79, Original price: 91.7916836437815","Severity":"Info"}
+{"Timestamp":"2025-09-22T13:41:47.4035635Z","EventType":"UserAction","Action":"BookUpdated","UserId":null,"Details":"Book 15 updated by ccsmith33@crimson.ua.edu. New price: 91.79","Severity":"Info"}
+{"Timestamp":"2025-09-22T13:41:47.4039151Z","EventType":"ApiCall","Method":"PUT","Endpoint":"/api/Book/15","StatusCode":204,"DurationMs":6,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:41:47.4079535Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:41:47.4100048Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":200,"DurationMs":2,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:42:05.5483619Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Book/16","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:42:05.5490313Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Book/16","StatusCode":204,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:42:05.5505374Z","EventType":"ApiCall","Method":"PUT","Endpoint":"/api/Book/16","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:42:05.552454Z","EventType":"UserAction","Action":"BookUpdateAttempt","UserId":null,"Details":"Admin ccsmith33@crimson.ua.edu attempting to update book 16. New price: 74.08, Original price: 74.0823862381954","Severity":"Info"}
+{"Timestamp":"2025-09-22T13:42:05.559214Z","EventType":"UserAction","Action":"BookUpdated","UserId":null,"Details":"Book 16 updated by ccsmith33@crimson.ua.edu. New price: 74.08","Severity":"Info"}
+{"Timestamp":"2025-09-22T13:42:05.5605004Z","EventType":"ApiCall","Method":"PUT","Endpoint":"/api/Book/16","StatusCode":204,"DurationMs":9,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:42:05.5635254Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:42:05.5651637Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":200,"DurationMs":1,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:42:28.3035481Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Book/19","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:42:28.3043033Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Book/19","StatusCode":204,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:42:28.3065068Z","EventType":"ApiCall","Method":"PUT","Endpoint":"/api/Book/19","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:42:28.3087248Z","EventType":"UserAction","Action":"BookUpdateAttempt","UserId":null,"Details":"Admin ccsmith33@crimson.ua.edu attempting to update book 19. New price: 87.93, Original price: 87.9347826407687","Severity":"Info"}
+{"Timestamp":"2025-09-22T13:42:28.312468Z","EventType":"UserAction","Action":"BookUpdated","UserId":null,"Details":"Book 19 updated by ccsmith33@crimson.ua.edu. New price: 87.93","Severity":"Info"}
+{"Timestamp":"2025-09-22T13:42:28.3128503Z","EventType":"ApiCall","Method":"PUT","Endpoint":"/api/Book/19","StatusCode":204,"DurationMs":6,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:42:28.318185Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:42:28.3208012Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":200,"DurationMs":2,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:42:36.255161Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Book/18","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:42:36.2557096Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Book/18","StatusCode":204,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:42:36.2570563Z","EventType":"ApiCall","Method":"PUT","Endpoint":"/api/Book/18","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:42:36.259568Z","EventType":"UserAction","Action":"BookUpdateAttempt","UserId":null,"Details":"Admin ccsmith33@crimson.ua.edu attempting to update book 18. New price: 65.26, Original price: 65.2588651575377","Severity":"Info"}
+{"Timestamp":"2025-09-22T13:42:36.2622997Z","EventType":"UserAction","Action":"BookUpdated","UserId":null,"Details":"Book 18 updated by ccsmith33@crimson.ua.edu. New price: 65.26","Severity":"Info"}
+{"Timestamp":"2025-09-22T13:42:36.2626295Z","EventType":"ApiCall","Method":"PUT","Endpoint":"/api/Book/18","StatusCode":204,"DurationMs":5,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:42:36.2661915Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:42:36.2691944Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":200,"DurationMs":3,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:42:40.9835278Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Book/17","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:42:40.9840112Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Book/17","StatusCode":204,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:42:40.9852233Z","EventType":"ApiCall","Method":"PUT","Endpoint":"/api/Book/17","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:42:40.9873972Z","EventType":"UserAction","Action":"BookUpdateAttempt","UserId":null,"Details":"Admin ccsmith33@crimson.ua.edu attempting to update book 17. New price: 130.64, Original price: 130.64","Severity":"Info"}
+{"Timestamp":"2025-09-22T13:42:40.98877Z","EventType":"UserAction","Action":"BookUpdated","UserId":null,"Details":"Book 17 updated by ccsmith33@crimson.ua.edu. New price: 130.64","Severity":"Info"}
+{"Timestamp":"2025-09-22T13:42:40.9894293Z","EventType":"ApiCall","Method":"PUT","Endpoint":"/api/Book/17","StatusCode":204,"DurationMs":4,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:42:40.9919341Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:42:40.9938418Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":200,"DurationMs":1,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:42:42.186939Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:42:42.1887698Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":200,"DurationMs":1,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:42:42.1978248Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:42:42.2006553Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":200,"DurationMs":2,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:42:42.2059534Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book/ratings/all","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:42:42.2072883Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book/ratings/all","StatusCode":200,"DurationMs":1,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:42:56.9905375Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:42:57.0319225Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":200,"DurationMs":42,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:42:57.038463Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:42:57.2631136Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":200,"DurationMs":224,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:42:57.2669406Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book/ratings/all","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-22T13:42:57.332638Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book/ratings/all","StatusCode":200,"DurationMs":65,"UserId":null,"Severity":"Info"}

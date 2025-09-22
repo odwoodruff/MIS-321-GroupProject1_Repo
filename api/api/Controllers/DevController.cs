@@ -3,8 +3,6 @@ using api.Services;
 using api.Models;
 using api.Data;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace api.Controllers
 {
@@ -302,7 +300,6 @@ namespace api.Controllers
                     Email = request.Email,
                     FirstName = request.FirstName,
                     LastName = request.LastName,
-                    PasswordHash = "dummy_hash", // Dummy password hash
                     DateCreated = DateTime.Now,
                     IsActive = true,
                     AverageRating = 0.0,
@@ -372,7 +369,6 @@ namespace api.Controllers
                         Email = email,
                         FirstName = firstName,
                         LastName = lastName,
-                        PasswordHash = HashPassword("password123"),
                         DateCreated = DateTime.Now.AddDays(-(60 - i)), // Staggered creation dates
                         IsActive = true,
                         AverageRating = 0.0,
@@ -700,15 +696,6 @@ namespace api.Controllers
             }
         }
 
-        // Helper method for password hashing (same as UserService)
-        private string HashPassword(string password)
-        {
-            using (var sha256 = SHA256.Create())
-            {
-                var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-                return Convert.ToBase64String(hashedBytes);
-            }
-        }
 
         // Helper method to get genre from course code
         private string GetGenreFromCourseCode(string courseCode)

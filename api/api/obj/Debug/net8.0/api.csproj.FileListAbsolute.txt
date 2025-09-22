@@ -168,3 +168,4 @@ C:\Users\clays\Desktop\MIS-321-GroupProject1_Repo\api\api\obj\Debug\net8.0\refin
 C:\Users\clays\Desktop\MIS-321-GroupProject1_Repo\api\api\obj\Debug\net8.0\api.pdb
 C:\Users\clays\Desktop\MIS-321-GroupProject1_Repo\api\api\obj\Debug\net8.0\api.genruntimeconfig.cache
 C:\Users\clays\Desktop\MIS-321-GroupProject1_Repo\api\api\obj\Debug\net8.0\ref\api.dll
+C:\Users\clays\Desktop\MIS-321-GroupProject1_Repo\api\api\bin\Debug\net8.0\BCrypt.Net-Next.dll

@@ -46,6 +46,13 @@ namespace api.Data
                 entity.HasIndex(e => new { e.SellerEmail, e.IsAvailable });
                 entity.HasIndex(e => new { e.Title, e.Author });
                 entity.HasIndex(e => new { e.Condition, e.Price });
+                
+                // Configure relationship to User
+                entity.HasOne(e => e.Seller)
+                    .WithMany()
+                    .HasForeignKey(e => e.SellerEmail)
+                    .HasPrincipalKey(e => e.Email)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
 
             // Configure User entity
@@ -54,7 +61,6 @@ namespace api.Data
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Username).IsRequired().HasMaxLength(50);
                 entity.Property(e => e.Email).IsRequired().HasMaxLength(100);
-                entity.Property(e => e.PasswordHash).IsRequired().HasMaxLength(255);
                 entity.Property(e => e.FirstName).IsRequired().HasMaxLength(50);
                 entity.Property(e => e.LastName).IsRequired().HasMaxLength(50);
                 entity.Property(e => e.AverageRating).HasColumnType("decimal(3,1)");

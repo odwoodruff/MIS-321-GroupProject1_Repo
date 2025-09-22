@@ -34,7 +34,7 @@ namespace api.Middleware
             var response = new
             {
                 message = "An error occurred while processing your request",
-                details = exception.Message,
+                details = "Internal server error", // Don't expose exception details
                 timestamp = DateTime.UtcNow
             };
 
@@ -44,7 +44,7 @@ namespace api.Middleware
                 response = new
                 {
                     message = "Invalid request parameters",
-                    details = exception.Message,
+                    details = "Please check your request and try again",
                     timestamp = DateTime.UtcNow
                 };
             }
@@ -64,7 +64,7 @@ namespace api.Middleware
                 response = new
                 {
                     message = "Resource not found",
-                    details = exception.Message,
+                    details = "The requested resource could not be found",
                     timestamp = DateTime.UtcNow
                 };
             }

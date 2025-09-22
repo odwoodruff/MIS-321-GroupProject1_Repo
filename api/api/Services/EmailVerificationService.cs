@@ -20,7 +20,7 @@ namespace api.Services
         public async Task<string> GenerateVerificationCodeAsync(string email)
         {
             // Clean up old verification codes for this email
-            await CleanupOldCodesAsync(email);
+            await CleanupOldCodesAsync(email).ConfigureAwait(false);
 
             // Generate 6-digit code
             var code = _random.Next(100000, 999999).ToString();
@@ -36,7 +36,7 @@ namespace api.Services
             };
 
             _context.EmailVerifications.Add(verification);
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync().ConfigureAwait(false);
 
             _loggingService.LogUserAction("VerificationCodeGenerated", null, $"Verification code generated for {email}");
             
@@ -50,18 +50,18 @@ namespace api.Services
                     v.Email == email.ToLowerInvariant() && 
                     v.VerificationCode == code &&
                     !v.IsUsed &&
-                    v.ExpiresAt > DateTime.Now);
+                    v.ExpiresAt > DateTime.Now).ConfigureAwait(false);
 
             if (verification == null)
             {
                 // Increment attempts for failed verification
                 var failedVerification = await _context.EmailVerifications
-                    .FirstOrDefaultAsync(v => v.Email == email.ToLowerInvariant());
+                    .FirstOrDefaultAsync(v => v.Email == email.ToLowerInvariant()).ConfigureAwait(false);
                 
                 if (failedVerification != null)
                 {
                     failedVerification.Attempts++;
-                    await _context.SaveChangesAsync();
+                    await _context.SaveChangesAsync().ConfigureAwait(false);
                 }
 
                 _loggingService.LogSecurityEvent("VerificationFailed", 
@@ -71,7 +71,7 @@ namespace api.Services
 
             // Mark as used
             verification.IsUsed = true;
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync().ConfigureAwait(false);
 
             _loggingService.LogUserAction("EmailVerified", null, $"Email verified for {email}");
             return true;
@@ -83,7 +83,7 @@ namespace api.Services
                 .AnyAsync(v => 
                     v.Email == email.ToLowerInvariant() && 
                     v.IsUsed &&
-                    v.ExpiresAt > DateTime.Now.AddDays(-1)); // Verified within last 24 hours
+                    v.ExpiresAt > DateTime.Now.AddDays(-1)).ConfigureAwait(false); // Verified within last 24 hours
         }
 
         public async Task<bool> IsRateLimitedAsync(string email)
@@ -91,7 +91,7 @@ namespace api.Services
             var recentAttempts = await _context.EmailVerifications
                 .Where(v => v.Email == email.ToLowerInvariant() && 
                            v.CreatedAt > DateTime.Now.AddMinutes(5))
-                .SumAsync(v => v.Attempts);
+                .SumAsync(v => v.Attempts).ConfigureAwait(false);
 
             return recentAttempts >= 5; // Max 5 attempts per 5 minutes
         }
@@ -101,10 +101,10 @@ namespace api.Services
             var oldCodes = await _context.EmailVerifications
                 .Where(v => v.Email == email.ToLowerInvariant() && 
                            (v.ExpiresAt < DateTime.Now || v.IsUsed))
-                .ToListAsync();
+                .ToListAsync().ConfigureAwait(false);
 
             _context.EmailVerifications.RemoveRange(oldCodes);
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync().ConfigureAwait(false);
         }
 
         // For testing purposes - in production, you'd integrate with actual email service
@@ -118,7 +118,7 @@ namespace api.Services
                     $"Verification code {code} sent to {email}");
                 
                 // Simulate email sending delay
-                await Task.Delay(100);
+                await Task.Delay(100).ConfigureAwait(false);
                 return true;
             }
             catch (Exception ex)

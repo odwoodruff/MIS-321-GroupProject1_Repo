@@ -62,5 +62,8 @@ namespace api.Models
         public int SellerRatingCount { get; set; } = 0;
         
         public bool IsActive { get; set; } = true;
+        
+        // Navigation property for seller
+        public User? Seller { get; set; }
     }
 }

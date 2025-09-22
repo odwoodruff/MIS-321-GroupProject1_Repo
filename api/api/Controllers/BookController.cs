@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using api.Models;
 using api.Services;
+using api.Constants;
 
 namespace api.Controllers
 {
@@ -50,9 +51,9 @@ namespace api.Controllers
                     }
 
                     var sanitizedSearch = ValidationService.SanitizeSearchTerm(search);
-                    return Ok(await _bookService.SearchBooksAsync(sanitizedSearch));
+                    return Ok(await _bookService.SearchBooksAsync(sanitizedSearch).ConfigureAwait(false));
                 }
-                return Ok(await _bookService.GetBooksAsync());
+                return Ok(await _bookService.GetBooksAsync().ConfigureAwait(false));
             }
             catch (Exception ex)
             {
@@ -65,7 +66,7 @@ namespace api.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Book>> GetBook(int id)
         {
-                var book = await _bookService.GetBookAsync(id);
+            var book = await _bookService.GetBookAsync(id).ConfigureAwait(false);
             
             if (book == null)
                 return NotFound();
@@ -111,7 +112,7 @@ namespace api.Controllers
                 book.Description = ValidationService.SanitizeInput(book.Description);
                 book.SellerName = ValidationService.SanitizeInput(book.SellerName);
 
-                var createdBook = await _bookService.CreateBookAsync(book);
+                var createdBook = await _bookService.CreateBookAsync(book).ConfigureAwait(false);
                 _loggingService.LogUserAction("BookCreated", null, $"Book '{book.Title}' created by {userEmail}");
                 
                 return CreatedAtAction(nameof(GetBook), new { id = createdBook.Id }, createdBook);
@@ -139,7 +140,7 @@ namespace api.Controllers
                     return Unauthorized("Invalid token");
 
                 // Get the existing book to check ownership
-                var existingBook = await _bookService.GetBookAsync(id);
+                var existingBook = await _bookService.GetBookAsync(id).ConfigureAwait(false);
                 if (existingBook == null)
                     return NotFound();
 
@@ -157,11 +158,20 @@ namespace api.Controllers
                 {
                     book.SellerEmail = userEmail;
                 }
+                else
+                {
+                    // For admin users, preserve the original seller email
+                    book.SellerEmail = existingBook.SellerEmail;
+                }
 
-                if (!await _bookService.UpdateBookAsync(id, book))
+                // Log the update attempt
+                _loggingService.LogUserAction("BookUpdateAttempt", null, 
+                    $"Admin {userEmail} attempting to update book {id}. New price: {book.Price}, Original price: {existingBook.Price}");
+
+                if (!await _bookService.UpdateBookAsync(id, book).ConfigureAwait(false))
                     return NotFound();
                 
-                _loggingService.LogUserAction("BookUpdated", null, $"Book {id} updated by {userEmail}");
+                _loggingService.LogUserAction("BookUpdated", null, $"Book {id} updated by {userEmail}. New price: {book.Price}");
                 return NoContent();
             }
             catch (Exception ex)
@@ -184,7 +194,7 @@ namespace api.Controllers
                     return Unauthorized("Invalid token");
 
                 // Get the existing book to check ownership
-                var existingBook = await _bookService.GetBookAsync(id);
+                var existingBook = await _bookService.GetBookAsync(id).ConfigureAwait(false);
                 if (existingBook == null)
                     return NotFound();
 
@@ -197,7 +207,7 @@ namespace api.Controllers
                     return Unauthorized("You can only delete your own books");
                 }
 
-                if (!await _bookService.DeleteBookAsync(id))
+                if (!await _bookService.DeleteBookAsync(id).ConfigureAwait(false))
                     return NotFound();
                 
                 _loggingService.LogUserAction("BookDeleted", null, $"Book {id} deleted by {userEmail}");
@@ -217,8 +227,12 @@ namespace api.Controllers
         {
             try
             {
-                if (request == null || request.RatedUserId <= 0 || request.BookId <= 0)
-                    return BadRequest("Invalid rating request");
+            if (request == null || request.RatedUserId <= 0 || request.BookId <= 0)
+                return BadRequest("Invalid rating request");
+
+            // Validate rating score
+            if (request.Score < ValidationConstants.MinRating || request.Score > ValidationConstants.MaxRating)
+                return BadRequest($"Rating score must be between {ValidationConstants.MinRating} and {ValidationConstants.MaxRating}");
 
                 // Get current user from JWT token
                 var raterId = _jwtService.GetUserIdFromToken(User);
@@ -229,13 +243,13 @@ namespace api.Controllers
                 _loggingService.LogUserAction("RatingAttempt", raterId.ToString(), 
                     $"Attempting to rate: RaterId={raterId}, RatedUserId={request.RatedUserId}, BookId={request.BookId}, Score={request.Score}");
 
-                var rating = _ratingService.CreateRating(
+                var rating = await _ratingService.CreateRatingAsync(
                     raterId, 
                     request.RatedUserId, 
                     request.BookId, 
                     request.Score, 
                     request.Comment ?? ""
-                );
+                ).ConfigureAwait(false);
 
                 if (rating == null)
                 {
@@ -264,7 +278,7 @@ namespace api.Controllers
             if (userId <= 0)
                 return Unauthorized("Invalid token");
 
-            var ratings = _ratingService.GetRatingsForUser(userId);
+            var ratings = await _ratingService.GetRatingsForUserAsync(userId).ConfigureAwait(false);
             return Ok(ratings);
         }
 
@@ -277,7 +291,7 @@ namespace api.Controllers
             if (userId <= 0)
                 return Unauthorized("Invalid token");
 
-            var ratings = _ratingService.GetRatingsByUser(userId);
+            var ratings = await _ratingService.GetRatingsByUserAsync(userId).ConfigureAwait(false);
             return Ok(ratings);
         }
 
@@ -286,10 +300,10 @@ namespace api.Controllers
         [Authorize]
         public async Task<IActionResult> UpdateRating(int id, [FromBody] UpdateRatingRequest request)
         {
-            if (request == null || request.Score < 1 || request.Score > 5)
-                return BadRequest("Invalid rating update request");
+            if (request == null || request.Score < ValidationConstants.MinRating || request.Score > ValidationConstants.MaxRating)
+                return BadRequest($"Rating score must be between {ValidationConstants.MinRating} and {ValidationConstants.MaxRating}");
 
-            if (!_ratingService.UpdateRating(id, request.Score, request.Comment ?? ""))
+            if (!await _ratingService.UpdateRatingAsync(id, request.Score, request.Comment ?? "").ConfigureAwait(false))
                 return NotFound();
 
             return NoContent();
@@ -300,7 +314,7 @@ namespace api.Controllers
         [Authorize]
         public async Task<IActionResult> DeleteRating(int id)
         {
-            if (!_ratingService.DeleteRating(id))
+            if (!await _ratingService.DeleteRatingAsync(id).ConfigureAwait(false))
                 return NotFound();
 
             return NoContent();
@@ -309,9 +323,9 @@ namespace api.Controllers
 
         // GET: api/Book/ratings/all (Admin only)
         [HttpGet("ratings/all")]
-        public ActionResult<List<Rating>> GetAllRatings()
+        public async Task<ActionResult<List<Rating>>> GetAllRatings()
         {
-            var allRatings = _ratingService.GetAllRatings();
+            var allRatings = await _ratingService.GetAllRatingsAsync().ConfigureAwait(false);
             return Ok(allRatings);
         }
 
@@ -337,7 +351,7 @@ namespace api.Controllers
             if (!ValidationService.IsValidName(book.SellerName))
                 errors.Add("Invalid seller name");
 
-            if (!string.IsNullOrEmpty(book.Description) && book.Description.Length > 1000)
+            if (!string.IsNullOrEmpty(book.Description) && book.Description.Length > ValidationConstants.MaxBookDescriptionLength)
                 errors.Add("Description too long");
 
             return errors;

@@ -97,7 +97,6 @@ namespace api.Services
                     Id = 1,
                     Username = "admin",
                     Email = "admin@crimson.ua.edu",
-                    PasswordHash = "", // No password needed for email-only auth
                     FirstName = "Admin",
                     LastName = "User",
                     DateCreated = DateTime.Now,
@@ -110,7 +109,6 @@ namespace api.Services
                     Id = 2,
                     Username = "alex.johnson",
                     Email = "alex.johnson@ua.edu",
-                    PasswordHash = "",
                     FirstName = "Alex",
                     LastName = "Johnson",
                     DateCreated = DateTime.Parse("2025-09-01 10:30:00"),
@@ -123,7 +121,6 @@ namespace api.Services
                     Id = 3,
                     Username = "sarah.williams",
                     Email = "sarah.williams@ua.edu",
-                    PasswordHash = "",
                     FirstName = "Sarah",
                     LastName = "Williams",
                     DateCreated = DateTime.Parse("2025-09-02 14:15:00"),

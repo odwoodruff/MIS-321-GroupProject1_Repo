@@ -1,5 +1,6 @@
 using api.Models;
 using api.Data;
+using api.Constants;
 using Microsoft.EntityFrameworkCore;
 
 namespace api.Services
@@ -18,22 +19,22 @@ namespace api.Services
         public async Task<Rating?> CreateRatingAsync(int raterId, int ratedUserId, int bookId, int score, string comment = "")
         {
             // Validate score
-            if (score < 1 || score > 5)
+            if (score < ValidationConstants.MinRating || score > ValidationConstants.MaxRating)
             {
                 Console.WriteLine($"Rating validation failed: Invalid score {score}");
                 return null;
             }
 
             // Check if user already rated this person for this book
-            if (await _context.Ratings.AnyAsync(r => r.RaterId == raterId && r.RatedUserId == ratedUserId && r.BookId == bookId && r.IsActive))
+            if (await _context.Ratings.AnyAsync(r => r.RaterId == raterId && r.RatedUserId == ratedUserId && r.BookId == bookId && r.IsActive).ConfigureAwait(false))
             {
                 Console.WriteLine($"Rating validation failed: User {raterId} already rated user {ratedUserId} for book {bookId}");
                 return null; // Already rated
             }
 
             // Validate users exist
-            var rater = await _userService.GetUserAsync(raterId);
-            var ratedUser = await _userService.GetUserAsync(ratedUserId);
+            var rater = await _userService.GetUserAsync(raterId).ConfigureAwait(false);
+            var ratedUser = await _userService.GetUserAsync(ratedUserId).ConfigureAwait(false);
             
             if (rater == null)
             {
@@ -48,7 +49,7 @@ namespace api.Services
             }
 
             // Validate book exists
-            var book = await _context.Books.FirstOrDefaultAsync(b => b.Id == bookId);
+            var book = await _context.Books.FirstOrDefaultAsync(b => b.Id == bookId).ConfigureAwait(false);
             if (book == null)
             {
                 Console.WriteLine($"Rating validation failed: Book {bookId} does not exist");
@@ -67,8 +68,8 @@ namespace api.Services
             };
 
             _context.Ratings.Add(rating);
-            await _context.SaveChangesAsync();
-            await UpdateUserRatingAsync(ratedUserId);
+            await _context.SaveChangesAsync().ConfigureAwait(false);
+            await UpdateUserRatingAsync(ratedUserId).ConfigureAwait(false);
             
             return rating;
         }
@@ -77,49 +78,49 @@ namespace api.Services
         {
             return await _context.Ratings
                 .Where(r => r.RatedUserId == userId && r.IsActive)
-                .ToListAsync();
+                .ToListAsync().ConfigureAwait(false);
         }
 
         public async Task<List<Rating>> GetRatingsByUserAsync(int userId)
         {
             return await _context.Ratings
                 .Where(r => r.RaterId == userId && r.IsActive)
-                .ToListAsync();
+                .ToListAsync().ConfigureAwait(false);
         }
 
         public async Task<Rating?> GetRatingAsync(int id)
         {
             return await _context.Ratings
-                .FirstOrDefaultAsync(r => r.Id == id && r.IsActive);
+                .FirstOrDefaultAsync(r => r.Id == id && r.IsActive).ConfigureAwait(false);
         }
 
         public async Task<bool> UpdateRatingAsync(int id, int score, string comment = "")
         {
-            var rating = await _context.Ratings.FirstOrDefaultAsync(r => r.Id == id && r.IsActive);
-            if (rating == null || score < 1 || score > 5)
+            var rating = await _context.Ratings.FirstOrDefaultAsync(r => r.Id == id && r.IsActive).ConfigureAwait(false);
+            if (rating == null || score < ValidationConstants.MinRating || score > ValidationConstants.MaxRating)
             {
                 return false;
             }
 
             rating.Score = score;
             rating.Comment = comment;
-            await _context.SaveChangesAsync();
-            await UpdateUserRatingAsync(rating.RatedUserId);
+            await _context.SaveChangesAsync().ConfigureAwait(false);
+            await UpdateUserRatingAsync(rating.RatedUserId).ConfigureAwait(false);
             
             return true;
         }
 
         public async Task<bool> DeleteRatingAsync(int id)
         {
-            var rating = await _context.Ratings.FirstOrDefaultAsync(r => r.Id == id && r.IsActive);
+            var rating = await _context.Ratings.FirstOrDefaultAsync(r => r.Id == id && r.IsActive).ConfigureAwait(false);
             if (rating == null)
             {
                 return false;
             }
 
             rating.IsActive = false;
-            await _context.SaveChangesAsync();
-            await UpdateUserRatingAsync(rating.RatedUserId);
+            await _context.SaveChangesAsync().ConfigureAwait(false);
+            await UpdateUserRatingAsync(rating.RatedUserId).ConfigureAwait(false);
             
             return true;
         }
@@ -128,7 +129,7 @@ namespace api.Services
         {
             var userRatings = await _context.Ratings
                 .Where(r => r.RatedUserId == userId && r.IsActive)
-                .ToListAsync();
+                .ToListAsync().ConfigureAwait(false);
                 
             Console.WriteLine($"User {userId} has {userRatings.Count} active ratings: {string.Join(", ", userRatings.Select(r => $"{r.Score}"))}");
                 
@@ -143,34 +144,34 @@ namespace api.Services
         public async Task<int> GetRatingCountForUserAsync(int userId)
         {
             return await _context.Ratings
-                .CountAsync(r => r.RatedUserId == userId && r.IsActive);
+                .CountAsync(r => r.RatedUserId == userId && r.IsActive).ConfigureAwait(false);
         }
 
         public async Task<List<Rating>> GetAllRatingsAsync()
         {
             return await _context.Ratings
                 .Where(r => r.IsActive)
-                .ToListAsync();
+                .ToListAsync().ConfigureAwait(false);
         }
 
         private async Task UpdateUserRatingAsync(int userId)
         {
-            var user = await _userService.GetUserAsync(userId);
+            var user = await _userService.GetUserAsync(userId).ConfigureAwait(false);
             if (user != null)
             {
-                var averageRating = await GetAverageRatingForUserAsync(userId);
-                var ratingCount = await GetRatingCountForUserAsync(userId);
+                var averageRating = await GetAverageRatingForUserAsync(userId).ConfigureAwait(false);
+                var ratingCount = await GetRatingCountForUserAsync(userId).ConfigureAwait(false);
                 
                 Console.WriteLine($"Updating user {userId} ratings: Average={averageRating}, Count={ratingCount}");
                 
                 user.AverageRating = averageRating;
                 user.RatingCount = ratingCount;
-                await _userService.SaveUserAsync(user);
+                await _userService.SaveUserAsync(user).ConfigureAwait(false);
                 
                 // Also update all books where this user is the seller
                 var userBooks = await _context.Books
                     .Where(b => b.SellerEmail == user.Email)
-                    .ToListAsync();
+                    .ToListAsync().ConfigureAwait(false);
                 
                 foreach (var book in userBooks)
                 {
@@ -180,56 +181,13 @@ namespace api.Services
                 
                 if (userBooks.Any())
                 {
-                    await _context.SaveChangesAsync();
+                    await _context.SaveChangesAsync().ConfigureAwait(false);
                     Console.WriteLine($"Updated {userBooks.Count} books for seller {user.Email} with rating {averageRating} (count: {ratingCount})");
                 }
             }
         }
 
-        // Legacy synchronous methods for backward compatibility
-        public Rating? CreateRating(int raterId, int ratedUserId, int bookId, int score, string comment = "")
-        {
-            return CreateRatingAsync(raterId, ratedUserId, bookId, score, comment).Result;
-        }
-
-        public List<Rating> GetRatingsForUser(int userId)
-        {
-            return GetRatingsForUserAsync(userId).Result;
-        }
-
-        public List<Rating> GetRatingsByUser(int userId)
-        {
-            return GetRatingsByUserAsync(userId).Result;
-        }
-
-        public Rating? GetRating(int id)
-        {
-            return GetRatingAsync(id).Result;
-        }
-
-        public bool UpdateRating(int id, int score, string comment = "")
-        {
-            return UpdateRatingAsync(id, score, comment).Result;
-        }
-
-        public bool DeleteRating(int id)
-        {
-            return DeleteRatingAsync(id).Result;
-        }
-
-        public double GetAverageRatingForUser(int userId)
-        {
-            return GetAverageRatingForUserAsync(userId).Result;
-        }
-
-        public int GetRatingCountForUser(int userId)
-        {
-            return GetRatingCountForUserAsync(userId).Result;
-        }
-
-        public List<Rating> GetAllRatings()
-        {
-            return GetAllRatingsAsync().Result;
-        }
+        // Legacy synchronous methods removed for safety - use async versions instead
+        // These methods were causing deadlock issues with .Result calls
     }
 }

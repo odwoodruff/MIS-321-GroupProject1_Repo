@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using api.Constants;
 
 namespace api.Services
 {
@@ -26,7 +27,7 @@ namespace api.Services
             if (string.IsNullOrWhiteSpace(email))
                 return false;
 
-            return EmailRegex.IsMatch(email) && email.Length <= 100;
+            return EmailRegex.IsMatch(email) && email.Length <= ValidationConstants.MaxEmailLength;
         }
 
         public static bool IsValidUsername(string username)
@@ -37,17 +38,6 @@ namespace api.Services
             return UsernameRegex.IsMatch(username);
         }
 
-        public static bool IsValidPassword(string password)
-        {
-            if (string.IsNullOrWhiteSpace(password))
-                return false;
-
-            // Password must be at least 8 characters, contain at least one letter and one number
-            return password.Length >= 8 && 
-                   password.Length <= 128 &&
-                   password.Any(char.IsLetter) && 
-                   password.Any(char.IsDigit);
-        }
 
         public static bool IsValidName(string name)
         {
@@ -56,7 +46,7 @@ namespace api.Services
 
             // Name should only contain letters, spaces, hyphens, and apostrophes
             return name.Length >= 1 && 
-                   name.Length <= 50 && 
+                   name.Length <= ValidationConstants.MaxNameLength && 
                    name.All(c => char.IsLetter(c) || char.IsWhiteSpace(c) || c == '-' || c == '\'');
         }
 
@@ -65,7 +55,7 @@ namespace api.Services
             if (string.IsNullOrWhiteSpace(title))
                 return false;
 
-            return title.Length >= 1 && title.Length <= 200;
+            return title.Length >= 1 && title.Length <= ValidationConstants.MaxBookTitleLength;
         }
 
         public static bool IsValidBookAuthor(string author)
@@ -73,22 +63,22 @@ namespace api.Services
             if (string.IsNullOrWhiteSpace(author))
                 return false;
 
-            return author.Length >= 1 && author.Length <= 100;
+            return author.Length >= 1 && author.Length <= ValidationConstants.MaxBookAuthorLength;
         }
 
         public static bool IsValidPrice(decimal price)
         {
-            return price >= 0 && price <= 10000; // Max $10,000
+            return price >= ValidationConstants.MinPrice && price <= ValidationConstants.MaxPrice;
         }
 
         public static bool IsValidYear(int year)
         {
-            return year >= 1900 && year <= DateTime.Now.Year + 5; // Reasonable book years
+            return year >= ValidationConstants.MinYear && year <= ValidationConstants.MaxYear;
         }
 
         public static bool IsValidRating(int score)
         {
-            return score >= 1 && score <= 5;
+            return score >= ValidationConstants.MinRating && score <= ValidationConstants.MaxRating;
         }
 
         public static bool IsValidComment(string comment)
@@ -96,7 +86,7 @@ namespace api.Services
             if (string.IsNullOrEmpty(comment))
                 return true; // Comments are optional
 
-            return comment.Length <= 500;
+            return comment.Length <= ValidationConstants.MaxCommentLength;
         }
 
         public static bool ContainsSqlInjection(string input)
@@ -132,7 +122,7 @@ namespace api.Services
                 return false;
 
             // Check length
-            return searchTerm.Length >= 1 && searchTerm.Length <= 100;
+            return searchTerm.Length >= 1 && searchTerm.Length <= ValidationConstants.MaxSearchTermLength;
         }
 
         public static string SanitizeSearchTerm(string searchTerm)
@@ -145,6 +135,58 @@ namespace api.Services
             
             // Trim and limit length
             return sanitized.Trim().Substring(0, Math.Min(sanitized.Trim().Length, 100));
+        }
+
+        public static bool IsValidId(int id)
+        {
+            return id > 0 && id <= int.MaxValue;
+        }
+
+        public static bool IsValidPageNumber(int pageNumber)
+        {
+            return pageNumber > 0 && pageNumber <= 1000; // Reasonable page limit
+        }
+
+        public static bool IsValidPageSize(int pageSize)
+        {
+            return pageSize > 0 && pageSize <= 100; // Max 100 items per page
+        }
+
+        public static bool IsValidCondition(string condition)
+        {
+            if (string.IsNullOrWhiteSpace(condition))
+                return false;
+
+            var validConditions = new[] { "New", "Like New", "Good", "Fair", "Poor" };
+            return validConditions.Contains(condition, StringComparer.OrdinalIgnoreCase);
+        }
+
+        public static bool IsValidGenre(string genre)
+        {
+            if (string.IsNullOrWhiteSpace(genre))
+                return false;
+
+            return genre.Length >= 1 && genre.Length <= 50 && 
+                   !ContainsSqlInjection(genre);
+        }
+
+        public static bool IsValidCourseCode(string courseCode)
+        {
+            if (string.IsNullOrWhiteSpace(courseCode))
+                return false;
+
+            // Course codes should be like "CS101", "MATH201", etc.
+            var courseCodeRegex = new Regex(@"^[A-Z]{2,4}\d{3,4}$", RegexOptions.Compiled);
+            return courseCodeRegex.IsMatch(courseCode) && courseCode.Length <= 10;
+        }
+
+        public static bool IsValidProfessorName(string professorName)
+        {
+            if (string.IsNullOrWhiteSpace(professorName))
+                return false;
+
+            return professorName.Length >= 2 && professorName.Length <= 100 &&
+                   IsValidName(professorName) && !ContainsSqlInjection(professorName);
         }
     }
 }

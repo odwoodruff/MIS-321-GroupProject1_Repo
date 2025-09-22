@@ -21,46 +21,43 @@ namespace api.Services
         {
             var books = await _context.Books
                 .Where(b => b.IsActive)
-                .ToListAsync();
-            var booksWithRatings = new List<Book>();
+                .Include(b => b.Seller) // Load seller data in single query
+                .ToListAsync().ConfigureAwait(false);
             
+            // Update seller rating information from the loaded seller data
             foreach (var book in books)
             {
-                var bookWithRating = book;
-                
-                // Find the seller user by email
-                var seller = await _userService.GetUserByEmailAsync(book.SellerEmail);
-                if (seller != null)
+                if (book.Seller != null)
                 {
-                    // Add seller rating information to the book
-                    bookWithRating.SellerRating = seller.AverageRating;
-                    bookWithRating.SellerRatingCount = seller.RatingCount;
+                    book.SellerRating = book.Seller.AverageRating;
+                    book.SellerRatingCount = book.Seller.RatingCount;
                 }
-                
-                booksWithRatings.Add(bookWithRating);
             }
             
-            return booksWithRatings;
+            return books;
         }
 
         public async Task<Book?> GetBookAsync(int id)
         {
-            return await _context.Books.FirstOrDefaultAsync(b => b.Id == id && b.IsActive);
+            return await _context.Books.FirstOrDefaultAsync(b => b.Id == id && b.IsActive).ConfigureAwait(false);
         }
 
         public async Task<Book> CreateBookAsync(Book book)
         {
             _context.Books.Add(book);
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync().ConfigureAwait(false);
             return book;
         }
 
         public async Task<bool> UpdateBookAsync(int id, Book book)
         {
-            var existingBook = await _context.Books.FirstOrDefaultAsync(b => b.Id == id && b.IsActive);
+            var existingBook = await _context.Books.FirstOrDefaultAsync(b => b.Id == id && b.IsActive).ConfigureAwait(false);
             if (existingBook == null)
                 return false;
 
+            Console.WriteLine($"BookService: Updating book {id}. Original price: {existingBook.Price}, New price: {book.Price}");
+
+            // Update only the fields that should be editable
             existingBook.Title = book.Title;
             existingBook.Author = book.Author;
             existingBook.Genre = book.Genre;
@@ -68,25 +65,33 @@ namespace api.Services
             existingBook.Description = book.Description;
             existingBook.Price = book.Price;
             existingBook.Condition = book.Condition;
-            existingBook.SellerName = book.SellerName;
-            existingBook.SellerEmail = book.SellerEmail;
             existingBook.CourseCode = book.CourseCode;
             existingBook.Professor = book.Professor;
             existingBook.IsAvailable = book.IsAvailable;
+            
+            // Only update seller info if provided (for admin edits)
+            if (!string.IsNullOrEmpty(book.SellerName))
+                existingBook.SellerName = book.SellerName;
+            if (!string.IsNullOrEmpty(book.SellerEmail))
+                existingBook.SellerEmail = book.SellerEmail;
 
-            await _context.SaveChangesAsync();
+            Console.WriteLine($"BookService: After update, price is: {existingBook.Price}");
+
+            await _context.SaveChangesAsync().ConfigureAwait(false);
+            
+            Console.WriteLine($"BookService: After SaveChanges, price is: {existingBook.Price}");
             return true;
         }
 
         public async Task<bool> DeleteBookAsync(int id)
         {
-            var book = await _context.Books.FirstOrDefaultAsync(b => b.Id == id && b.IsActive);
+            var book = await _context.Books.FirstOrDefaultAsync(b => b.Id == id && b.IsActive).ConfigureAwait(false);
             if (book == null)
                 return false;
 
             // Soft delete - mark as inactive instead of removing
             book.IsActive = false;
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync().ConfigureAwait(false);
             return true;
         }
 
@@ -95,35 +100,29 @@ namespace api.Services
             if (string.IsNullOrEmpty(searchTerm))
                 return await GetBooksAsync();
 
+            // Use EF.Functions.Like for parameterized queries to prevent SQL injection
             var filteredBooks = await _context.Books
                 .Where(b => b.IsActive && (
-                    b.Title.Contains(searchTerm) ||
-                    b.Author.Contains(searchTerm) ||
-                    b.Genre.Contains(searchTerm) ||
-                    b.CourseCode.Contains(searchTerm) ||
-                    b.Professor.Contains(searchTerm) ||
-                    b.SellerName.Contains(searchTerm)))
-                .ToListAsync();
+                    EF.Functions.Like(b.Title, $"%{searchTerm}%") ||
+                    EF.Functions.Like(b.Author, $"%{searchTerm}%") ||
+                    EF.Functions.Like(b.Genre, $"%{searchTerm}%") ||
+                    EF.Functions.Like(b.CourseCode, $"%{searchTerm}%") ||
+                    EF.Functions.Like(b.Professor, $"%{searchTerm}%") ||
+                    EF.Functions.Like(b.SellerName, $"%{searchTerm}%")))
+                .Include(b => b.Seller) // Load seller data in single query
+                .ToListAsync().ConfigureAwait(false);
 
-            var booksWithRatings = new List<Book>();
-            
+            // Update seller rating information from the loaded seller data
             foreach (var book in filteredBooks)
             {
-                var bookWithRating = book;
-                
-                // Find the seller user by email
-                var seller = await _userService.GetUserByEmailAsync(book.SellerEmail);
-                if (seller != null)
+                if (book.Seller != null)
                 {
-                    // Add seller rating information to the book
-                    bookWithRating.SellerRating = seller.AverageRating;
-                    bookWithRating.SellerRatingCount = seller.RatingCount;
+                    book.SellerRating = book.Seller.AverageRating;
+                    book.SellerRatingCount = book.Seller.RatingCount;
                 }
-                
-                booksWithRatings.Add(bookWithRating);
             }
             
-            return booksWithRatings;
+            return filteredBooks;
         }
 
         // Note: Legacy synchronous methods removed to avoid async/sync pattern confusion
@@ -132,7 +131,7 @@ namespace api.Services
         // Admin method to get all books including inactive ones
         public async Task<List<Book>> GetAllBooksAsync()
         {
-            return await _context.Books.ToListAsync();
+            return await _context.Books.ToListAsync().ConfigureAwait(false);
         }
     }
 }

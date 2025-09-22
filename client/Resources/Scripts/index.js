@@ -1,11 +1,31 @@
-// Configuration - Easy to change for production
-const CONFIG = {
+// Configuration - Dynamic port detection
+let CONFIG = {
   API_BASE_URL: "http://localhost:5032/api/Book",
   USER_API_URL: "http://localhost:5032/api/User",
   RATING_API_URL: "http://localhost:5032/api/Book",
   AUTH_API_URL: "http://localhost:5032/api/Auth",
   DEV_API_URL: "http://localhost:5032/api/Dev",
 };
+
+// Function to update config with actual port
+async function updateConfigWithPort() {
+  try {
+    // Try to get port from API, fallback to 5032
+    const response = await fetch("http://localhost:5032/api/config/port");
+    if (response.ok) {
+      const data = await response.json();
+      const port = data.port;
+      CONFIG.API_BASE_URL = `http://localhost:${port}/api/Book`;
+      CONFIG.USER_API_URL = `http://localhost:${port}/api/User`;
+      CONFIG.RATING_API_URL = `http://localhost:${port}/api/Book`;
+      CONFIG.AUTH_API_URL = `http://localhost:${port}/api/Auth`;
+      CONFIG.DEV_API_URL = `http://localhost:${port}/api/Dev`;
+      console.log(`Updated API URLs to use port: ${port}`);
+    }
+  } catch (error) {
+    console.log("Using default port 5032");
+  }
+}
 
 // Helper function to get headers with JWT token
 function getAuthHeaders() {
@@ -56,6 +76,9 @@ let contactedSellers = new Set(); // Track which sellers the user has contacted
 async function handleOnLoad() {
   console.log("Page loaded, initializing app...");
   try {
+    // Update config with actual port first
+    await updateConfigWithPort();
+
     // Check if user is logged in
     checkAuthStatus();
     await loadBooks();
@@ -413,7 +436,7 @@ async function loadBooks() {
     console.error("Error loading books:", error);
     books = [];
     showAlert(
-      "Failed to load books. Please check if the API server is running on localhost:5032.",
+      "Failed to load books. Please check if the API server is running.",
       "danger"
     );
   }
@@ -1634,7 +1657,8 @@ async function handleBookSubmit(event) {
   };
 
   if (editingBookId) {
-    await updateBook(editingBookId, bookData);
+    // For updates, send the book object directly (not wrapped in 'book' property)
+    await updateBook(editingBookId, bookData.book);
   } else {
     await addBook(bookData);
   }

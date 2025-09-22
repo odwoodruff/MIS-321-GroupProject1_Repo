@@ -60,7 +60,7 @@ namespace api.Middleware
                     $"Rate limit exceeded for {identifier} on {requestPath}", null, clientIp);
                 
                 context.Response.StatusCode = 429;
-                context.Response.Headers.Add("Retry-After", "60");
+                context.Response.Headers["Retry-After"] = "60";
                 await context.Response.WriteAsync("Rate limit exceeded. Please try again later.");
                 return;
             }
@@ -153,23 +153,23 @@ namespace api.Middleware
         private void AddSecurityHeaders(HttpContext context)
         {
             // Prevent clickjacking
-            context.Response.Headers.Add("X-Frame-Options", "DENY");
+            context.Response.Headers["X-Frame-Options"] = "DENY";
             
             // Prevent MIME type sniffing
-            context.Response.Headers.Add("X-Content-Type-Options", "nosniff");
+            context.Response.Headers["X-Content-Type-Options"] = "nosniff";
             
             // Enable XSS protection
-            context.Response.Headers.Add("X-XSS-Protection", "1; mode=block");
+            context.Response.Headers["X-XSS-Protection"] = "1; mode=block";
             
             // Strict transport security (HTTPS only)
-            context.Response.Headers.Add("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+            context.Response.Headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains";
             
             // Content Security Policy
-            context.Response.Headers.Add("Content-Security-Policy", 
-                "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';");
+            context.Response.Headers["Content-Security-Policy"] = 
+                "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';";
             
             // Referrer Policy
-            context.Response.Headers.Add("Referrer-Policy", "strict-origin-when-cross-origin");
+            context.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
             
             // Remove server information
             context.Response.Headers.Remove("Server");

@@ -8,6 +8,8 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Let .NET assign an available port automatically
+
 // Configure settings
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
 builder.Services.Configure<AdminSettings>(builder.Configuration.GetSection("AdminSettings"));
@@ -34,20 +36,33 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Add CORS with restricted origins
+// Add CORS with restricted origins - SECURITY HARDENED
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("RestrictedPolicy",
     builder =>
     {
-        builder.WithOrigins("http://localhost:3000", "https://localhost:3000", 
-                           "http://127.0.0.1:3000", "https://127.0.0.1:3000",
-                           "http://localhost:8080", "https://localhost:8080",
-                           "http://127.0.0.1:8080", "https://127.0.0.1:8080",
-                           "null")
-               .AllowAnyMethod()
-               .AllowAnyHeader()
-               .AllowCredentials();
+        builder.SetIsOriginAllowed(origin => 
+        {
+            // Allow specific origins
+            var allowedOrigins = new[]
+            {
+                "http://localhost:3000", "https://localhost:3000",
+                "http://127.0.0.1:3000", "https://127.0.0.1:3000",
+                "http://localhost:8080", "https://localhost:8080",
+                "http://127.0.0.1:8080", "https://127.0.0.1:8080"
+            };
+            
+            // Allow null origin for local file:// URLs (development only)
+            if (string.IsNullOrEmpty(origin) || origin == "null")
+                return true;
+                
+            return allowedOrigins.Contains(origin);
+        })
+               .WithMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // Explicit methods only
+               .WithHeaders("Content-Type", "Authorization", "X-Requested-With", "X-CSRF-TOKEN") // Explicit headers only
+               .AllowCredentials()
+               .SetPreflightMaxAge(TimeSpan.FromMinutes(10)); // Cache preflight for 10 minutes
     });
 });
 
@@ -65,21 +80,53 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = jwtSettings?.Issuer ?? "BookTradingApp",
             ValidAudience = jwtSettings?.Audience ?? "BookTradingApp",
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(jwtSettings?.Key ?? throw new InvalidOperationException("JWT Key is not configured")))
+                Encoding.UTF8.GetBytes(jwtSettings?.Key ?? throw new InvalidOperationException("JWT Key is not configured"))),
+            ClockSkew = TimeSpan.Zero
+        };
+        
+        // Configure events to handle authentication
+        options.Events = new Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerEvents
+        {
+            OnAuthenticationFailed = context =>
+            {
+                Console.WriteLine($"JWT Authentication failed: {context.Exception.Message}");
+                return Task.CompletedTask;
+            },
+            OnTokenValidated = context =>
+            {
+                Console.WriteLine($"JWT Token validated for user: {context.Principal?.Identity?.Name}");
+                return Task.CompletedTask;
+            },
+            OnMessageReceived = context =>
+            {
+                // Try to get token from Authorization header
+                var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+                if (!string.IsNullOrEmpty(token))
+                {
+                    context.Token = token;
+                }
+                return Task.CompletedTask;
+            }
         };
     });
 
 // Add Authorization
 builder.Services.AddAuthorization();
 
-// Add CSRF protection
+// Add CSRF protection - SECURITY HARDENED
 builder.Services.AddAntiforgery(options =>
 {
     options.HeaderName = "X-CSRF-TOKEN";
     options.SuppressXFrameOptionsHeader = false;
+    options.Cookie.Name = "CSRF-TOKEN";
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+    options.Cookie.SameSite = SameSiteMode.Strict;
 });
 
 var app = builder.Build();
+
+// Store the app instance to access port later
 
 // Ensure database is created and run data migration on startup
 using (var scope = app.Services.CreateScope())
@@ -120,5 +167,12 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Get the actual assigned port and make it available
+var port = app.Urls.FirstOrDefault()?.Split(':').LastOrDefault() ?? "5032";
+Console.WriteLine($"Server running on port: {port}");
+
+// Add endpoint to expose the port to client
+app.MapGet("/api/config/port", () => new { port = port });
 
 app.Run();

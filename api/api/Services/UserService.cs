@@ -1,7 +1,6 @@
 using api.Models;
 using api.Data;
 using Microsoft.EntityFrameworkCore;
-using BCrypt.Net;
 
 namespace api.Services
 {
@@ -14,10 +13,10 @@ namespace api.Services
             _context = context;
         }
 
-        public async Task<User?> RegisterAsync(string username, string email, string password, string firstName, string lastName)
+        public async Task<User?> RegisterAsync(string username, string email, string firstName, string lastName)
         {
             // Check if user already exists
-            if (await _context.Users.AnyAsync(u => u.Username == username || u.Email == email))
+            if (await _context.Users.AnyAsync(u => u.Username == username || u.Email == email).ConfigureAwait(false))
             {
                 return null;
             }
@@ -26,7 +25,6 @@ namespace api.Services
             {
                 Username = username,
                 Email = email,
-                PasswordHash = HashPassword(password),
                 FirstName = firstName,
                 LastName = lastName,
                 DateCreated = DateTime.Now,
@@ -34,17 +32,16 @@ namespace api.Services
             };
 
             _context.Users.Add(user);
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync().ConfigureAwait(false);
             return user;
         }
 
-        public async Task<User?> LoginAsync(string usernameOrEmail, string password)
+        public async Task<User?> LoginAsync(string email)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => 
-                (u.Username == usernameOrEmail || u.Email == usernameOrEmail) && 
-                u.IsActive);
+                u.Email == email && u.IsActive).ConfigureAwait(false);
 
-            if (user == null || !VerifyPassword(password, user.PasswordHash))
+            if (user == null)
             {
                 return null;
             }
@@ -54,26 +51,26 @@ namespace api.Services
 
         public async Task<User?> GetUserAsync(int id)
         {
-            return await _context.Users.FirstOrDefaultAsync(u => u.Id == id && u.IsActive);
+            return await _context.Users.FirstOrDefaultAsync(u => u.Id == id && u.IsActive).ConfigureAwait(false);
         }
 
         public async Task<User?> GetUserByUsernameAsync(string username)
         {
-            return await _context.Users.FirstOrDefaultAsync(u => u.Username == username && u.IsActive);
+            return await _context.Users.FirstOrDefaultAsync(u => u.Username == username && u.IsActive).ConfigureAwait(false);
         }
 
         public async Task<User?> GetUserByEmailAsync(string email)
         {
-            return await _context.Users.FirstOrDefaultAsync(u => u.Email == email && u.IsActive);
+            return await _context.Users.FirstOrDefaultAsync(u => u.Email == email && u.IsActive).ConfigureAwait(false);
         }
 
         public async Task<bool> UpdateUserAsync(int id, string firstName, string lastName, string email)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id).ConfigureAwait(false);
             if (user == null) return false;
 
             // Check if email is already taken by another user
-            if (await _context.Users.AnyAsync(u => u.Id != id && u.Email == email))
+            if (await _context.Users.AnyAsync(u => u.Id != id && u.Email == email).ConfigureAwait(false))
             {
                 return false;
             }
@@ -82,42 +79,29 @@ namespace api.Services
             user.LastName = lastName;
             user.Email = email;
 
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync().ConfigureAwait(false);
             return true;
         }
 
-        public async Task<bool> ChangePasswordAsync(int id, string currentPassword, string newPassword)
-        {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
-            if (user == null || !VerifyPassword(currentPassword, user.PasswordHash))
-            {
-                return false;
-            }
-
-            user.PasswordHash = HashPassword(newPassword);
-            await _context.SaveChangesAsync();
-            return true;
-        }
 
         public async Task<bool> DeactivateUserAsync(int id)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id).ConfigureAwait(false);
             if (user == null) return false;
 
             user.IsActive = false;
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync().ConfigureAwait(false);
             return true;
         }
 
         public async Task<bool> SaveUserAsync(User user)
         {
-            var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Id == user.Id);
+            var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Id == user.Id).ConfigureAwait(false);
             if (existingUser == null) return false;
 
             // Update the user properties
             existingUser.Username = user.Username;
             existingUser.Email = user.Email;
-            existingUser.PasswordHash = user.PasswordHash;
             existingUser.FirstName = user.FirstName;
             existingUser.LastName = user.LastName;
             existingUser.DateCreated = user.DateCreated;
@@ -125,64 +109,11 @@ namespace api.Services
             existingUser.AverageRating = user.AverageRating;
             existingUser.RatingCount = user.RatingCount;
 
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync().ConfigureAwait(false);
             return true;
         }
 
-        private string HashPassword(string password)
-        {
-            return BCrypt.Net.BCrypt.HashPassword(password, BCrypt.Net.BCrypt.GenerateSalt(12));
-        }
-
-        private bool VerifyPassword(string password, string hash)
-        {
-            return BCrypt.Net.BCrypt.Verify(password, hash);
-        }
-
-        // Legacy synchronous methods for backward compatibility
-        public User? Register(string username, string email, string password, string firstName, string lastName)
-        {
-            return RegisterAsync(username, email, password, firstName, lastName).Result;
-        }
-
-        public User? Login(string usernameOrEmail, string password)
-        {
-            return LoginAsync(usernameOrEmail, password).Result;
-        }
-
-        public User? GetUser(int id)
-        {
-            return GetUserAsync(id).Result;
-        }
-
-        public User? GetUserByUsername(string username)
-        {
-            return GetUserByUsernameAsync(username).Result;
-        }
-
-        public User? GetUserByEmail(string email)
-        {
-            return GetUserByEmailAsync(email).Result;
-        }
-
-        public bool UpdateUser(int id, string firstName, string lastName, string email)
-        {
-            return UpdateUserAsync(id, firstName, lastName, email).Result;
-        }
-
-        public bool ChangePassword(int id, string currentPassword, string newPassword)
-        {
-            return ChangePasswordAsync(id, currentPassword, newPassword).Result;
-        }
-
-        public bool DeactivateUser(int id)
-        {
-            return DeactivateUserAsync(id).Result;
-        }
-
-        public bool SaveUser(User user)
-        {
-            return SaveUserAsync(user).Result;
-        }
+        // Legacy synchronous methods removed for safety - use async versions instead
+        // These methods were causing deadlock issues with .Result calls
     }
 }

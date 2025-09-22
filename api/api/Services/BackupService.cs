@@ -30,9 +30,9 @@ namespace api.Services
                 var backupData = new
                 {
                     Timestamp = DateTime.UtcNow,
-                    Users = await _context.Users.ToListAsync(),
-                    Books = await _context.Books.ToListAsync(),
-                    Ratings = await _context.Ratings.ToListAsync()
+                    Users = await _context.Users.ToListAsync().ConfigureAwait(false),
+                    Books = await _context.Books.ToListAsync().ConfigureAwait(false),
+                    Ratings = await _context.Ratings.ToListAsync().ConfigureAwait(false)
                 };
 
                 var json = JsonSerializer.Serialize(backupData, new JsonSerializerOptions
@@ -40,7 +40,7 @@ namespace api.Services
                     WriteIndented = true
                 });
 
-                await File.WriteAllTextAsync(backupPath, json);
+                await File.WriteAllTextAsync(backupPath, json).ConfigureAwait(false);
 
                 _logger.LogInformation("Backup created successfully: {BackupPath}", backupPath);
                 return true;
@@ -62,7 +62,7 @@ namespace api.Services
                     return false;
                 }
 
-                var json = await File.ReadAllTextAsync(backupFilePath);
+                var json = await File.ReadAllTextAsync(backupFilePath).ConfigureAwait(false);
                 var backupData = JsonSerializer.Deserialize<BackupData>(json);
 
                 if (backupData == null)
@@ -75,7 +75,7 @@ namespace api.Services
                 _context.Users.RemoveRange(_context.Users);
                 _context.Books.RemoveRange(_context.Books);
                 _context.Ratings.RemoveRange(_context.Ratings);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync().ConfigureAwait(false);
 
                 // Restore data
                 if (backupData.Users != null)
@@ -93,7 +93,7 @@ namespace api.Services
                     _context.Ratings.AddRange(backupData.Ratings);
                 }
 
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync().ConfigureAwait(false);
 
                 _logger.LogInformation("Backup restored successfully from: {BackupPath}", backupFilePath);
                 return true;

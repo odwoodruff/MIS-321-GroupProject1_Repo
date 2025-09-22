@@ -84,14 +84,46 @@ namespace api.Services
 
         public int GetUserIdFromToken(ClaimsPrincipal principal)
         {
+            if (principal?.Identity == null || !principal.Identity.IsAuthenticated)
+            {
+                Console.WriteLine("JWT: Principal or Identity is null or not authenticated");
+                return 0;
+            }
+
             var userIdClaim = principal.FindFirst(ClaimTypes.NameIdentifier);
-            return userIdClaim != null ? int.Parse(userIdClaim.Value) : 0;
+            if (userIdClaim == null)
+            {
+                Console.WriteLine("JWT: NameIdentifier claim not found");
+                return 0;
+            }
+
+            if (int.TryParse(userIdClaim.Value, out var userId))
+            {
+                Console.WriteLine($"JWT: Successfully extracted user ID: {userId}");
+                return userId;
+            }
+
+            Console.WriteLine($"JWT: Failed to parse user ID: {userIdClaim.Value}");
+            return 0;
         }
 
         public string GetUserEmailFromToken(ClaimsPrincipal principal)
         {
+            if (principal?.Identity == null || !principal.Identity.IsAuthenticated)
+            {
+                Console.WriteLine("JWT: Principal or Identity is null or not authenticated");
+                return string.Empty;
+            }
+
             var emailClaim = principal.FindFirst(ClaimTypes.Email);
-            return emailClaim?.Value ?? string.Empty;
+            if (emailClaim == null)
+            {
+                Console.WriteLine("JWT: Email claim not found");
+                return string.Empty;
+            }
+
+            Console.WriteLine($"JWT: Successfully extracted email: {emailClaim.Value}");
+            return emailClaim.Value;
         }
     }
 }

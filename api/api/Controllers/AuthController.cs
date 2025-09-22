@@ -94,7 +94,7 @@ namespace api.Controllers
 
                 // Check if user already exists
                 var existingUser = await _userService.GetUserByEmailAsync(request.Email);
-                User user;
+                User? user;
 
                 if (existingUser == null)
                 {
@@ -104,7 +104,7 @@ namespace api.Controllers
                     var lastName = emailParts.Length > 1 ? emailParts[1] : "User";
                     var username = request.Email.Split('@')[0];
 
-                    user = await _userService.RegisterAsync(username, request.Email, "dummy", firstName, lastName);
+                    user = await _userService.RegisterAsync(username, request.Email, firstName, lastName);
                     
                     if (user == null)
                     {

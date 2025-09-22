@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using api.Constants;
 
 namespace api.Services
 {
@@ -7,11 +8,11 @@ namespace api.Services
         private readonly ConcurrentDictionary<string, List<DateTime>> _requestHistory = new();
         private readonly ConcurrentDictionary<string, List<DateTime>> _loginAttempts = new();
         
-        // Rate limiting configuration
-        private const int MaxRequestsPerMinute = 60;
-        private const int MaxLoginAttemptsPerMinute = 5;
-        private const int MaxLoginAttemptsPerHour = 20;
-        private const int MaxRequestsPerHour = 1000;
+        // Rate limiting configuration - using constants from ValidationConstants
+        private const int MaxRequestsPerMinute = ValidationConstants.MaxRequestsPerMinute;
+        private const int MaxLoginAttemptsPerMinute = ValidationConstants.MaxLoginAttemptsPerMinute;
+        private const int MaxLoginAttemptsPerHour = ValidationConstants.MaxLoginAttemptsPerHour;
+        private const int MaxRequestsPerHour = ValidationConstants.MaxRequestsPerHour;
 
         public bool IsRateLimited(string identifier, string actionType = "general")
         {
