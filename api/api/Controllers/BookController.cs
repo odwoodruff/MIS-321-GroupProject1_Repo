@@ -342,7 +342,7 @@ namespace api.Controllers
             if (!ValidationService.IsValidPrice(book.Price))
                 errors.Add("Invalid price");
 
-            if (!ValidationService.IsValidYear(book.Year))
+            if (book.Year.HasValue && !ValidationService.IsValidYear(book.Year.Value))
                 errors.Add("Invalid year");
 
             if (!ValidationService.IsValidEmail(book.SellerEmail))
@@ -353,6 +353,19 @@ namespace api.Controllers
 
             if (!string.IsNullOrEmpty(book.Description) && book.Description.Length > ValidationConstants.MaxBookDescriptionLength)
                 errors.Add("Description too long");
+
+            if (!ValidationService.IsValidCondition(book.Condition))
+            {
+                errors.Add($"Invalid condition: '{book.Condition}'");
+            }
+
+            if (!ValidationService.IsValidCourseCode(book.CourseCode))
+            {
+                errors.Add($"Invalid course code: '{book.CourseCode}'");
+            }
+
+            if (!string.IsNullOrEmpty(book.Professor) && !ValidationService.IsValidName(book.Professor))
+                errors.Add("Invalid professor name");
 
             return errors;
         }

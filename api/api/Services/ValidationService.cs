@@ -157,7 +157,7 @@ namespace api.Services
             if (string.IsNullOrWhiteSpace(condition))
                 return false;
 
-            var validConditions = new[] { "New", "Like New", "Good", "Fair", "Poor" };
+            var validConditions = new[] { "Excellent", "Very Good", "Good", "Fair", "Poor" };
             return validConditions.Contains(condition, StringComparer.OrdinalIgnoreCase);
         }
 
@@ -175,9 +175,9 @@ namespace api.Services
             if (string.IsNullOrWhiteSpace(courseCode))
                 return false;
 
-            // Course codes should be like "CS101", "MATH201", etc.
-            var courseCodeRegex = new Regex(@"^[A-Z]{2,4}\d{3,4}$", RegexOptions.Compiled);
-            return courseCodeRegex.IsMatch(courseCode) && courseCode.Length <= 10;
+            // Course codes should be like "CS 101", "MATH 201", etc. (letters space numbers)
+            var courseCodeRegex = new Regex(@"^[A-Za-z]{2,4}\s+\d{1,4}$", RegexOptions.Compiled);
+            return courseCodeRegex.IsMatch(courseCode) && courseCode.Length <= 20;
         }
 
         public static bool IsValidProfessorName(string professorName)

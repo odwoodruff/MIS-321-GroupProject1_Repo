@@ -85,6 +85,8 @@ namespace api.Services
         {
             return await _context.Ratings
                 .Where(r => r.RaterId == userId && r.IsActive)
+                .Include(r => r.RatedUser)
+                .Include(r => r.Book)
                 .ToListAsync().ConfigureAwait(false);
         }
 

@@ -419,7 +419,6 @@ namespace api.Controllers
                         Professor = course.Professor,
                         IsAvailable = true,
                         DatePosted = DateTime.Now.AddDays(-random.Next(30)), // Random posting date within last 30 days
-                        ImageUrl = "",
                         SellerRating = 0.0,
                         SellerRatingCount = 0
                     });
@@ -635,6 +634,52 @@ namespace api.Controllers
             {
                 _loggingService.LogError("Error clearing all ratings", ex);
                 return StatusCode(500, new { message = "An error occurred while clearing ratings" });
+            }
+        }
+
+        // Development-only endpoint to identify orphaned records
+        [HttpGet("check-orphaned-records")]
+        public async Task<IActionResult> CheckOrphanedRecords()
+        {
+            try
+            {
+                // Find books with seller emails that don't match any user
+                var allUsers = await _context.Users.ToListAsync();
+                var allBooks = await _context.Books.ToListAsync();
+                var allRatings = await _context.Ratings.ToListAsync();
+
+                var userEmails = allUsers.Select(u => u.Email.ToLower()).ToHashSet();
+                var userIds = allUsers.Select(u => u.Id).ToHashSet();
+
+                var orphanedBooks = allBooks.Where(b => !userEmails.Contains(b.SellerEmail.ToLower())).ToList();
+                var orphanedRatings = allRatings.Where(r => !userIds.Contains(r.RaterId) || !userIds.Contains(r.RatedUserId)).ToList();
+
+                return Ok(new
+                {
+                    message = "Orphaned records check completed",
+                    totalUsers = allUsers.Count,
+                    totalBooks = allBooks.Count,
+                    totalRatings = allRatings.Count,
+                    orphanedBooks = orphanedBooks.Select(b => new { 
+                        id = b.Id, 
+                        title = b.Title, 
+                        sellerEmail = b.SellerEmail,
+                        sellerName = b.SellerName 
+                    }),
+                    orphanedRatings = orphanedRatings.Select(r => new { 
+                        id = r.Id, 
+                        raterId = r.RaterId, 
+                        ratedUserId = r.RatedUserId, 
+                        bookId = r.BookId 
+                    }),
+                    orphanedBooksCount = orphanedBooks.Count,
+                    orphanedRatingsCount = orphanedRatings.Count
+                });
+            }
+            catch (Exception ex)
+            {
+                _loggingService.LogError("Error checking orphaned records", ex);
+                return StatusCode(500, new { message = "An error occurred while checking orphaned records" });
             }
         }
 

@@ -112,21 +112,7 @@ namespace api.Services
                                   "Walker", "Young", "Allen", "King", "Wright", "Scott", "Torres", "Nguyen", "Hill", "Flores",
                                   "Green", "Adams", "Nelson", "Baker", "Hall", "Rivera", "Campbell", "Mitchell", "Carter", "Roberts" };
 
-            // Create admin user first
-            if (!existingUsernames.Contains("admin") && !existingEmails.Contains("admin@crimson.ua.edu"))
-            {
-                usersToCreate.Add(new User
-                {
-                    Username = "admin",
-                    Email = "admin@crimson.ua.edu",
-                    FirstName = "Admin",
-                    LastName = "User",
-                    DateCreated = DateTime.Now,
-                    IsActive = true,
-                    AverageRating = 4.2,
-                    RatingCount = 47
-                });
-            }
+            // Admin user is ccsmith33@crimson.ua.edu - no need to create here
 
             // Create 55 random users (including the book sellers)
             var bookSellerEmails = new[] { "alex.johnson@ua.edu", "sarah.williams@ua.edu" };
@@ -213,38 +199,68 @@ namespace api.Services
             var existingBooks = await _context.Books.ToListAsync();
             var existingBookTitles = existingBooks.Select(b => b.Title).ToHashSet();
 
-            var booksToCreate = new List<Book>();
+            // Get all users to distribute books among them
+            var users = await _context.Users.Where(u => u.IsActive).ToListAsync();
+            if (users.Count == 0)
+            {
+                Console.WriteLine("No active users found, cannot create books");
+                return;
+            }
 
-            // Define sample books data
+            var booksToCreate = new List<Book>();
+            var random = new Random();
+
+            // Define sample books data (without hardcoded sellers)
             var sampleBooks = new[]
             {
-                new { Title = "Calculus: Early Transcendentals", Author = "James Stewart", Genre = "Textbook", Year = 2021, Description = "Comprehensive calculus textbook with practice problems and solutions. Used for MATH 125.", Price = 85.00m, Condition = "Good", SellerName = "Alex Johnson", SellerEmail = "alex.johnson@ua.edu", CourseCode = "MATH 125", Professor = "Dr. Smith", DatePosted = "2025-09-10 14:09:37", ImageUrl = "https://via.placeholder.com/300x400?text=Calculus", SellerRating = 4.1, SellerRatingCount = 52 },
-                new { Title = "Introduction to Psychology", Author = "David Myers", Genre = "Psychology", Year = 2021, Description = "Psychology textbook in excellent condition. Barely used, no highlighting.", Price = 120.00m, Condition = "Excellent", SellerName = "Sarah Williams", SellerEmail = "sarah.williams@ua.edu", CourseCode = "PSY 101", Professor = "Dr. Williams", DatePosted = "2025-09-13 14:09:37", ImageUrl = "https://via.placeholder.com/300x400?text=Psychology", SellerRating = 4.5, SellerRatingCount = 48 },
-                new { Title = "Principles of Economics", Author = "N. Gregory Mankiw", Genre = "Economics", Year = 2022, Description = "Micro and macroeconomics textbook. Some highlighting but in good condition.", Price = 95.00m, Condition = "Good", SellerName = "Alex Johnson", SellerEmail = "alex.johnson@ua.edu", CourseCode = "EC 110", Professor = "Dr. Brown", DatePosted = "2025-09-08 14:09:37", ImageUrl = "https://via.placeholder.com/300x400?text=Economics", SellerRating = 4.1, SellerRatingCount = 52 },
-                new { Title = "Organic Chemistry", Author = "Paula Yurkanis Bruice", Genre = "Chemistry", Year = 2020, Description = "Comprehensive organic chemistry textbook with detailed mechanisms and practice problems.", Price = 150.00m, Condition = "Very Good", SellerName = "Sarah Williams", SellerEmail = "sarah.williams@ua.edu", CourseCode = "CH 231", Professor = "Dr. Davis", DatePosted = "2025-09-12 09:15:00", ImageUrl = "https://via.placeholder.com/300x400?text=Chemistry", SellerRating = 4.5, SellerRatingCount = 48 },
-                new { Title = "Introduction to Computer Science", Author = "John Zelle", Genre = "Computer Science", Year = 2021, Description = "Python programming textbook with exercises and examples. Perfect for CS 100.", Price = 75.00m, Condition = "Excellent", SellerName = "Alex Johnson", SellerEmail = "alex.johnson@ua.edu", CourseCode = "CS 100", Professor = "Dr. Wilson", DatePosted = "2025-09-14 16:30:00", ImageUrl = "https://via.placeholder.com/300x400?text=Computer+Science", SellerRating = 4.1, SellerRatingCount = 52 },
-                new { Title = "American History: A Survey", Author = "Alan Brinkley", Genre = "History", Year = 2019, Description = "Comprehensive American history textbook covering colonial period to present.", Price = 110.00m, Condition = "Good", SellerName = "Sarah Williams", SellerEmail = "sarah.williams@ua.edu", CourseCode = "HY 101", Professor = "Dr. Thompson", DatePosted = "2025-09-11 11:45:00", ImageUrl = "https://via.placeholder.com/300x400?text=History", SellerRating = 4.5, SellerRatingCount = 48 },
-                new { Title = "Physics for Scientists and Engineers", Author = "Raymond Serway", Genre = "Physics", Year = 2020, Description = "Physics textbook with calculus-based approach. Includes problem solutions.", Price = 180.00m, Condition = "Very Good", SellerName = "Alex Johnson", SellerEmail = "alex.johnson@ua.edu", CourseCode = "PH 105", Professor = "Dr. Martinez", DatePosted = "2025-09-09 13:20:00", ImageUrl = "https://via.placeholder.com/300x400?text=Physics", SellerRating = 4.1, SellerRatingCount = 52 },
-                new { Title = "Business Communication", Author = "Courtland Bovee", Genre = "Business", Year = 2021, Description = "Professional communication skills for business students. Includes writing and presentation guides.", Price = 90.00m, Condition = "Excellent", SellerName = "Sarah Williams", SellerEmail = "sarah.williams@ua.edu", CourseCode = "MGT 300", Professor = "Dr. Anderson", DatePosted = "2025-09-15 14:10:00", ImageUrl = "https://via.placeholder.com/300x400?text=Business", SellerRating = 4.5, SellerRatingCount = 48 },
-                new { Title = "Linear Algebra and Its Applications", Author = "David Lay", Genre = "Mathematics", Year = 2022, Description = "Linear algebra textbook with clear explanations and practice problems. Used for MATH 237.", Price = 125.00m, Condition = "Good", SellerName = "Alex Johnson", SellerEmail = "alex.johnson@ua.edu", CourseCode = "MATH 237", Professor = "Dr. Garcia", DatePosted = "2025-09-16 10:15:00", ImageUrl = "https://via.placeholder.com/300x400?text=Linear+Algebra", SellerRating = 4.1, SellerRatingCount = 52 },
-                new { Title = "Abnormal Psychology", Author = "Ronald Comer", Genre = "Psychology", Year = 2021, Description = "Comprehensive abnormal psychology textbook. Some highlighting but in good condition.", Price = 135.00m, Condition = "Good", SellerName = "Sarah Williams", SellerEmail = "sarah.williams@ua.edu", CourseCode = "PSY 240", Professor = "Dr. Rodriguez", DatePosted = "2025-09-17 14:30:00", ImageUrl = "https://via.placeholder.com/300x400?text=Abnormal+Psychology", SellerRating = 4.5, SellerRatingCount = 48 },
-                new { Title = "Financial Accounting", Author = "Jerry Weygandt", Genre = "Accounting", Year = 2023, Description = "Financial accounting textbook with practice exercises. Like new condition.", Price = 160.00m, Condition = "Excellent", SellerName = "Alex Johnson", SellerEmail = "alex.johnson@ua.edu", CourseCode = "AC 210", Professor = "Dr. Lee", DatePosted = "2025-09-18 09:45:00", ImageUrl = "https://via.placeholder.com/300x400?text=Accounting", SellerRating = 4.1, SellerRatingCount = 52 },
-                new { Title = "General Biology", Author = "Sylvia Mader", Genre = "Biology", Year = 2022, Description = "Biology textbook with detailed illustrations. Some wear but still very usable.", Price = 140.00m, Condition = "Good", SellerName = "Sarah Williams", SellerEmail = "sarah.williams@ua.edu", CourseCode = "BSC 114", Professor = "Dr. Kim", DatePosted = "2025-09-19 16:20:00", ImageUrl = "https://via.placeholder.com/300x400?text=Biology", SellerRating = 4.5, SellerRatingCount = 48 },
-                new { Title = "Data Structures and Algorithms", Author = "Mark Weiss", Genre = "Computer Science", Year = 2021, Description = "Advanced computer science textbook. Perfect for CS 201. Minimal highlighting.", Price = 95.00m, Condition = "Very Good", SellerName = "Alex Johnson", SellerEmail = "alex.johnson@ua.edu", CourseCode = "CS 201", Professor = "Dr. Patel", DatePosted = "2025-09-20 11:10:00", ImageUrl = "https://via.placeholder.com/300x400?text=Data+Structures", SellerRating = 4.1, SellerRatingCount = 52 },
-                new { Title = "World Literature", Author = "Damrosch & Pike", Genre = "Literature", Year = 2020, Description = "Comprehensive world literature anthology. Some highlighting but in good condition.", Price = 85.00m, Condition = "Good", SellerName = "Sarah Williams", SellerEmail = "sarah.williams@ua.edu", CourseCode = "EN 205", Professor = "Dr. Taylor", DatePosted = "2025-09-21 13:25:00", ImageUrl = "https://via.placeholder.com/300x400?text=Literature", SellerRating = 4.5, SellerRatingCount = 48 },
-                new { Title = "Marketing Management", Author = "Philip Kotler", Genre = "Marketing", Year = 2022, Description = "Marketing textbook with case studies. Excellent condition, no marks.", Price = 120.00m, Condition = "Excellent", SellerName = "Alex Johnson", SellerEmail = "alex.johnson@ua.edu", CourseCode = "MKT 300", Professor = "Dr. Johnson", DatePosted = "2025-09-22 15:40:00", ImageUrl = "https://via.placeholder.com/300x400?text=Marketing", SellerRating = 4.1, SellerRatingCount = 52 },
-                new { Title = "Environmental Science", Author = "G. Tyler Miller", Genre = "Environmental", Year = 2021, Description = "Environmental science textbook with current data and case studies.", Price = 105.00m, Condition = "Very Good", SellerName = "Sarah Williams", SellerEmail = "sarah.williams@ua.edu", CourseCode = "GEO 105", Professor = "Dr. Green", DatePosted = "2025-09-23 08:50:00", ImageUrl = "https://via.placeholder.com/300x400?text=Environmental", SellerRating = 4.5, SellerRatingCount = 48 },
-                new { Title = "Statistics for Business", Author = "David Anderson", Genre = "Statistics", Year = 2023, Description = "Business statistics textbook with Excel integration. Like new condition.", Price = 130.00m, Condition = "Excellent", SellerName = "Alex Johnson", SellerEmail = "alex.johnson@ua.edu", CourseCode = "ST 260", Professor = "Dr. White", DatePosted = "2025-09-24 12:35:00", ImageUrl = "https://via.placeholder.com/300x400?text=Statistics", SellerRating = 4.1, SellerRatingCount = 52 },
-                new { Title = "Art History", Author = "Marilyn Stokstad", Genre = "Art", Year = 2020, Description = "Comprehensive art history textbook with color plates. Some wear but good condition.", Price = 115.00m, Condition = "Good", SellerName = "Sarah Williams", SellerEmail = "sarah.williams@ua.edu", CourseCode = "ARH 101", Professor = "Dr. Brown", DatePosted = "2025-09-25 14:15:00", ImageUrl = "https://via.placeholder.com/300x400?text=Art+History", SellerRating = 4.5, SellerRatingCount = 48 },
-                new { Title = "Philosophy: The Quest for Truth", Author = "Louis Pojman", Genre = "Philosophy", Year = 2021, Description = "Philosophy textbook with primary source readings. Minimal highlighting.", Price = 75.00m, Condition = "Very Good", SellerName = "Alex Johnson", SellerEmail = "alex.johnson@ua.edu", CourseCode = "PHL 100", Professor = "Dr. Moore", DatePosted = "2025-09-26 10:30:00", ImageUrl = "https://via.placeholder.com/300x400?text=Philosophy", SellerRating = 4.1, SellerRatingCount = 52 },
-                new { Title = "Spanish Language and Culture", Author = "José Díaz", Genre = "Language", Year = 2022, Description = "Spanish textbook with audio CDs. Excellent condition, barely used.", Price = 100.00m, Condition = "Excellent", SellerName = "Sarah Williams", SellerEmail = "sarah.williams@ua.edu", CourseCode = "SP 101", Professor = "Dr. Martinez", DatePosted = "2025-09-27 16:45:00", ImageUrl = "https://via.placeholder.com/300x400?text=Spanish", SellerRating = 4.5, SellerRatingCount = 48 }
+                new { Title = "Calculus: Early Transcendentals", Author = "James Stewart", Genre = "Textbook", Year = 2021, Description = "Comprehensive calculus textbook with practice problems and solutions. Used for MATH 125.", Price = 85.00m, Condition = "Good", CourseCode = "MATH 125", Professor = "Dr. Smith", DatePosted = "2025-09-10 14:09:37" },
+                new { Title = "Introduction to Psychology", Author = "David Myers", Genre = "Psychology", Year = 2021, Description = "Psychology textbook in excellent condition. Barely used, no highlighting.", Price = 120.00m, Condition = "Excellent", CourseCode = "PSY 101", Professor = "Dr. Williams", DatePosted = "2025-09-13 14:09:37" },
+                new { Title = "Principles of Economics", Author = "N. Gregory Mankiw", Genre = "Economics", Year = 2022, Description = "Micro and macroeconomics textbook. Some highlighting but in good condition.", Price = 95.00m, Condition = "Good", CourseCode = "EC 110", Professor = "Dr. Brown", DatePosted = "2025-09-08 14:09:37" },
+                new { Title = "Organic Chemistry", Author = "Paula Yurkanis Bruice", Genre = "Chemistry", Year = 2020, Description = "Comprehensive organic chemistry textbook with detailed mechanisms and practice problems.", Price = 150.00m, Condition = "Very Good", CourseCode = "CH 231", Professor = "Dr. Davis", DatePosted = "2025-09-12 09:15:00" },
+                new { Title = "Introduction to Computer Science", Author = "John Zelle", Genre = "Computer Science", Year = 2021, Description = "Python programming textbook with exercises and examples. Perfect for CS 100.", Price = 75.00m, Condition = "Excellent", CourseCode = "CS 100", Professor = "Dr. Wilson", DatePosted = "2025-09-14 16:30:00" },
+                new { Title = "American History: A Survey", Author = "Alan Brinkley", Genre = "History", Year = 2019, Description = "Comprehensive American history textbook covering colonial period to present.", Price = 110.00m, Condition = "Good", CourseCode = "HY 101", Professor = "Dr. Thompson", DatePosted = "2025-09-11 11:45:00" },
+                new { Title = "Physics for Scientists and Engineers", Author = "Raymond Serway", Genre = "Physics", Year = 2020, Description = "Physics textbook with calculus-based approach. Includes problem solutions.", Price = 180.00m, Condition = "Very Good", CourseCode = "PH 105", Professor = "Dr. Martinez", DatePosted = "2025-09-09 13:20:00" },
+                new { Title = "Business Communication", Author = "Courtland Bovee", Genre = "Business", Year = 2021, Description = "Professional communication skills for business students. Includes writing and presentation guides.", Price = 90.00m, Condition = "Excellent", CourseCode = "MGT 300", Professor = "Dr. Anderson", DatePosted = "2025-09-15 14:10:00" },
+                new { Title = "Linear Algebra and Its Applications", Author = "David Lay", Genre = "Mathematics", Year = 2022, Description = "Linear algebra textbook with clear explanations and practice problems. Used for MATH 237.", Price = 125.00m, Condition = "Good", CourseCode = "MATH 237", Professor = "Dr. Garcia", DatePosted = "2025-09-16 10:15:00" },
+                new { Title = "Abnormal Psychology", Author = "Ronald Comer", Genre = "Psychology", Year = 2021, Description = "Comprehensive abnormal psychology textbook. Some highlighting but in good condition.", Price = 135.00m, Condition = "Good", CourseCode = "PSY 240", Professor = "Dr. Rodriguez", DatePosted = "2025-09-17 14:30:00" },
+                new { Title = "Financial Accounting", Author = "Jerry Weygandt", Genre = "Accounting", Year = 2023, Description = "Financial accounting textbook with practice exercises. Like new condition.", Price = 160.00m, Condition = "Excellent", CourseCode = "AC 210", Professor = "Dr. Lee", DatePosted = "2025-09-18 09:45:00" },
+                new { Title = "General Biology", Author = "Sylvia Mader", Genre = "Biology", Year = 2022, Description = "Biology textbook with detailed illustrations. Some wear but still very usable.", Price = 140.00m, Condition = "Good", CourseCode = "BSC 114", Professor = "Dr. Kim", DatePosted = "2025-09-19 16:20:00" },
+                new { Title = "Data Structures and Algorithms", Author = "Mark Weiss", Genre = "Computer Science", Year = 2021, Description = "Advanced computer science textbook. Perfect for CS 201. Minimal highlighting.", Price = 95.00m, Condition = "Very Good", CourseCode = "CS 201", Professor = "Dr. Patel", DatePosted = "2025-09-20 11:10:00" },
+                new { Title = "World Literature", Author = "Damrosch & Pike", Genre = "Literature", Year = 2020, Description = "Comprehensive world literature anthology. Some highlighting but in good condition.", Price = 85.00m, Condition = "Good", CourseCode = "EN 205", Professor = "Dr. Taylor", DatePosted = "2025-09-21 13:25:00" },
+                new { Title = "Marketing Management", Author = "Philip Kotler", Genre = "Marketing", Year = 2022, Description = "Marketing textbook with case studies. Excellent condition, no marks.", Price = 120.00m, Condition = "Excellent", CourseCode = "MKT 300", Professor = "Dr. Johnson", DatePosted = "2025-09-22 15:40:00" },
+                new { Title = "Environmental Science", Author = "G. Tyler Miller", Genre = "Environmental", Year = 2021, Description = "Environmental science textbook with current data and case studies.", Price = 105.00m, Condition = "Very Good", CourseCode = "GEO 105", Professor = "Dr. Green", DatePosted = "2025-09-23 08:50:00" },
+                new { Title = "Statistics for Business", Author = "David Anderson", Genre = "Statistics", Year = 2023, Description = "Business statistics textbook with Excel integration. Like new condition.", Price = 130.00m, Condition = "Excellent", CourseCode = "ST 260", Professor = "Dr. White", DatePosted = "2025-09-24 12:35:00" },
+                new { Title = "Art History", Author = "Marilyn Stokstad", Genre = "Art", Year = 2020, Description = "Comprehensive art history textbook with color plates. Some wear but good condition.", Price = 115.00m, Condition = "Good", CourseCode = "ARH 101", Professor = "Dr. Brown", DatePosted = "2025-09-25 14:15:00" },
+                new { Title = "Philosophy: The Quest for Truth", Author = "Louis Pojman", Genre = "Philosophy", Year = 2021, Description = "Philosophy textbook with primary source readings. Minimal highlighting.", Price = 75.00m, Condition = "Very Good", CourseCode = "PHL 100", Professor = "Dr. Moore", DatePosted = "2025-09-26 10:30:00" },
+                new { Title = "Spanish Language and Culture", Author = "José Díaz", Genre = "Language", Year = 2022, Description = "Spanish textbook with audio CDs. Excellent condition, barely used.", Price = 100.00m, Condition = "Excellent", CourseCode = "SP 101", Professor = "Dr. Martinez", DatePosted = "2025-09-27 16:45:00" }
             };
 
-            // Only create books that don't already exist
-            foreach (var bookData in sampleBooks)
+            // Create additional books to distribute among all users
+            var additionalBooks = new[]
+            {
+                new { Title = "Advanced Calculus", Author = "Michael Spivak", Genre = "Mathematics", Year = 2020, Description = "Rigorous calculus textbook for advanced students.", Price = 95.00m, Condition = "Very Good", CourseCode = "MATH 301", Professor = "Dr. Adams", DatePosted = "2025-09-28 10:00:00" },
+                new { Title = "Social Psychology", Author = "Elliot Aronson", Genre = "Psychology", Year = 2021, Description = "Comprehensive social psychology textbook with research studies.", Price = 110.00m, Condition = "Good", CourseCode = "PSY 250", Professor = "Dr. Clark", DatePosted = "2025-09-29 14:30:00" },
+                new { Title = "Microeconomics", Author = "Robert Pindyck", Genre = "Economics", Year = 2022, Description = "Intermediate microeconomics with mathematical approach.", Price = 125.00m, Condition = "Excellent", CourseCode = "EC 301", Professor = "Dr. Taylor", DatePosted = "2025-09-30 09:15:00" },
+                new { Title = "Inorganic Chemistry", Author = "Gary Miessler", Genre = "Chemistry", Year = 2021, Description = "Inorganic chemistry textbook with molecular orbital theory.", Price = 145.00m, Condition = "Very Good", CourseCode = "CH 232", Professor = "Dr. Wilson", DatePosted = "2025-10-01 11:45:00" },
+                new { Title = "Database Systems", Author = "Ramez Elmasri", Genre = "Computer Science", Year = 2020, Description = "Database design and implementation textbook.", Price = 105.00m, Condition = "Good", CourseCode = "CS 301", Professor = "Dr. Chen", DatePosted = "2025-10-02 16:20:00" },
+                new { Title = "European History", Author = "John Merriman", Genre = "History", Year = 2019, Description = "Comprehensive European history from Renaissance to present.", Price = 98.00m, Condition = "Good", CourseCode = "HY 201", Professor = "Dr. Johnson", DatePosted = "2025-10-03 13:10:00" },
+                new { Title = "Quantum Physics", Author = "David Griffiths", Genre = "Physics", Year = 2021, Description = "Introduction to quantum mechanics with problems and solutions.", Price = 165.00m, Condition = "Excellent", CourseCode = "PH 301", Professor = "Dr. Singh", DatePosted = "2025-10-04 08:30:00" },
+                new { Title = "Strategic Management", Author = "Michael Porter", Genre = "Business", Year = 2022, Description = "Strategic management concepts and case studies.", Price = 115.00m, Condition = "Very Good", CourseCode = "MGT 400", Professor = "Dr. Davis", DatePosted = "2025-10-05 15:45:00" },
+                new { Title = "Differential Equations", Author = "William Boyce", Genre = "Mathematics", Year = 2020, Description = "Ordinary and partial differential equations textbook.", Price = 88.00m, Condition = "Good", CourseCode = "MATH 238", Professor = "Dr. Miller", DatePosted = "2025-10-06 12:00:00" },
+                new { Title = "Cognitive Psychology", Author = "Robert Sternberg", Genre = "Psychology", Year = 2021, Description = "Cognitive processes and mental representations.", Price = 128.00m, Condition = "Very Good", CourseCode = "PSY 350", Professor = "Dr. Thompson", DatePosted = "2025-10-07 10:15:00" }
+            };
+
+            // Combine all books
+            var allBooks = sampleBooks.Concat(additionalBooks).ToArray();
+
+            // Only create books that don't already exist and distribute among users
+            foreach (var bookData in allBooks)
             {
                 if (!existingBookTitles.Contains(bookData.Title))
                 {
+                    // Randomly select a seller from all users
+                    var seller = users[random.Next(users.Count)];
+                    
                     booksToCreate.Add(new Book
                     {
                         Title = bookData.Title,
@@ -254,15 +270,14 @@ namespace api.Services
                         Description = bookData.Description,
                         Price = bookData.Price,
                         Condition = bookData.Condition,
-                        SellerName = bookData.SellerName,
-                        SellerEmail = bookData.SellerEmail,
+                        SellerName = $"{seller.FirstName} {seller.LastName}",
+                        SellerEmail = seller.Email,
                         CourseCode = bookData.CourseCode,
                         Professor = bookData.Professor,
                         IsAvailable = true,
                         DatePosted = DateTime.Parse(bookData.DatePosted),
-                        ImageUrl = bookData.ImageUrl,
-                        SellerRating = bookData.SellerRating,
-                        SellerRatingCount = bookData.SellerRatingCount
+                        SellerRating = seller.AverageRating,
+                        SellerRatingCount = seller.RatingCount
                     });
                 }
             }
@@ -271,7 +286,7 @@ namespace api.Services
             {
                 _context.Books.AddRange(booksToCreate);
                 await _context.SaveChangesAsync();
-                Console.WriteLine($"Created {booksToCreate.Count} new books");
+                Console.WriteLine($"Created {booksToCreate.Count} new books distributed among {users.Count} users");
             }
             else
             {
@@ -437,6 +452,14 @@ namespace api.Services
                 await UpdateExistingRatingsIsActiveAsync();
                 Console.WriteLine("Updated existing ratings IsActive status.");
 
+                // Ensure alex.johnson@ua.edu has required data
+                await EnsureAlexJohnsonDataAsync();
+                Console.WriteLine("Alex Johnson data ensured.");
+
+                // Populate new tracking tables with sample data
+                await PopulateTrackingDataAsync();
+                Console.WriteLine("Tracking data populated.");
+
                 Console.WriteLine("Force re-migration completed successfully!");
             }
             catch (Exception ex)
@@ -446,9 +469,371 @@ namespace api.Services
             }
         }
 
+        private async Task EnsureAlexJohnsonDataAsync()
+        {
+            try
+            {
+                var alexUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == "alex.johnson@ua.edu");
+                if (alexUser == null)
+                {
+                    Console.WriteLine("Alex Johnson user not found, skipping data creation");
+                    return;
+                }
+
+                // 1. Ensure Alex has at least 3 books
+                var alexBooks = await _context.Books.Where(b => b.SellerEmail == "alex.johnson@ua.edu").ToListAsync();
+                if (alexBooks.Count < 3)
+                {
+                    var booksToCreate = new[]
+                    {
+                        new Book
+                        {
+                            Title = "Introduction to Computer Science",
+                            Author = "John Smith",
+                            Genre = "Computer Science",
+                            Year = 2023,
+                            Price = 45.99m,
+                            Condition = "Good",
+                            Description = "Used textbook with some highlighting",
+                            SellerName = "Alex Johnson",
+                            SellerEmail = "alex.johnson@ua.edu",
+                            CourseCode = "CS101",
+                            Professor = "Dr. Smith",
+                            DatePosted = DateTime.UtcNow,
+                            IsActive = true
+                        },
+                        new Book
+                        {
+                            Title = "Data Structures and Algorithms",
+                            Author = "Jane Doe",
+                            Genre = "Computer Science",
+                            Year = 2022,
+                            Price = 65.50m,
+                            Condition = "Excellent",
+                            Description = "Like new condition, no marks",
+                            SellerName = "Alex Johnson",
+                            SellerEmail = "alex.johnson@ua.edu",
+                            CourseCode = "CS201",
+                            Professor = "Dr. Doe",
+                            DatePosted = DateTime.UtcNow,
+                            IsActive = true
+                        },
+                        new Book
+                        {
+                            Title = "Database Systems",
+                            Author = "Bob Wilson",
+                            Genre = "Computer Science",
+                            Year = 2023,
+                            Price = 55.00m,
+                            Condition = "Fair",
+                            Description = "Some wear but all pages intact",
+                            SellerName = "Alex Johnson",
+                            SellerEmail = "alex.johnson@ua.edu",
+                            CourseCode = "CS301",
+                            Professor = "Dr. Wilson",
+                            DatePosted = DateTime.UtcNow,
+                            IsActive = true
+                        },
+                        new Book
+                        {
+                            Title = "Software Engineering Principles",
+                            Author = "Alice Johnson",
+                            Genre = "Computer Science",
+                            Year = 2022,
+                            Price = 75.00m,
+                            Condition = "Good",
+                            Description = "Well-maintained textbook with minimal wear",
+                            SellerName = "Alex Johnson",
+                            SellerEmail = "alex.johnson@ua.edu",
+                            CourseCode = "CS401",
+                            Professor = "Dr. Johnson",
+                            DatePosted = DateTime.UtcNow,
+                            IsActive = true
+                        },
+                        new Book
+                        {
+                            Title = "Machine Learning Fundamentals",
+                            Author = "David Brown",
+                            Genre = "Computer Science",
+                            Year = 2023,
+                            Price = 85.00m,
+                            Condition = "Excellent",
+                            Description = "Brand new condition, never used",
+                            SellerName = "Alex Johnson",
+                            SellerEmail = "alex.johnson@ua.edu",
+                            CourseCode = "CS501",
+                            Professor = "Dr. Brown",
+                            DatePosted = DateTime.UtcNow,
+                            IsActive = true
+                        }
+                    };
+
+                    _context.Books.AddRange(booksToCreate);
+                    await _context.SaveChangesAsync();
+                    Console.WriteLine($"Created {booksToCreate.Length} books for Alex Johnson");
+                }
+
+                // 2. Ensure Alex has at least 3 ratings given
+                var alexRatingsGiven = await _context.Ratings.Where(r => r.RaterId == alexUser.Id).ToListAsync();
+                if (alexRatingsGiven.Count < 3)
+                {
+                    // Get other users to rate
+                    var otherUsers = await _context.Users.Where(u => u.Email != "alex.johnson@ua.edu").Take(2).ToListAsync();
+                    if (otherUsers.Count >= 2)
+                    {
+                        var ratingsToCreate = new[]
+                        {
+                            new Rating
+                            {
+                                RaterId = alexUser.Id,
+                                RatedUserId = otherUsers[0].Id,
+                                BookId = 1,
+                                Score = 5,
+                                Comment = "Great seller! Book was exactly as described and shipped quickly.",
+                                DateCreated = DateTime.UtcNow,
+                                IsActive = true
+                            },
+                            new Rating
+                            {
+                                RaterId = alexUser.Id,
+                                RatedUserId = otherUsers[1].Id,
+                                BookId = 2,
+                                Score = 4,
+                                Comment = "Good condition book, fair price. Would buy again.",
+                                DateCreated = DateTime.UtcNow,
+                                IsActive = true
+                            },
+                            new Rating
+                            {
+                                RaterId = alexUser.Id,
+                                RatedUserId = otherUsers[0].Id,
+                                BookId = 3,
+                                Score = 5,
+                                Comment = "Excellent communication and fast delivery. Highly recommend!",
+                                DateCreated = DateTime.UtcNow,
+                                IsActive = true
+                            }
+                        };
+
+                        _context.Ratings.AddRange(ratingsToCreate);
+                        await _context.SaveChangesAsync();
+                        Console.WriteLine($"Created {ratingsToCreate.Length} ratings from Alex Johnson");
+                    }
+                }
+
+                // 3. Ensure Alex has notifications in SQL
+                var alexNotifications = await _context.Notifications.Where(n => n.UserId == alexUser.Id).ToListAsync();
+                if (alexNotifications.Count < 5)
+                {
+                    var notificationsToCreate = new[]
+                    {
+                        new Notification
+                        {
+                            UserId = alexUser.Id,
+                            Message = "New book listing: 'Introduction to Computer Science' is now available",
+                            Type = "info",
+                            DateCreated = DateTime.UtcNow,
+                            IsRead = false,
+                            IsActive = true
+                        },
+                        new Notification
+                        {
+                            UserId = alexUser.Id,
+                            Message = "Book inquiry: Someone is interested in your 'Data Structures' textbook",
+                            Type = "info",
+                            DateCreated = DateTime.UtcNow,
+                            IsRead = false,
+                            IsActive = true
+                        },
+                        new Notification
+                        {
+                            UserId = alexUser.Id,
+                            Message = "Rating received: You got 5 stars for your 'Database Systems' book",
+                            Type = "success",
+                            DateCreated = DateTime.UtcNow,
+                            IsRead = false,
+                            IsActive = true
+                        },
+                        new Notification
+                        {
+                            UserId = alexUser.Id,
+                            Message = "Price update: Consider adjusting your book prices for better visibility",
+                            Type = "info",
+                            DateCreated = DateTime.UtcNow,
+                            IsRead = false,
+                            IsActive = true
+                        },
+                        new Notification
+                        {
+                            UserId = alexUser.Id,
+                            Message = "Weekly summary: 5 books listed, 2 inquiries received",
+                            Type = "info",
+                            DateCreated = DateTime.UtcNow,
+                            IsRead = false,
+                            IsActive = true
+                        },
+                        new Notification
+                        {
+                            UserId = alexUser.Id,
+                            Message = "Reminder: Update your book descriptions for better sales",
+                            Type = "warning",
+                            DateCreated = DateTime.UtcNow,
+                            IsRead = false,
+                            IsActive = true
+                        },
+                        new Notification
+                        {
+                            UserId = alexUser.Id,
+                            Message = "New message: Buyer interested in 'Machine Learning' textbook",
+                            Type = "info",
+                            DateCreated = DateTime.UtcNow,
+                            IsRead = false,
+                            IsActive = true
+                        },
+                        new Notification
+                        {
+                            UserId = alexUser.Id,
+                            Message = "System: Your book 'Software Engineering' has been viewed 15 times",
+                            Type = "info",
+                            DateCreated = DateTime.UtcNow,
+                            IsRead = false,
+                            IsActive = true
+                        }
+                    };
+
+                    _context.Notifications.AddRange(notificationsToCreate);
+                    await _context.SaveChangesAsync();
+                    Console.WriteLine($"Created {notificationsToCreate.Length} notifications for Alex Johnson");
+                }
+
+                Console.WriteLine("Alex Johnson data ensured successfully");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error ensuring Alex Johnson data: {ex.Message}");
+                // Don't throw - this is not critical for migration
+            }
+        }
+
+        private async Task PopulateTrackingDataAsync()
+        {
+            try
+            {
+                // Get some users and books for sample data
+                var users = await _context.Users.Take(10).ToListAsync();
+                var books = await _context.Books.Take(10).ToListAsync();
+                var ratings = await _context.Ratings.Take(10).ToListAsync();
+
+                if (users.Count < 2 || books.Count < 2)
+                {
+                    Console.WriteLine("Not enough users or books for tracking data population");
+                    return;
+                }
+
+                // 1. Populate ContactedSellers with sample data
+                var contactedSellersCount = await _context.ContactedSellers.CountAsync();
+                if (contactedSellersCount == 0)
+                {
+                    var contactedSellersToCreate = new List<ContactedSeller>();
+                    
+                    // Create some realistic contact scenarios
+                    for (int i = 0; i < Math.Min(20, books.Count); i++)
+                    {
+                        var buyer = users[i % users.Count];
+                        var seller = users[(i + 1) % users.Count];
+                        var book = books[i % books.Count];
+                        
+                        // Don't contact yourself
+                        if (buyer.Id != seller.Id)
+                        {
+                            contactedSellersToCreate.Add(new ContactedSeller
+                            {
+                                BuyerId = buyer.Id,
+                                SellerId = seller.Id,
+                                BookId = book.Id,
+                                DateContacted = DateTime.UtcNow.AddDays(-random.Next(1, 30)),
+                                IsActive = true
+                            });
+                        }
+                    }
+
+                    _context.ContactedSellers.AddRange(contactedSellersToCreate);
+                    await _context.SaveChangesAsync();
+                    Console.WriteLine($"Created {contactedSellersToCreate.Count} contacted seller records");
+                }
+
+                // 2. Populate RatedBooks with sample data
+                var ratedBooksCount = await _context.RatedBooks.CountAsync();
+                if (ratedBooksCount == 0)
+                {
+                    var ratedBooksToCreate = new List<RatedBook>();
+                    
+                    // Link existing ratings to rated books
+                    foreach (var rating in ratings)
+                    {
+                        ratedBooksToCreate.Add(new RatedBook
+                        {
+                            UserId = rating.RaterId,
+                            BookId = rating.BookId,
+                            RatingId = rating.Id,
+                            DateRated = rating.DateCreated,
+                            IsActive = true
+                        });
+                    }
+
+                    _context.RatedBooks.AddRange(ratedBooksToCreate);
+                    await _context.SaveChangesAsync();
+                    Console.WriteLine($"Created {ratedBooksToCreate.Count} rated book records");
+                }
+
+                // 3. Populate PromptedToRate with sample data
+                var promptedToRateCount = await _context.PromptedToRates.CountAsync();
+                if (promptedToRateCount == 0)
+                {
+                    var promptedToRateToCreate = new List<PromptedToRate>();
+                    
+                    // Create some rating prompts
+                    for (int i = 0; i < Math.Min(15, users.Count); i++)
+                    {
+                        var user = users[i % users.Count];
+                        var book = books[i % books.Count];
+                        var seller = users[(i + 2) % users.Count];
+                        
+                        // Don't prompt to rate yourself
+                        if (user.Id != seller.Id)
+                        {
+                            promptedToRateToCreate.Add(new PromptedToRate
+                            {
+                                UserId = user.Id,
+                                BookId = book.Id,
+                                SellerId = seller.Id,
+                                DatePrompted = DateTime.UtcNow.AddDays(-random.Next(1, 15)),
+                                IsActive = true
+                            });
+                        }
+                    }
+
+                    _context.PromptedToRates.AddRange(promptedToRateToCreate);
+                    await _context.SaveChangesAsync();
+                    Console.WriteLine($"Created {promptedToRateToCreate.Count} prompted to rate records");
+                }
+
+                Console.WriteLine("Tracking data population completed successfully");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error populating tracking data: {ex.Message}");
+                // Don't throw - this is not critical for migration
+            }
+        }
+
         private async Task ClearAllDataAsync()
         {
             // Clear all data in reverse order of dependencies
+            _context.PromptedToRates.RemoveRange(_context.PromptedToRates);
+            _context.RatedBooks.RemoveRange(_context.RatedBooks);
+            _context.ContactedSellers.RemoveRange(_context.ContactedSellers);
+            _context.Notifications.RemoveRange(_context.Notifications);
             _context.Ratings.RemoveRange(_context.Ratings);
             _context.Books.RemoveRange(_context.Books);
             _context.EmailVerifications.RemoveRange(_context.EmailVerifications);

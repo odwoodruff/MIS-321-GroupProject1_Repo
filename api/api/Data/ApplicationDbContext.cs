@@ -13,6 +13,10 @@ namespace api.Data
         public DbSet<User> Users { get; set; }
         public DbSet<Rating> Ratings { get; set; }
         public DbSet<EmailVerification> EmailVerifications { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
+        public DbSet<ContactedSeller> ContactedSellers { get; set; }
+        public DbSet<RatedBook> RatedBooks { get; set; }
+        public DbSet<PromptedToRate> PromptedToRates { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -32,7 +36,6 @@ namespace api.Data
                 entity.Property(e => e.SellerEmail).IsRequired().HasMaxLength(100);
                 entity.Property(e => e.CourseCode).HasMaxLength(20);
                 entity.Property(e => e.Professor).HasMaxLength(100);
-                entity.Property(e => e.ImageUrl).HasMaxLength(500);
                 entity.Property(e => e.SellerRating).HasColumnType("decimal(3,1)");
                 
                 // Add indexes for performance
@@ -114,6 +117,117 @@ namespace api.Data
                 entity.HasIndex(e => new { e.RaterId, e.RatedUserId, e.BookId })
                     .IsUnique()
                     .HasFilter("[IsActive] = 1");
+            });
+
+            // Configure Notification entity
+            modelBuilder.Entity<Notification>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Message).IsRequired().HasMaxLength(500);
+                entity.Property(e => e.Type).HasMaxLength(50).HasDefaultValue("info");
+                
+                entity.HasOne(e => e.User)
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                    
+                entity.HasOne(e => e.RelatedBook)
+                    .WithMany()
+                    .HasForeignKey(e => e.RelatedBookId)
+                    .OnDelete(DeleteBehavior.SetNull);
+                    
+                entity.HasOne(e => e.RelatedUser)
+                    .WithMany()
+                    .HasForeignKey(e => e.RelatedUserId)
+                    .OnDelete(DeleteBehavior.SetNull);
+                
+                // Add indexes for performance
+                entity.HasIndex(e => e.UserId);
+                entity.HasIndex(e => e.IsRead);
+                entity.HasIndex(e => e.DateCreated);
+            });
+
+            // Configure ContactedSeller entity
+            modelBuilder.Entity<ContactedSeller>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                
+                entity.HasOne(e => e.Buyer)
+                    .WithMany()
+                    .HasForeignKey(e => e.BuyerId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                    
+                entity.HasOne(e => e.Seller)
+                    .WithMany()
+                    .HasForeignKey(e => e.SellerId)
+                    .OnDelete(DeleteBehavior.Restrict);
+                    
+                entity.HasOne(e => e.Book)
+                    .WithMany()
+                    .HasForeignKey(e => e.BookId)
+                    .OnDelete(DeleteBehavior.Restrict);
+                
+                // Add indexes for performance
+                entity.HasIndex(e => e.BuyerId);
+                entity.HasIndex(e => e.SellerId);
+                entity.HasIndex(e => e.BookId);
+                
+                // Add unique constraint to prevent duplicate contacts
+                entity.HasIndex(e => new { e.BuyerId, e.SellerId, e.BookId })
+                    .IsUnique()
+                    .HasFilter("[IsActive] = 1");
+            });
+
+            // Configure RatedBook entity
+            modelBuilder.Entity<RatedBook>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                
+                entity.HasOne(e => e.User)
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                    
+                entity.HasOne(e => e.Book)
+                    .WithMany()
+                    .HasForeignKey(e => e.BookId)
+                    .OnDelete(DeleteBehavior.Restrict);
+                    
+                entity.HasOne(e => e.Rating)
+                    .WithMany()
+                    .HasForeignKey(e => e.RatingId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                
+                // Add indexes for performance
+                entity.HasIndex(e => e.UserId);
+                entity.HasIndex(e => e.BookId);
+                entity.HasIndex(e => e.RatingId);
+            });
+
+            // Configure PromptedToRate entity
+            modelBuilder.Entity<PromptedToRate>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                
+                entity.HasOne(e => e.User)
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                    
+                entity.HasOne(e => e.Book)
+                    .WithMany()
+                    .HasForeignKey(e => e.BookId)
+                    .OnDelete(DeleteBehavior.Restrict);
+                    
+                entity.HasOne(e => e.Seller)
+                    .WithMany()
+                    .HasForeignKey(e => e.SellerId)
+                    .OnDelete(DeleteBehavior.Restrict);
+                
+                // Add indexes for performance
+                entity.HasIndex(e => e.UserId);
+                entity.HasIndex(e => e.BookId);
+                entity.HasIndex(e => e.SellerId);
             });
         }
     }

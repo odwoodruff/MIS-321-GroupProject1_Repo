@@ -30,7 +30,6 @@ namespace api.Migrations
                     Professor = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
                     IsAvailable = table.Column<bool>(type: "INTEGER", nullable: false),
                     DatePosted = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    ImageUrl = table.Column<string>(type: "TEXT", maxLength: 500, nullable: false),
                     SellerRating = table.Column<double>(type: "decimal(3,1)", nullable: false),
                     SellerRatingCount = table.Column<int>(type: "INTEGER", nullable: false),
                     IsActive = table.Column<bool>(type: "INTEGER", nullable: false)
