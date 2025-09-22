@@ -93,10 +93,10 @@ async function handleOnLoad() {
       updateAuthUI();
       loadNotifications();
       renderNotificationsPage();
-    } else if (currentPage === "adminRatings") {
-      // If viewing admin ratings page
+    } else if (currentPage === "adminPanel") {
+      // If viewing admin panel
       updateAuthUI();
-      renderAdminRatingManagement();
+      renderAdminPanel();
     } else {
       // Normal behavior - render main app
       renderApp();
@@ -140,7 +140,7 @@ function updateAuthUI() {
   const authButtons = document.getElementById("auth-buttons");
   const userMenu = document.getElementById("user-menu");
   const userName = document.getElementById("user-name");
-  const adminRatingLink = document.getElementById("admin-rating-link");
+  const adminPanelLink = document.getElementById("admin-panel-link");
 
   if (currentUser) {
     if (authButtons) authButtons.classList.add("d-none");
@@ -148,31 +148,35 @@ function updateAuthUI() {
     if (userName) userName.textContent = currentUser.firstName;
 
     // Show admin menu items for admin users
-    if (isAdmin() && adminRatingLink) {
-      adminRatingLink.classList.remove("d-none");
-    } else if (adminRatingLink) {
-      adminRatingLink.classList.add("d-none");
+    if (isAdmin() && adminPanelLink) {
+      adminPanelLink.classList.remove("d-none");
+    } else if (adminPanelLink) {
+      adminPanelLink.classList.add("d-none");
     }
   } else {
     if (authButtons) authButtons.classList.remove("d-none");
     if (userMenu) userMenu.classList.add("d-none");
-    if (adminRatingLink) adminRatingLink.classList.add("d-none");
+    if (adminPanelLink) adminPanelLink.classList.add("d-none");
   }
 }
 
 function setupAuthEventListeners() {
-  // Login button
-  document.getElementById("loginBtn").addEventListener("click", handleLogin);
+  // Login form submission
+  document.getElementById("loginForm").addEventListener("submit", (e) => {
+    e.preventDefault(); // Prevent default form submission
+    handleLogin();
+  });
+
+  // Login button (backup)
+  document.getElementById("loginBtn").addEventListener("click", (e) => {
+    e.preventDefault(); // Prevent default button behavior
+    handleLogin();
+  });
 
   // Logout button
   document
     .getElementById("logout-link")
     .addEventListener("click", handleLogout);
-
-  // Enter key handler
-  document.getElementById("loginEmail").addEventListener("keypress", (e) => {
-    if (e.key === "Enter") handleLogin();
-  });
 }
 
 function setupScrollBehavior() {
@@ -355,6 +359,7 @@ async function verifyEmailCode(email) {
       updateAuthUI();
       loadNotifications();
       loadContactedSellers();
+      await loadBooks();
       renderApp();
 
       // Hide verification modal
@@ -412,6 +417,12 @@ function showAlert(message, type) {
 
 // API Functions
 async function loadBooks() {
+  // Don't load books if user is not authenticated
+  if (!authToken) {
+    books = [];
+    return;
+  }
+
   try {
     console.log("Loading books from:", CONFIG.API_BASE_URL);
     const url = currentSearchTerm
@@ -534,7 +545,13 @@ async function loadRatings() {
 
 async function loadAllRatings() {
   try {
-    const response = await fetch(`${CONFIG.RATING_API_URL}/ratings/all`);
+    const response = await fetch(`${CONFIG.RATING_API_URL}/ratings/all`, {
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+        "Content-Type": "application/json",
+      },
+    });
+
     if (response.ok) {
       const allRatings = await response.json();
       console.log("Raw ratings from API:", allRatings); // Debug log
@@ -543,6 +560,9 @@ async function loadAllRatings() {
       ratings = allRatings || [];
       console.log("Admin: Loaded all ratings", allRatings.length);
       console.log("Current ratings array:", ratings); // Debug log
+
+      // Update the ratings list in the admin panel
+      renderRatingsInAdminPanel();
     } else {
       console.error(
         "Failed to load ratings:",
@@ -550,11 +570,73 @@ async function loadAllRatings() {
         response.statusText
       );
       ratings = []; // Set empty array if API fails
+      showAlert("Failed to load ratings", "danger");
     }
   } catch (error) {
     console.error("Error loading all ratings:", error);
     ratings = []; // Set empty array if error occurs
+    showAlert("Error loading ratings", "danger");
   }
+}
+
+function renderRatingsInAdminPanel() {
+  const ratingsList = document.getElementById("ratingsList");
+  if (!ratingsList) return;
+
+  if (ratings.length === 0) {
+    ratingsList.innerHTML = '<p class="text-muted">No ratings found</p>';
+    return;
+  }
+
+  const ratingListHTML = ratings
+    .map(
+      (rating) => `
+    <div class="rating-item">
+      <div class="rating-content">
+        <div class="d-flex justify-content-between align-items-start">
+          <div class="flex-grow-1">
+            <div class="d-flex align-items-center mb-2">
+              <strong>Rating ID: ${rating.id}</strong>
+              <span class="badge bg-primary ms-2">${rating.score}/5 stars</span>
+            </div>
+            <div class="rating-details">
+              <p class="mb-1"><strong>Rater:</strong> User ID ${
+                rating.raterId
+              }</p>
+              <p class="mb-1"><strong>Rated User:</strong> User ID ${
+                rating.ratedUserId
+              }</p>
+              <p class="mb-1"><strong>Book ID:</strong> ${rating.bookId}</p>
+              <p class="mb-1"><strong>Date:</strong> ${new Date(
+                rating.dateCreated
+              ).toLocaleString()}</p>
+              ${
+                rating.comment
+                  ? `<p class="mb-1"><strong>Comment:</strong> ${escapeHtml(
+                      rating.comment
+                    )}</p>`
+                  : ""
+              }
+            </div>
+            <div class="rating-stars mb-2">
+              ${renderStarRating(rating.score)}
+            </div>
+          </div>
+          <div class="rating-actions">
+            <button class="btn btn-outline-primary btn-sm" onclick="editRating(${
+              rating.id
+            })">
+              <i class="bi bi-pencil"></i> Edit
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `
+    )
+    .join("");
+
+  ratingsList.innerHTML = ratingListHTML;
 }
 
 function loadContactedSellers() {
@@ -1251,6 +1333,20 @@ function renderApp() {
 }
 
 function renderBooks() {
+  // Check if user is authenticated
+  if (!authToken) {
+    return `
+      <div class="text-center py-5">
+        <i class="bi bi-lock display-1 text-muted"></i>
+        <h3 class="text-muted mt-3">Please Sign In</h3>
+        <p class="text-muted">You need to sign in to view and buy books</p>
+        <button class="btn btn-crimson" data-bs-toggle="modal" data-bs-target="#loginModal">
+          <i class="bi bi-box-arrow-in-right"></i> Sign In
+        </button>
+      </div>
+    `;
+  }
+
   if (books.length === 0) {
     return `
       <div class="text-center py-5">
@@ -1968,111 +2064,540 @@ function goBackToBooks() {
   renderApp();
 }
 
-function showAdminRatingManagement() {
+function showAdminPanel() {
   if (!isAdmin()) {
     showAlert("Access denied. Admin privileges required.", "danger");
     return;
   }
 
-  // Set page state and render admin rating management page
-  localStorage.setItem("currentPage", "adminRatings");
-  renderAdminRatingManagement();
+  // Set page state and render admin panel
+  localStorage.setItem("currentPage", "adminPanel");
+  renderAdminPanel();
 }
 
-function renderAdminRatingManagement() {
+function renderAdminPanel() {
   const app = document.getElementById("app");
   if (!app) return;
 
-  if (ratings.length === 0) {
-    app.innerHTML = `
-      <div class="container mt-4">
-        <div class="row">
-          <div class="col-12">
-            <div class="text-center py-5">
-              <i class="bi bi-star-half display-1 text-muted"></i>
-              <h3 class="text-muted mt-3">No ratings found</h3>
-              <p class="text-muted">There are no ratings to manage at this time.</p>
-              <div class="mt-3">
-                <button class="btn btn-outline-primary me-2" onclick="createSampleRatings()">
-                  <i class="bi bi-plus-circle"></i> Create Sample Ratings
-                </button>
-                <button class="btn btn-crimson" onclick="goBackToBooks()">
-                  <i class="bi bi-arrow-left"></i> Back to Books
-                </button>
+  // Create comprehensive admin panel
+  const adminPanelHTML = `
+    <div class="container mt-4">
+      <div class="row">
+        <div class="col-12">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="bi bi-gear"></i> Admin Panel</h2>
+            <button class="btn btn-outline-primary" onclick="goBackToBooks()">
+              <i class="bi bi-arrow-left"></i> Back to Books
+            </button>
+          </div>
+          
+          <!-- Admin Navigation Tabs -->
+          <ul class="nav nav-tabs mb-4" id="adminTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active" id="users-tab" data-bs-toggle="tab" data-bs-target="#users" type="button" role="tab">
+                <i class="bi bi-people"></i> Users
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="ratings-tab" data-bs-toggle="tab" data-bs-target="#ratings" type="button" role="tab">
+                <i class="bi bi-star-half"></i> Ratings
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="rate-limits-tab" data-bs-toggle="tab" data-bs-target="#rate-limits" type="button" role="tab">
+                <i class="bi bi-speedometer2"></i> Rate Limits
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="backup-tab" data-bs-toggle="tab" data-bs-target="#backup" type="button" role="tab">
+                <i class="bi bi-download"></i> Backup
+              </button>
+            </li>
+          </ul>
+
+          <!-- Tab Content -->
+          <div class="tab-content" id="adminTabContent">
+            <!-- Users Tab -->
+            <div class="tab-pane fade show active" id="users" role="tabpanel">
+              <div class="card">
+                <div class="card-header">
+                  <h5><i class="bi bi-people"></i> User Management</h5>
+                </div>
+                <div class="card-body">
+                  <div class="row mb-3">
+                    <div class="col-md-6">
+                      <button class="btn btn-primary" onclick="loadAllUsers()">
+                        <i class="bi bi-arrow-clockwise"></i> Refresh Users
+                      </button>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="input-group">
+                        <input type="text" class="form-control" id="usernameSearch" placeholder="Search by username...">
+                        <button class="btn btn-outline-secondary" onclick="searchUserByUsername()">
+                          <i class="bi bi-search"></i> Search
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <div id="usersList" class="table-responsive">
+                    <p class="text-muted">Click "Refresh Users" to load user list</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Ratings Tab -->
+            <div class="tab-pane fade" id="ratings" role="tabpanel">
+              <div class="card">
+                <div class="card-header">
+                  <h5><i class="bi bi-star-half"></i> Rating Management</h5>
+                </div>
+                <div class="card-body">
+                  <div class="mb-3">
+                    <button class="btn btn-primary" onclick="loadAllRatings()">
+                      <i class="bi bi-arrow-clockwise"></i> Refresh Ratings
+                    </button>
+                  </div>
+                  <div id="ratingsList" class="admin-ratings-container">
+                    <p class="text-muted">Click "Refresh Ratings" to load ratings</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Rate Limits Tab -->
+            <div class="tab-pane fade" id="rate-limits" role="tabpanel">
+              <div class="card">
+                <div class="card-header">
+                  <h5><i class="bi bi-speedometer2"></i> Rate Limit Management</h5>
+                </div>
+                <div class="card-body">
+                  <div class="row mb-3">
+                    <div class="col-md-6">
+                      <div class="input-group">
+                        <input type="text" class="form-control" id="rateLimitIdentifier" placeholder="User identifier (email/IP)">
+                        <button class="btn btn-outline-secondary" onclick="checkRateLimit()">
+                          <i class="bi bi-search"></i> Check Status
+                        </button>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <button class="btn btn-warning" onclick="resetRateLimit()">
+                        <i class="bi bi-arrow-clockwise"></i> Reset Rate Limit
+                      </button>
+                    </div>
+                  </div>
+                  <div id="rateLimitStatus" class="alert alert-info">
+                    <p class="mb-0">Enter an identifier above to check rate limit status</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Backup Tab -->
+            <div class="tab-pane fade" id="backup" role="tabpanel">
+              <div class="card">
+                <div class="card-header">
+                  <h5><i class="bi bi-download"></i> Backup Management</h5>
+                </div>
+                <div class="card-body">
+                  <div class="mb-3">
+                    <button class="btn btn-success" onclick="createBackup()">
+                      <i class="bi bi-plus"></i> Create Backup
+                    </button>
+                    <button class="btn btn-primary" onclick="loadBackups()">
+                      <i class="bi bi-arrow-clockwise"></i> Refresh Backups
+                    </button>
+                  </div>
+                  <div id="backupsList">
+                    <p class="text-muted">Click "Refresh Backups" to load backup list</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    `;
+    </div>
+  `;
+
+  app.innerHTML = adminPanelHTML;
+}
+
+// Admin Panel Functions
+async function loadAllUsers() {
+  try {
+    const response = await fetch(
+      `${CONFIG.API_BASE_URL.replace("/api/Book", "")}/api/Admin/users`,
+      {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const usersList = document.getElementById("usersList");
+
+    if (data.users && data.users.length > 0) {
+      const usersTable = `
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Username</th>
+              <th>Email</th>
+              <th>Name</th>
+              <th>Rating</th>
+              <th>Joined</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${data.users
+              .map(
+                (user) => `
+              <tr>
+                <td>${user.id}</td>
+                <td>${user.username}</td>
+                <td>${user.email}</td>
+                <td>${user.firstName} ${user.lastName}</td>
+                <td>${user.averageRating.toFixed(1)} (${user.ratingCount})</td>
+                <td>${new Date(user.dateCreated).toLocaleDateString()}</td>
+              </tr>
+            `
+              )
+              .join("")}
+          </tbody>
+        </table>
+        <p class="text-muted">Total users: ${data.totalCount}</p>
+      `;
+      usersList.innerHTML = usersTable;
+    } else {
+      usersList.innerHTML = '<p class="text-muted">No users found</p>';
+    }
+  } catch (error) {
+    console.error("Error loading users:", error);
+    showAlert("Failed to load users", "danger");
+  }
+}
+
+async function searchUserByUsername() {
+  const username = document.getElementById("usernameSearch").value.trim();
+  if (!username) {
+    showAlert("Please enter a username to search", "warning");
     return;
   }
 
-  const ratingList = ratings
-    .map(
-      (rating) => `
-    <div class="rating-item">
-      <div class="rating-content">
-        <div class="d-flex justify-content-between align-items-start">
-          <div class="flex-grow-1">
-            <div class="d-flex align-items-center mb-2">
-              <strong>Rating ID: ${rating.id}</strong>
-              <span class="badge bg-primary ms-2">${rating.score}/5 stars</span>
-            </div>
-            <div class="rating-details">
-              <p class="mb-1"><strong>Rater:</strong> User ID ${
-                rating.raterId
-              }</p>
-              <p class="mb-1"><strong>Rated User:</strong> User ID ${
-                rating.ratedUserId
-              }</p>
-              <p class="mb-1"><strong>Book ID:</strong> ${rating.bookId}</p>
-              <p class="mb-1"><strong>Date:</strong> ${new Date(
-                rating.dateCreated
-              ).toLocaleString()}</p>
-              ${
-                rating.comment
-                  ? `<p class="mb-1"><strong>Comment:</strong> ${escapeHtml(
-                      rating.comment
-                    )}</p>`
-                  : ""
-              }
-            </div>
-            <div class="rating-stars mb-2">
-              ${renderStarRating(rating.score)}
-            </div>
-          </div>
-          <div class="rating-actions">
-            <button class="btn btn-outline-primary btn-sm" onclick="editRating(${
-              rating.id
-            })">
-              <i class="bi bi-pencil"></i> Edit
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  `
-    )
-    .join("");
+  try {
+    const response = await fetch(
+      `${CONFIG.API_BASE_URL.replace(
+        "/api/Book",
+        ""
+      )}/api/Admin/user-by-username/${encodeURIComponent(username)}`,
+      {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
-  app.innerHTML = `
-    <div class="container mt-4">
-      <div class="row">
-        <div class="col-12">
-          <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2><i class="bi bi-star-half"></i> Rating Management (Admin)</h2>
-            <button class="btn btn-outline-crimson" onclick="goBackToBooks()">
-              <i class="bi bi-arrow-left"></i> Back to Books
-            </button>
-          </div>
-          <div class="admin-ratings-container">
-            ${ratingList}
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
+    if (!response.ok) {
+      if (response.status === 404) {
+        showAlert("User not found", "warning");
+        return;
+      }
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const user = await response.json();
+    const usersList = document.getElementById("usersList");
+
+    const userTable = `
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Name</th>
+            <th>Rating</th>
+            <th>Joined</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>${user.id}</td>
+            <td>${user.username}</td>
+            <td>${user.email}</td>
+            <td>${user.firstName} ${user.lastName}</td>
+            <td>${user.averageRating.toFixed(1)} (${user.ratingCount})</td>
+            <td>${new Date(user.dateCreated).toLocaleDateString()}</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+    usersList.innerHTML = userTable;
+  } catch (error) {
+    console.error("Error searching user:", error);
+    showAlert("Failed to search user", "danger");
+  }
+}
+
+async function checkRateLimit() {
+  const identifier = document
+    .getElementById("rateLimitIdentifier")
+    .value.trim();
+  if (!identifier) {
+    showAlert("Please enter an identifier to check", "warning");
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `${CONFIG.API_BASE_URL.replace(
+        "/api/Book",
+        ""
+      )}/api/Admin/rate-limit-status/${encodeURIComponent(identifier)}`,
+      {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const statusDiv = document.getElementById("rateLimitStatus");
+
+    const alertClass = data.isRateLimited ? "alert-danger" : "alert-success";
+    statusDiv.className = `alert ${alertClass}`;
+    statusDiv.innerHTML = `
+      <h6>Rate Limit Status for: ${data.identifier}</h6>
+      <p><strong>Is Rate Limited:</strong> ${
+        data.isRateLimited ? "Yes" : "No"
+      }</p>
+      <p><strong>Remaining Requests:</strong> ${data.remainingRequests}</p>
+    `;
+  } catch (error) {
+    console.error("Error checking rate limit:", error);
+    showAlert("Failed to check rate limit status", "danger");
+  }
+}
+
+async function resetRateLimit() {
+  const identifier = document
+    .getElementById("rateLimitIdentifier")
+    .value.trim();
+  if (!identifier) {
+    showAlert("Please enter an identifier to reset", "warning");
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `${CONFIG.API_BASE_URL.replace(
+        "/api/Book",
+        ""
+      )}/api/Admin/reset-rate-limit`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          identifier: identifier,
+          actionType: "general",
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    showAlert(data.message, "success");
+
+    // Refresh the rate limit status
+    await checkRateLimit();
+  } catch (error) {
+    console.error("Error resetting rate limit:", error);
+    showAlert("Failed to reset rate limit", "danger");
+  }
+}
+
+async function createBackup() {
+  try {
+    const response = await fetch(
+      `${CONFIG.API_BASE_URL.replace("/api/Book", "")}/api/Backup/create`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    showAlert(data.message, "success");
+
+    // Refresh the backup list
+    await loadBackups();
+  } catch (error) {
+    console.error("Error creating backup:", error);
+    showAlert("Failed to create backup", "danger");
+  }
+}
+
+async function loadBackups() {
+  try {
+    const response = await fetch(
+      `${CONFIG.API_BASE_URL.replace("/api/Book", "")}/api/Backup/list`,
+      {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const backupsList = document.getElementById("backupsList");
+
+    if (data && data.length > 0) {
+      const backupsTable = `
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>File Name</th>
+              <th>Created Date</th>
+              <th>File Size</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${data
+              .map(
+                (backup) => `
+              <tr>
+                <td>${backup.fileName}</td>
+                <td>${new Date(backup.createdDate).toLocaleString()}</td>
+                <td>${(backup.fileSize / 1024).toFixed(1)} KB</td>
+                <td>
+                  <button class="btn btn-sm btn-outline-primary" onclick="downloadBackup('${
+                    backup.fileName
+                  }')">
+                    <i class="bi bi-download"></i> Download
+                  </button>
+                  <button class="btn btn-sm btn-outline-danger" onclick="deleteBackup('${
+                    backup.fileName
+                  }')">
+                    <i class="bi bi-trash"></i> Delete
+                  </button>
+                </td>
+              </tr>
+            `
+              )
+              .join("")}
+          </tbody>
+        </table>
+      `;
+      backupsList.innerHTML = backupsTable;
+    } else {
+      backupsList.innerHTML = '<p class="text-muted">No backups found</p>';
+    }
+  } catch (error) {
+    console.error("Error loading backups:", error);
+    showAlert("Failed to load backups", "danger");
+  }
+}
+
+async function downloadBackup(fileName) {
+  try {
+    const response = await fetch(
+      `${CONFIG.API_BASE_URL.replace(
+        "/api/Book",
+        ""
+      )}/api/Backup/download/${fileName}`,
+      {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  } catch (error) {
+    console.error("Error downloading backup:", error);
+    showAlert("Failed to download backup", "danger");
+  }
+}
+
+async function deleteBackup(fileName) {
+  if (!confirm(`Are you sure you want to delete backup "${fileName}"?`)) {
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `${CONFIG.API_BASE_URL.replace(
+        "/api/Book",
+        ""
+      )}/api/Backup/delete/${fileName}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    showAlert(data.message, "success");
+
+    // Refresh the backup list
+    await loadBackups();
+  } catch (error) {
+    console.error("Error deleting backup:", error);
+    showAlert("Failed to delete backup", "danger");
+  }
 }
 
 function renderNotificationsPage() {
@@ -2175,7 +2700,8 @@ function addDevelopmentHelper() {
       <h6 style="margin: 0 0 10px 0; color: #495057;">🔧 Development Helper</h6>
       <div style="margin-bottom: 10px;">
         <button onclick="verifyAllExistingUsers()" class="btn btn-sm btn-primary" style="margin-right: 5px;">Verify All Users</button>
-        <button onclick="showExistingUsers()" class="btn btn-sm btn-info">Show Users</button>
+        <button onclick="showExistingUsers()" class="btn btn-sm btn-info" style="margin-right: 5px;">Show Users</button>
+        <button onclick="forceRemigrateData()" class="btn btn-sm btn-warning">Force Remigrate</button>
       </div>
       <div style="margin-bottom: 10px;">
         <input type="email" id="dev-email" placeholder="Enter email to verify" style="width: 100%; margin-bottom: 5px; padding: 2px 5px; font-size: 11px;">
@@ -2261,5 +2787,35 @@ async function showExistingUsers() {
   } catch (error) {
     console.error("Error loading users:", error);
     showAlert("❌ Failed to load users", "danger");
+  }
+}
+
+async function forceRemigrateData() {
+  if (!confirm("This will delete ALL data and recreate it. Are you sure?")) {
+    return;
+  }
+
+  try {
+    showAlert("🔄 Force remigrating data...", "info");
+
+    const response = await fetch(`${CONFIG.DEV_API_URL}/force-remigrate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    const result = await response.json();
+
+    if (response.ok) {
+      showAlert(`✅ ${result.message}`, "success");
+      // Refresh the page to show new data
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+    } else {
+      showAlert(`❌ ${result.message}`, "danger");
+    }
+  } catch (error) {
+    console.error("Error force remigrating:", error);
+    showAlert("❌ Failed to force remigrate data", "danger");
   }
 }

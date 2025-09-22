@@ -131,18 +131,36 @@ var app = builder.Build();
 // Ensure database is created and run data migration on startup
 using (var scope = app.Services.CreateScope())
 {
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    var loggingService = scope.ServiceProvider.GetRequiredService<LoggingService>();
+    
     try
     {
+        logger.LogInformation("Starting database initialization...");
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         await context.Database.EnsureCreatedAsync();
+        logger.LogInformation("Database created successfully");
         
         var migrationService = scope.ServiceProvider.GetRequiredService<DataMigrationService>();
         await migrationService.MigrateCsvToSqliteAsync();
+        logger.LogInformation("Data migration completed successfully");
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"Migration error: {ex.Message}");
-        // Continue with app startup even if migration fails
+        var errorMessage = $"Critical migration error: {ex.Message}";
+        logger.LogError(ex, errorMessage);
+        loggingService.LogError(errorMessage, ex);
+        
+        // For development, continue but log the issue
+        // In production, you might want to fail fast
+        if (app.Environment.IsDevelopment())
+        {
+            logger.LogWarning("Continuing startup in development mode despite migration failure");
+        }
+        else
+        {
+            logger.LogCritical("Migration failed in production - application may be in inconsistent state");
+        }
     }
 }
 

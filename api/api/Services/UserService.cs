@@ -64,6 +64,15 @@ namespace api.Services
             return await _context.Users.FirstOrDefaultAsync(u => u.Email == email && u.IsActive).ConfigureAwait(false);
         }
 
+        public async Task<List<User>> GetAllUsersAsync()
+        {
+            return await _context.Users
+                .Where(u => u.IsActive)
+                .OrderBy(u => u.Username)
+                .ToListAsync()
+                .ConfigureAwait(false);
+        }
+
         public async Task<bool> UpdateUserAsync(int id, string firstName, string lastName, string email)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id).ConfigureAwait(false);

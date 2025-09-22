@@ -799,6 +799,35 @@ namespace api.Controllers
             }
         }
 
+        [HttpPost("force-remigrate")]
+        public async Task<IActionResult> ForceRemigrate()
+        {
+            // Only allow in development
+            if (!HttpContext.RequestServices.GetRequiredService<IWebHostEnvironment>().IsDevelopment())
+            {
+                return NotFound();
+            }
+
+            try
+            {
+                var migrationService = HttpContext.RequestServices.GetRequiredService<DataMigrationService>();
+                await migrationService.ForceRemigrateWithNewDataAsync();
+
+                _loggingService.LogUserAction("DevForceRemigrate", null, 
+                    "Force re-migration completed with new data structure");
+
+                return Ok(new { 
+                    message = "Force re-migration completed successfully!",
+                    details = "Created 55+ users with random ratings across all books"
+                });
+            }
+            catch (Exception ex)
+            {
+                _loggingService.LogError("Error during force re-migration", ex);
+                return StatusCode(500, new { message = "An error occurred during force re-migration", details = ex.Message });
+            }
+        }
+
     }
 
     public class VerifyExistingUserRequest

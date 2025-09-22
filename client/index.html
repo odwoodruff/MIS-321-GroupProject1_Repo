@@ -33,13 +33,7 @@
               <i class="bi bi-geo-alt-fill me-2"></i>
               <span class="me-3">Tuscaloosa, AL</span>
               <div id="auth-buttons">
-                <button
-                  class="btn btn-primary"
-                  data-bs-toggle="modal"
-                  data-bs-target="#loginModal"
-                >
-                  <i class="bi bi-box-arrow-in-right"></i> Sign In
-                </button>
+                <!-- Sign-in button removed - now in main content area -->
               </div>
             </div>
           </div>
@@ -91,12 +85,9 @@
                       ><i class="bi bi-book"></i> My Books</a
                     >
                   </li>
-                  <li class="d-none" id="admin-rating-link">
-                    <a
-                      class="dropdown-item"
-                      href="#"
-                      onclick="showAdminRatingManagement()"
-                      ><i class="bi bi-star-half"></i> Manage Ratings</a
+                  <li class="d-none" id="admin-panel-link">
+                    <a class="dropdown-item" href="#" onclick="showAdminPanel()"
+                      ><i class="bi bi-gear"></i> Admin Panel</a
                     >
                   </li>
                   <li><hr class="dropdown-divider" /></li>
@@ -164,19 +155,19 @@
                   Must be a valid University of Alabama email address
                 </div>
               </div>
+              <div class="modal-footer">
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  data-bs-dismiss="modal"
+                >
+                  Cancel
+                </button>
+                <button type="submit" class="btn btn-primary" id="loginBtn">
+                  Sign In
+                </button>
+              </div>
             </form>
-          </div>
-          <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-secondary"
-              data-bs-dismiss="modal"
-            >
-              Cancel
-            </button>
-            <button type="button" class="btn btn-primary" id="loginBtn">
-              Sign In
-            </button>
           </div>
         </div>
       </div>
