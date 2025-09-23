@@ -25,62 +25,11 @@ function setupNotificationPolling() {
   }
 }
 
-async function loadNotifications() {
-  try {
-    if (!currentUser) return;
-
-    const response = await fetch(
-      `${CONFIG.API_BASE_URL.replace("/api/Book", "/api/Notification")}`,
-      {
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    if (response.ok) {
-      const apiNotifications = await response.json();
-      console.log("Notifications from API:", apiNotifications);
-
-      // Convert API notifications to our format
-      notifications = apiNotifications.map((notif) => ({
-        id: notif.id,
-        message: notif.message,
-        type: notif.type || "info",
-        read: notif.read || false,
-        dateCreated: notif.dateCreated,
-        relatedBookId: notif.relatedBookId,
-        relatedUserId: notif.relatedUserId,
-      }));
-
-      console.log("Converted notifications:", notifications);
-    } else {
-      console.error("Failed to load notifications:", response.status);
-      // Don't clear existing data on API failure
-    }
-  } catch (error) {
-    console.error("Error loading notifications:", error);
-    // Don't clear existing data on error
-  }
-}
+// loadNotifications() function moved to utils/helpers.js to consolidate duplicates
 
 function addNotification(notification) {
   notifications.unshift(notification);
   updateNotificationBadge();
-}
-
-function updateNotificationBadge() {
-  const unreadCount = notifications.filter((notif) => !notif.read).length;
-  const badge = document.getElementById("notificationBadge");
-  if (badge) {
-    if (unreadCount > 0) {
-      badge.textContent = unreadCount;
-      badge.style.display = "inline";
-    } else {
-      badge.style.display = "none";
-    }
-  }
 }
 
 function updateNotificationBadgeForSeller(sellerEmail) {
