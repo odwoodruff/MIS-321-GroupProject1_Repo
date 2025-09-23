@@ -1008,10 +1008,12 @@ namespace api.Controllers
                 if (userId <= 0)
                     return Unauthorized("Invalid token");
 
-                // Get seller by email
-                var seller = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.SellerEmail);
+                // Look up seller ID from email
+                var seller = await _context.Users
+                    .FirstOrDefaultAsync(u => u.Email == request.SellerEmail);
+                
                 if (seller == null)
-                    return NotFound(new { message = "Seller not found" });
+                    return BadRequest("Seller not found");
 
                 // Check if already contacted for this book
                 var existing = await _context.ContactedSellers
@@ -1163,10 +1165,12 @@ namespace api.Controllers
                 if (userId <= 0)
                     return Unauthorized("Invalid token");
 
-                // Get seller by email
-                var seller = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.SellerEmail);
+                // Look up seller ID from email
+                var seller = await _context.Users
+                    .FirstOrDefaultAsync(u => u.Email == request.SellerEmail);
+                
                 if (seller == null)
-                    return NotFound(new { message = "Seller not found" });
+                    return BadRequest("Seller not found");
 
                 // Check if already prompted for this book
                 var existing = await _context.PromptedToRates
@@ -1258,21 +1262,5 @@ namespace api.Controllers
         public string LastName { get; set; } = string.Empty;
     }
 
-    public class AddContactedSellerRequest
-    {
-        public string SellerEmail { get; set; } = string.Empty;
-        public int BookId { get; set; }
-    }
-
-    public class AddRatedBookRequest
-    {
-        public int BookId { get; set; }
-    }
-
-    public class AddPromptedToRateRequest
-    {
-        public string SellerEmail { get; set; } = string.Empty;
-        public int BookId { get; set; }
-    }
 
 }

@@ -64,6 +64,11 @@ namespace api.Services
             return await _context.Users.FirstOrDefaultAsync(u => u.Email == email && u.IsActive).ConfigureAwait(false);
         }
 
+        public async Task<User?> GetUserByIdAsync(int id)
+        {
+            return await _context.Users.FirstOrDefaultAsync(u => u.Id == id && u.IsActive).ConfigureAwait(false);
+        }
+
         public async Task<List<User>> GetAllUsersAsync()
         {
             return await _context.Users
@@ -90,6 +95,20 @@ namespace api.Services
 
             await _context.SaveChangesAsync().ConfigureAwait(false);
             return true;
+        }
+
+        public async Task<bool> UpdateUserAsync(User user)
+        {
+            try
+            {
+                _context.Users.Update(user);
+                await _context.SaveChangesAsync().ConfigureAwait(false);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
 

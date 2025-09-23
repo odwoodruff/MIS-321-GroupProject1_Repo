@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using api.Services;
 using api.Models;
 
@@ -71,6 +72,50 @@ namespace api.Controllers
             {
                 _loggingService.LogError("Error sending verification code", ex);
                 return StatusCode(500, new { message = "An error occurred while sending verification code" });
+            }
+        }
+
+        [HttpPut("update-profile")]
+        [Authorize]
+        public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest request)
+        {
+            try
+            {
+                var userId = _jwtService.GetUserIdFromToken(User);
+                if (userId <= 0)
+                    return Unauthorized("Invalid user ID");
+
+                var user = await _userService.GetUserByIdAsync(userId);
+                if (user == null)
+                    return NotFound(new { message = "User not found" });
+
+                // Update user profile
+                user.FirstName = request.FirstName;
+                user.LastName = request.LastName;
+
+                var success = await _userService.UpdateUserAsync(user);
+                if (!success)
+                    return StatusCode(500, new { message = "Failed to update profile" });
+
+                _loggingService.LogUserAction("ProfileUpdate", userId.ToString(), 
+                    $"User {user.Email} updated their profile");
+
+                return Ok(new { 
+                    message = "Profile updated successfully",
+                    user = new {
+                        id = user.Id,
+                        username = user.Username,
+                        email = user.Email,
+                        firstName = user.FirstName,
+                        lastName = user.LastName,
+                        dateCreated = user.DateCreated
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                _loggingService.LogError("Error updating user profile", ex);
+                return StatusCode(500, new { message = "An error occurred while updating profile" });
             }
         }
 
@@ -189,6 +234,12 @@ namespace api.Controllers
     {
         public string Email { get; set; } = string.Empty;
         public string Code { get; set; } = string.Empty;
+    }
+
+    public class UpdateProfileRequest
+    {
+        public string FirstName { get; set; } = string.Empty;
+        public string LastName { get; set; } = string.Empty;
     }
 
     public class CheckVerificationRequest

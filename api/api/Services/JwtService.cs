@@ -86,24 +86,20 @@ namespace api.Services
         {
             if (principal?.Identity == null || !principal.Identity.IsAuthenticated)
             {
-                Console.WriteLine("JWT: Principal or Identity is null or not authenticated");
                 return 0;
             }
 
             var userIdClaim = principal.FindFirst(ClaimTypes.NameIdentifier);
             if (userIdClaim == null)
             {
-                Console.WriteLine("JWT: NameIdentifier claim not found");
                 return 0;
             }
 
             if (int.TryParse(userIdClaim.Value, out var userId))
             {
-                Console.WriteLine($"JWT: Successfully extracted user ID: {userId}");
                 return userId;
             }
 
-            Console.WriteLine($"JWT: Failed to parse user ID: {userIdClaim.Value}");
             return 0;
         }
 

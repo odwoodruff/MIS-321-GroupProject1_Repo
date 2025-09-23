@@ -27,6 +27,10 @@ builder.Services.AddScoped<ValidationService>();
 builder.Services.AddScoped<EmailVerificationService>();
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<AdminService>();
+builder.Services.AddScoped<NotificationService>();
+builder.Services.AddScoped<ContactedSellerService>();
+builder.Services.AddScoped<PromptedToRateService>();
+builder.Services.AddScoped<RatedBookService>();
 builder.Services.AddSingleton<LoggingService>();
 builder.Services.AddScoped<BackupService>();
 builder.Services.AddSingleton<RateLimitingService>();
@@ -50,11 +54,16 @@ builder.Services.AddCors(options =>
                 "http://localhost:3000", "https://localhost:3000",
                 "http://127.0.0.1:3000", "https://127.0.0.1:3000",
                 "http://localhost:8080", "https://localhost:8080",
-                "http://127.0.0.1:8080", "https://127.0.0.1:8080"
+                "http://127.0.0.1:8080", "https://127.0.0.1:8080",
+                "http://localhost:5032", "https://localhost:5032"
             };
             
             // Allow null origin for local file:// URLs (development only)
             if (string.IsNullOrEmpty(origin) || origin == "null")
+                return true;
+                
+            // Allow any localhost origin in development
+            if (origin.StartsWith("http://localhost") || origin.StartsWith("https://localhost"))
                 return true;
                 
             return allowedOrigins.Contains(origin);

@@ -101,8 +101,7 @@ namespace api.Middleware
 
             var suspiciousPatterns = new[]
             {
-                "sqlmap", "nmap", "nikto", "w3af", "acunetix", "nessus",
-                "curl", "wget", "python-requests", "bot", "crawler", "spider"
+                "sqlmap", "nmap", "nikto", "w3af", "acunetix", "nessus"
             };
 
             var lowerUserAgent = userAgent.ToLowerInvariant();

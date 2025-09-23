@@ -44,10 +44,10 @@ namespace api.Services
             if (string.IsNullOrWhiteSpace(name))
                 return false;
 
-            // Name should only contain letters, spaces, hyphens, and apostrophes
+            // Name should only contain letters, spaces, hyphens, apostrophes, and periods
             return name.Length >= 1 && 
                    name.Length <= ValidationConstants.MaxNameLength && 
-                   name.All(c => char.IsLetter(c) || char.IsWhiteSpace(c) || c == '-' || c == '\'');
+                   name.All(c => char.IsLetter(c) || char.IsWhiteSpace(c) || c == '-' || c == '\'' || c == '.');
         }
 
         public static bool IsValidBookTitle(string title)
