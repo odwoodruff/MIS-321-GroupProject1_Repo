@@ -460,6 +460,10 @@ namespace api.Services
                 await PopulateTrackingDataAsync();
                 Console.WriteLine("Tracking data populated.");
 
+                // Create comprehensive notifications for Alex (after all data is created)
+                await CreateAlexNotificationsAsync();
+                Console.WriteLine("Alex notifications created.");
+
                 Console.WriteLine("Force re-migration completed successfully!");
             }
             catch (Exception ex)
@@ -469,7 +473,7 @@ namespace api.Services
             }
         }
 
-        private async Task EnsureAlexJohnsonDataAsync()
+        public async Task EnsureAlexJohnsonDataAsync()
         {
             try
             {
@@ -480,9 +484,11 @@ namespace api.Services
                     return;
                 }
 
-                // 1. Ensure Alex has at least 3 books
+                // 1. Always ensure Alex has books for demo (clear and recreate if needed)
                 var alexBooks = await _context.Books.Where(b => b.SellerEmail == "alex.johnson@ua.edu").ToListAsync();
-                if (alexBooks.Count < 3)
+                
+                // For demo purposes, always ensure Alex has at least 5 books
+                if (alexBooks.Count < 5)
                 {
                     var booksToCreate = new[]
                     {
@@ -572,138 +578,298 @@ namespace api.Services
                     await _context.SaveChangesAsync();
                     Console.WriteLine($"Created {booksToCreate.Length} books for Alex Johnson");
                 }
-
-                // 2. Ensure Alex has at least 3 ratings given
-                var alexRatingsGiven = await _context.Ratings.Where(r => r.RaterId == alexUser.Id).ToListAsync();
-                if (alexRatingsGiven.Count < 3)
+                else
                 {
-                    // Get other users to rate
-                    var otherUsers = await _context.Users.Where(u => u.Email != "alex.johnson@ua.edu").Take(2).ToListAsync();
-                    if (otherUsers.Count >= 2)
+                    Console.WriteLine($"Alex Johnson already has {alexBooks.Count} books");
+                }
+
+                // 2. Have Alex rate actual users who have books
+                var alexRatingsGiven = await _context.Ratings.Where(r => r.RaterId == alexUser.Id).ToListAsync();
+                if (alexRatingsGiven.Count < 4)
+                {
+                    // Get users who have books (excluding Alex)
+                    var usersWithBooks = await _context.Users
+                        .Where(u => u.Email != "alex.johnson@ua.edu" && 
+                                   _context.Books.Any(b => b.SellerEmail == u.Email))
+                        .Take(5)
+                        .ToListAsync();
+                    
+                    if (usersWithBooks.Count >= 1)
                     {
-                        var ratingsToCreate = new[]
+                        // Get books from these users
+                        var booksToRate = await _context.Books
+                            .Where(b => usersWithBooks.Select(u => u.Email).Contains(b.SellerEmail))
+                            .Take(5)
+                            .ToListAsync();
+
+                        var ratingsToCreate = new List<Rating>();
+                        var ratedBooksToCreate = new List<RatedBook>();
+
+                        for (int i = 0; i < Math.Min(4, Math.Min(usersWithBooks.Count, booksToRate.Count)); i++)
                         {
-                            new Rating
+                            var userToRate = usersWithBooks[i];
+                            var bookToRate = booksToRate[i];
+                            
+                            var rating = new Rating
                             {
                                 RaterId = alexUser.Id,
-                                RatedUserId = otherUsers[0].Id,
-                                BookId = 1,
-                                Score = 5,
-                                Comment = "Great seller! Book was exactly as described and shipped quickly.",
-                                DateCreated = DateTime.UtcNow,
+                                RatedUserId = userToRate.Id,
+                                BookId = bookToRate.Id,
+                                Score = 4 + (i % 2), // 4 or 5 stars
+                                Comment = i == 0 ? "Great seller! Book was exactly as described and shipped quickly." :
+                                         i == 1 ? "Good condition book, fair price. Would buy again." :
+                                         i == 2 ? "Excellent communication and fast delivery. Highly recommend!" :
+                                         "Professional seller, great experience overall.",
+                                DateCreated = DateTime.UtcNow.AddDays(-i),
                                 IsActive = true
-                            },
-                            new Rating
-                            {
-                                RaterId = alexUser.Id,
-                                RatedUserId = otherUsers[1].Id,
-                                BookId = 2,
-                                Score = 4,
-                                Comment = "Good condition book, fair price. Would buy again.",
-                                DateCreated = DateTime.UtcNow,
-                                IsActive = true
-                            },
-                            new Rating
-                            {
-                                RaterId = alexUser.Id,
-                                RatedUserId = otherUsers[0].Id,
-                                BookId = 3,
-                                Score = 5,
-                                Comment = "Excellent communication and fast delivery. Highly recommend!",
-                                DateCreated = DateTime.UtcNow,
-                                IsActive = true
-                            }
-                        };
+                            };
+                            
+                            ratingsToCreate.Add(rating);
+                        }
 
                         _context.Ratings.AddRange(ratingsToCreate);
                         await _context.SaveChangesAsync();
-                        Console.WriteLine($"Created {ratingsToCreate.Length} ratings from Alex Johnson");
+                        Console.WriteLine($"Created {ratingsToCreate.Count} ratings from Alex Johnson");
+
+                        // Create corresponding RatedBook records
+                        for (int i = 0; i < ratingsToCreate.Count; i++)
+                        {
+                            var ratedBook = new RatedBook
+                            {
+                                UserId = alexUser.Id,
+                                BookId = booksToRate[i].Id,
+                                RatingId = ratingsToCreate[i].Id,
+                                DateRated = ratingsToCreate[i].DateCreated,
+                                IsActive = true
+                            };
+                            ratedBooksToCreate.Add(ratedBook);
+                        }
+
+                        _context.RatedBooks.AddRange(ratedBooksToCreate);
+                        await _context.SaveChangesAsync();
+                        Console.WriteLine($"Created {ratedBooksToCreate.Count} rated book records for Alex Johnson");
                     }
                 }
 
-                // 3. Ensure Alex has notifications in SQL
-                var alexNotifications = await _context.Notifications.Where(n => n.UserId == alexUser.Id).ToListAsync();
-                if (alexNotifications.Count < 5)
+                // 3. Have Alex contact sellers of actual books
+                var alexContactedSellers = await _context.ContactedSellers.Where(cs => cs.BuyerId == alexUser.Id).ToListAsync();
+                if (alexContactedSellers.Count < 3)
                 {
-                    var notificationsToCreate = new[]
+                    // Get books from other users that Alex can contact about
+                    var booksToContact = await _context.Books
+                        .Where(b => b.SellerEmail != "alex.johnson@ua.edu" && b.IsActive)
+                        .Take(3)
+                        .ToListAsync();
+                    
+                    if (booksToContact.Count >= 3)
                     {
-                        new Notification
-                        {
-                            UserId = alexUser.Id,
-                            Message = "New book listing: 'Introduction to Computer Science' is now available",
-                            Type = "info",
-                            DateCreated = DateTime.UtcNow,
-                            IsRead = false,
-                            IsActive = true
-                        },
-                        new Notification
-                        {
-                            UserId = alexUser.Id,
-                            Message = "Book inquiry: Someone is interested in your 'Data Structures' textbook",
-                            Type = "info",
-                            DateCreated = DateTime.UtcNow,
-                            IsRead = false,
-                            IsActive = true
-                        },
-                        new Notification
-                        {
-                            UserId = alexUser.Id,
-                            Message = "Rating received: You got 5 stars for your 'Database Systems' book",
-                            Type = "success",
-                            DateCreated = DateTime.UtcNow,
-                            IsRead = false,
-                            IsActive = true
-                        },
-                        new Notification
-                        {
-                            UserId = alexUser.Id,
-                            Message = "Price update: Consider adjusting your book prices for better visibility",
-                            Type = "info",
-                            DateCreated = DateTime.UtcNow,
-                            IsRead = false,
-                            IsActive = true
-                        },
-                        new Notification
-                        {
-                            UserId = alexUser.Id,
-                            Message = "Weekly summary: 5 books listed, 2 inquiries received",
-                            Type = "info",
-                            DateCreated = DateTime.UtcNow,
-                            IsRead = false,
-                            IsActive = true
-                        },
-                        new Notification
-                        {
-                            UserId = alexUser.Id,
-                            Message = "Reminder: Update your book descriptions for better sales",
-                            Type = "warning",
-                            DateCreated = DateTime.UtcNow,
-                            IsRead = false,
-                            IsActive = true
-                        },
-                        new Notification
-                        {
-                            UserId = alexUser.Id,
-                            Message = "New message: Buyer interested in 'Machine Learning' textbook",
-                            Type = "info",
-                            DateCreated = DateTime.UtcNow,
-                            IsRead = false,
-                            IsActive = true
-                        },
-                        new Notification
-                        {
-                            UserId = alexUser.Id,
-                            Message = "System: Your book 'Software Engineering' has been viewed 15 times",
-                            Type = "info",
-                            DateCreated = DateTime.UtcNow,
-                            IsRead = false,
-                            IsActive = true
-                        }
-                    };
+                        var contactedSellersToCreate = new List<ContactedSeller>();
 
-                    _context.Notifications.AddRange(notificationsToCreate);
+                        for (int i = 0; i < booksToContact.Count; i++)
+                        {
+                            var book = booksToContact[i];
+                            var seller = await _context.Users.FirstOrDefaultAsync(u => u.Email == book.SellerEmail);
+                            
+                            if (seller != null)
+                            {
+                                var contactedSeller = new ContactedSeller
+                                {
+                                    BuyerId = alexUser.Id,
+                                    SellerId = seller.Id,
+                                    BookId = book.Id,
+                                    DateContacted = DateTime.UtcNow.AddDays(-i - 1),
+                                    IsActive = true
+                                };
+                                contactedSellersToCreate.Add(contactedSeller);
+                            }
+                        }
+
+                        _context.ContactedSellers.AddRange(contactedSellersToCreate);
+                        await _context.SaveChangesAsync();
+                        Console.WriteLine($"Created {contactedSellersToCreate.Count} contacted seller records for Alex Johnson");
+                    }
+                }
+
+                // 4. Have Alex be prompted to rate books he contacted about
+                var alexPromptedToRate = await _context.PromptedToRates.Where(ptr => ptr.UserId == alexUser.Id).ToListAsync();
+                if (alexPromptedToRate.Count < 2)
+                {
+                    // Get books Alex contacted about (from step 3)
+                    var alexContactedBooks = await _context.ContactedSellers
+                        .Where(cs => cs.BuyerId == alexUser.Id)
+                        .Select(cs => new { cs.BookId, cs.SellerId })
+                        .Take(2)
+                        .ToListAsync();
+                    
+                    if (alexContactedBooks.Count >= 2)
+                    {
+                        var promptedToRateToCreate = new List<PromptedToRate>();
+
+                        for (int i = 0; i < alexContactedBooks.Count; i++)
+                        {
+                            var contact = alexContactedBooks[i];
+                            var promptedToRate = new PromptedToRate
+                            {
+                                UserId = alexUser.Id,
+                                BookId = contact.BookId,
+                                SellerId = contact.SellerId,
+                                DatePrompted = DateTime.UtcNow.AddDays(-i - 1),
+                                IsActive = true
+                            };
+                            promptedToRateToCreate.Add(promptedToRate);
+                        }
+
+                        _context.PromptedToRates.AddRange(promptedToRateToCreate);
+                        await _context.SaveChangesAsync();
+                        Console.WriteLine($"Created {promptedToRateToCreate.Count} prompted to rate records for Alex Johnson");
+                    }
+                }
+
+                // 5. Have 4 random users contact Alex about his books
+                var alexBooksForContact = await _context.Books.Where(b => b.SellerEmail == "alex.johnson@ua.edu").ToListAsync();
+                var usersToContactAlex = await _context.Users
+                    .Where(u => u.Email != "alex.johnson@ua.edu")
+                    .Take(4)
+                    .ToListAsync();
+                
+                if (alexBooksForContact.Count > 0 && usersToContactAlex.Count >= 4)
+                {
+                    var contactsToAlex = new List<ContactedSeller>();
+                    var notificationsToAlex = new List<Notification>();
+
+                    for (int i = 0; i < 4; i++)
+                    {
+                        var book = alexBooksForContact[i % alexBooksForContact.Count];
+                        var buyer = usersToContactAlex[i];
+                        
+                        // Create contact record
+                        var contact = new ContactedSeller
+                        {
+                            BuyerId = buyer.Id,
+                            SellerId = alexUser.Id,
+                            BookId = book.Id,
+                            DateContacted = DateTime.UtcNow.AddDays(-i - 1),
+                            IsActive = true
+                        };
+                        contactsToAlex.Add(contact);
+
+                        // Create notification for Alex about the contact
+                        var notification = new Notification
+                        {
+                            UserId = alexUser.Id,
+                            Message = $"Book inquiry: {buyer.FirstName} {buyer.LastName} is interested in your '{book.Title}' textbook",
+                            Type = "info",
+                            RelatedBookId = book.Id,
+                            RelatedUserId = buyer.Id,
+                            DateCreated = DateTime.UtcNow.AddDays(-i - 1),
+                            IsRead = false,
+                            IsActive = true
+                        };
+                        notificationsToAlex.Add(notification);
+                    }
+
+                    _context.ContactedSellers.AddRange(contactsToAlex);
+                    _context.Notifications.AddRange(notificationsToAlex);
                     await _context.SaveChangesAsync();
-                    Console.WriteLine($"Created {notificationsToCreate.Length} notifications for Alex Johnson");
+                    Console.WriteLine($"Created {contactsToAlex.Count} contacts to Alex and {notificationsToAlex.Count} notifications");
+                }
+
+                // Notifications will be created separately after all data is populated
+
+                // 7. Have other users rate Alex's books (so Alex gets realistic feedback)
+                var ratingsForAlex = await _context.Ratings.Where(r => r.RatedUserId == alexUser.Id).ToListAsync();
+                if (ratingsForAlex.Count < 5)
+                {
+                    var alexBooksForRating = await _context.Books
+                        .Where(b => b.SellerEmail == "alex.johnson@ua.edu" && b.IsActive)
+                        .Take(3)
+                        .ToListAsync();
+
+                    var usersToRateAlex = await _context.Users
+                        .Where(u => u.Email != "alex.johnson@ua.edu")
+                        .Take(10)
+                        .ToListAsync();
+
+                    if (alexBooksForRating.Count > 0 && usersToRateAlex.Count >= 10)
+                    {
+                        var ratingsForAlexToCreate = new List<Rating>();
+                        var ratedBooksForAlexToCreate = new List<RatedBook>();
+
+                        // Create at least 10 ratings for Alex
+                        for (int i = 0; i < 10; i++)
+                        {
+                            var book = alexBooksForRating[i % alexBooksForRating.Count];
+                            var rater = usersToRateAlex[i % usersToRateAlex.Count];
+                            
+                            var rating = new Rating
+                            {
+                                RaterId = rater.Id,
+                                RatedUserId = alexUser.Id,
+                                BookId = book.Id,
+                                Score = 4 + (i % 2), // 4 or 5 stars
+                                Comment = i == 0 ? "Great seller! Book was exactly as described and shipped quickly." :
+                                         i == 1 ? "Good condition book, fair price. Would buy again." :
+                                         i == 2 ? "Excellent communication and fast delivery. Highly recommend!" :
+                                         i == 3 ? "Book arrived in perfect condition. Very satisfied!" :
+                                         i == 4 ? "Professional seller, great experience overall." :
+                                         i == 5 ? "Fast shipping and book was in excellent condition!" :
+                                         i == 6 ? "Great price and quick response to messages." :
+                                         i == 7 ? "Book was exactly as described, very happy with purchase." :
+                                         i == 8 ? "Smooth transaction, would definitely buy from again." :
+                                         "Outstanding seller, highly recommend to other students!",
+                                DateCreated = DateTime.UtcNow.AddDays(-i - 1),
+                                IsActive = true
+                            };
+                            
+                            ratingsForAlexToCreate.Add(rating);
+                        }
+
+                        _context.Ratings.AddRange(ratingsForAlexToCreate);
+                        await _context.SaveChangesAsync();
+
+                        // Create corresponding RatedBook records
+                        for (int i = 0; i < ratingsForAlexToCreate.Count; i++)
+                        {
+                            var ratedBook = new RatedBook
+                            {
+                                UserId = usersToRateAlex[i].Id,
+                                BookId = alexBooksForRating[i % alexBooksForRating.Count].Id,
+                                RatingId = ratingsForAlexToCreate[i].Id,
+                                DateRated = ratingsForAlexToCreate[i].DateCreated,
+                                IsActive = true
+                            };
+                            ratedBooksForAlexToCreate.Add(ratedBook);
+                        }
+
+                        _context.RatedBooks.AddRange(ratedBooksForAlexToCreate);
+                        await _context.SaveChangesAsync();
+
+                        // Update Alex's average rating
+                        var allRatingsForAlex = await _context.Ratings
+                            .Where(r => r.RatedUserId == alexUser.Id && r.IsActive)
+                            .ToListAsync();
+                        
+                        if (allRatingsForAlex.Any())
+                        {
+                            alexUser.AverageRating = (double)allRatingsForAlex.Average(r => r.Score);
+                            alexUser.RatingCount = allRatingsForAlex.Count;
+                            
+                            // Update seller ratings on Alex's books
+                            var alexBooksToUpdate = await _context.Books
+                                .Where(b => b.SellerEmail == "alex.johnson@ua.edu")
+                                .ToListAsync();
+                            
+                            foreach (var book in alexBooksToUpdate)
+                            {
+                                book.SellerRating = alexUser.AverageRating;
+                                book.SellerRatingCount = alexUser.RatingCount;
+                            }
+                            
+                            await _context.SaveChangesAsync();
+                        }
+
+                        Console.WriteLine($"Created {ratingsForAlexToCreate.Count} ratings FOR Alex Johnson from other users");
+                    }
                 }
 
                 Console.WriteLine("Alex Johnson data ensured successfully");
@@ -711,6 +877,213 @@ namespace api.Services
             catch (Exception ex)
             {
                 Console.WriteLine($"Error ensuring Alex Johnson data: {ex.Message}");
+                // Don't throw - this is not critical for migration
+            }
+        }
+
+        public async Task CreateAlexNotificationsAsync()
+        {
+            try
+            {
+                var alexUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == "alex.johnson@ua.edu");
+                if (alexUser == null)
+                {
+                    Console.WriteLine("Alex Johnson user not found, skipping notification creation");
+                    return;
+                }
+
+                // Clear existing notifications for Alex to ensure fresh unread notifications
+                var existingNotifications = await _context.Notifications.Where(n => n.UserId == alexUser.Id).ToListAsync();
+                if (existingNotifications.Any())
+                {
+                    _context.Notifications.RemoveRange(existingNotifications);
+                    await _context.SaveChangesAsync();
+                    Console.WriteLine($"Cleared {existingNotifications.Count} existing notifications for Alex Johnson");
+                }
+
+                // Get all other users for realistic notifications
+                var allOtherUsers = await _context.Users
+                    .Where(u => u.Email != "alex.johnson@ua.edu")
+                    .Take(10)
+                    .ToListAsync();
+
+                // Get Alex's books for the notifications
+                var alexBooksForNotifications = await _context.Books
+                    .Where(b => b.SellerEmail == "alex.johnson@ua.edu" && b.IsActive)
+                    .Take(5)
+                    .ToListAsync();
+
+                var notificationsToCreate = new List<Notification>();
+
+                // Add book inquiry notifications from real users about Alex's books
+                for (int i = 0; i < Math.Min(5, allOtherUsers.Count); i++)
+                {
+                    var user = allOtherUsers[i];
+                    var book = alexBooksForNotifications[i % alexBooksForNotifications.Count];
+                    
+                    notificationsToCreate.Add(new Notification
+                    {
+                        UserId = alexUser.Id,
+                        Message = $"📚 {user.FirstName} {user.LastName} is interested in your '{book.Title}' textbook",
+                        Type = "info",
+                        RelatedBookId = book.Id,
+                        RelatedUserId = user.Id,
+                        DateCreated = DateTime.UtcNow.AddDays(-i - 1),
+                        IsRead = false, // All unread for demo
+                        IsActive = true
+                    });
+                }
+
+                // Add rating notifications from real users about Alex's books
+                for (int i = 0; i < Math.Min(3, allOtherUsers.Count); i++)
+                {
+                    var user = allOtherUsers[i];
+                    var book = alexBooksForNotifications[(i + 2) % alexBooksForNotifications.Count];
+                    
+                    notificationsToCreate.Add(new Notification
+                    {
+                        UserId = alexUser.Id,
+                        Message = $"⭐ {user.FirstName} {user.LastName} rated you 5 stars for '{book.Title}' - 'Great seller!'",
+                        Type = "success",
+                        RelatedBookId = book.Id,
+                        RelatedUserId = user.Id,
+                        DateCreated = DateTime.UtcNow.AddDays(-i - 3),
+                        IsRead = false, // All unread for demo
+                        IsActive = true
+                    });
+                }
+
+                // Add system notifications (all unread for demo)
+                var systemNotifications = new[]
+                    {
+                        new Notification
+                        {
+                            UserId = alexUser.Id,
+                        Message = "🎉 Welcome to Roll Tide Books! Your account is now active.",
+                            Type = "success",
+                        DateCreated = DateTime.UtcNow.AddDays(-10),
+                        IsRead = false, // Unread for demo
+                            IsActive = true
+                        },
+                        new Notification
+                        {
+                            UserId = alexUser.Id,
+                        Message = "💡 Tip: Add detailed descriptions to your books for better visibility",
+                            Type = "info",
+                        DateCreated = DateTime.UtcNow.AddDays(-5),
+                            IsRead = false,
+                            IsActive = true
+                        },
+                        new Notification
+                        {
+                            UserId = alexUser.Id,
+                        Message = "📊 Your book listings are performing well this week!",
+                        Type = "info",
+                        DateCreated = DateTime.UtcNow.AddDays(-2),
+                        IsRead = false,
+                        IsActive = true
+                    },
+                    new Notification
+                    {
+                        UserId = alexUser.Id,
+                        Message = "🔔 New feature: You can now rate sellers after transactions",
+                            Type = "info",
+                            DateCreated = DateTime.UtcNow.AddDays(-1),
+                            IsRead = false,
+                            IsActive = true
+                    },
+                    new Notification
+                    {
+                        UserId = alexUser.Id,
+                        Message = "📈 Your seller rating has improved to 4.8/5.0!",
+                        Type = "success",
+                        DateCreated = DateTime.UtcNow.AddHours(-6),
+                        IsRead = false,
+                        IsActive = true
+                    }
+                };
+
+                notificationsToCreate.AddRange(systemNotifications);
+
+                _context.Notifications.AddRange(notificationsToCreate);
+                    await _context.SaveChangesAsync();
+                Console.WriteLine($"Created {notificationsToCreate.Count} comprehensive notifications for Alex Johnson");
+                
+                // Verify all notifications are unread
+                var unreadCount = notificationsToCreate.Count(n => !n.IsRead);
+                Console.WriteLine($"All {unreadCount} notifications created as UNREAD for demo purposes");
+
+                // Now create the actual ratings for Alex (the same users who contacted him)
+                var ratingsToCreate = new List<Rating>();
+                var ratedBooksToCreate = new List<RatedBook>();
+
+                // Create ratings from the same users who contacted Alex
+                for (int i = 0; i < Math.Min(10, allOtherUsers.Count); i++)
+                {
+                    var user = allOtherUsers[i];
+                    var book = alexBooksForNotifications[i % alexBooksForNotifications.Count];
+                    
+                    var rating = new Rating
+                    {
+                        RaterId = user.Id,
+                        RatedUserId = alexUser.Id,
+                        BookId = book.Id,
+                        Score = 4 + (i % 2), // 4 or 5 stars
+                        Comment = i == 0 ? "Great seller! Book was exactly as described and shipped quickly." :
+                                 i == 1 ? "Good condition book, fair price. Would buy again." :
+                                 i == 2 ? "Excellent communication and fast delivery. Highly recommend!" :
+                                 i == 3 ? "Book arrived in perfect condition. Very satisfied!" :
+                                 i == 4 ? "Professional seller, great experience overall." :
+                                 i == 5 ? "Fast shipping and book was in excellent condition!" :
+                                 i == 6 ? "Great price and quick response to messages." :
+                                 i == 7 ? "Book was exactly as described, very happy with purchase." :
+                                 i == 8 ? "Smooth transaction, would definitely buy from again." :
+                                 "Outstanding seller, highly recommend to other students!",
+                        DateCreated = DateTime.UtcNow.AddDays(-i - 1),
+                        IsActive = true
+                    };
+                    
+                    ratingsToCreate.Add(rating);
+                }
+
+                _context.Ratings.AddRange(ratingsToCreate);
+                await _context.SaveChangesAsync();
+
+                // Create corresponding RatedBook records
+                for (int i = 0; i < ratingsToCreate.Count; i++)
+                {
+                    var ratedBook = new RatedBook
+                    {
+                        UserId = allOtherUsers[i % allOtherUsers.Count].Id,
+                        BookId = alexBooksForNotifications[i % alexBooksForNotifications.Count].Id,
+                        RatingId = ratingsToCreate[i].Id,
+                        DateRated = ratingsToCreate[i].DateCreated,
+                        IsActive = true
+                    };
+                    ratedBooksToCreate.Add(ratedBook);
+                }
+
+                _context.RatedBooks.AddRange(ratedBooksToCreate);
+                await _context.SaveChangesAsync();
+
+                // Update Alex's average rating
+                var allRatingsForAlex = await _context.Ratings
+                    .Where(r => r.RatedUserId == alexUser.Id && r.IsActive)
+                    .ToListAsync();
+                
+                if (allRatingsForAlex.Any())
+                {
+                    alexUser.AverageRating = (double)allRatingsForAlex.Average(r => r.Score);
+                    alexUser.RatingCount = allRatingsForAlex.Count;
+                    
+                    await _context.SaveChangesAsync();
+                }
+
+                Console.WriteLine($"Created {ratingsToCreate.Count} ratings FOR Alex Johnson from other users");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error creating Alex notifications: {ex.Message}");
                 // Don't throw - this is not critical for migration
             }
         }
@@ -723,6 +1096,7 @@ namespace api.Services
                 var users = await _context.Users.Take(10).ToListAsync();
                 var books = await _context.Books.Take(10).ToListAsync();
                 var ratings = await _context.Ratings.Take(10).ToListAsync();
+                var random = new Random();
 
                 if (users.Count < 2 || books.Count < 2)
                 {

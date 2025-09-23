@@ -13,12 +13,14 @@ namespace api.Controllers
         private readonly ApplicationDbContext _context;
         private readonly EmailVerificationService _emailVerificationService;
         private readonly LoggingService _loggingService;
+        private readonly JwtService _jwtService;
 
-        public DevController(ApplicationDbContext context, EmailVerificationService emailVerificationService, LoggingService loggingService)
+        public DevController(ApplicationDbContext context, EmailVerificationService emailVerificationService, LoggingService loggingService, JwtService jwtService)
         {
             _context = context;
             _emailVerificationService = emailVerificationService;
             _loggingService = loggingService;
+            _jwtService = jwtService;
         }
 
         // Development-only endpoint to verify existing users
@@ -52,13 +54,23 @@ namespace api.Controllers
                         VerificationCode = "000000",
                         CreatedAt = DateTime.Now.AddDays(-1),
                         ExpiresAt = DateTime.Now.AddDays(1),
-                        IsUsed = true,
+                        IsUsed = false, // Must be false for verification to work
                         Attempts = 0
                     };
 
                     _context.EmailVerifications.Add(verification);
-                    await _context.SaveChangesAsync();
                 }
+                else
+                {
+                    // Update existing verification to make it usable
+                    existingVerification.VerificationCode = "000000";
+                    existingVerification.CreatedAt = DateTime.Now.AddDays(-1);
+                    existingVerification.ExpiresAt = DateTime.Now.AddDays(1);
+                    existingVerification.IsUsed = false; // Reset to unused
+                    existingVerification.Attempts = 0;
+                }
+
+                await _context.SaveChangesAsync();
 
                 _loggingService.LogUserAction("DevUserVerified", user.Id.ToString(), 
                     $"Development user {request.Email} verified for testing");
@@ -142,11 +154,21 @@ namespace api.Controllers
                             VerificationCode = "000000",
                             CreatedAt = DateTime.Now.AddDays(-1),
                             ExpiresAt = DateTime.Now.AddDays(1),
-                            IsUsed = true,
+                            IsUsed = false, // Must be false for verification to work
                             Attempts = 0
                         };
 
                         _context.EmailVerifications.Add(verification);
+                        verifiedCount++;
+                    }
+                    else
+                    {
+                        // Update existing verification to make it usable
+                        existingVerification.VerificationCode = "000000";
+                        existingVerification.CreatedAt = DateTime.Now.AddDays(-1);
+                        existingVerification.ExpiresAt = DateTime.Now.AddDays(1);
+                        existingVerification.IsUsed = false; // Reset to unused
+                        existingVerification.Attempts = 0;
                         verifiedCount++;
                     }
                 }
@@ -844,6 +866,51 @@ namespace api.Controllers
             }
         }
 
+        [HttpPost("dev-login-alex")]
+        public async Task<IActionResult> DevLoginAlex()
+        {
+            // Only allow in development
+            if (!HttpContext.RequestServices.GetRequiredService<IWebHostEnvironment>().IsDevelopment())
+            {
+                return NotFound();
+            }
+
+            try
+            {
+                var alexUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == "alex.johnson@ua.edu");
+                
+                if (alexUser == null)
+                {
+                    return NotFound(new { message = "Alex Johnson user not found. Run Force Remigrate first." });
+                }
+
+                // Generate JWT token directly
+                var jwtService = HttpContext.RequestServices.GetRequiredService<JwtService>();
+                var token = jwtService.GenerateToken(alexUser);
+
+                _loggingService.LogUserAction("DevLoginAlex", alexUser.Id.ToString(), 
+                    "Development login as Alex Johnson");
+
+                return Ok(new { 
+                    message = "Development login successful",
+                    token = token,
+                    user = new {
+                        id = alexUser.Id,
+                        username = alexUser.Username,
+                        email = alexUser.Email,
+                        firstName = alexUser.FirstName,
+                        lastName = alexUser.LastName,
+                        dateCreated = alexUser.DateCreated
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                _loggingService.LogError("Error during dev login as Alex", ex);
+                return StatusCode(500, new { message = "An error occurred during dev login", details = ex.Message });
+            }
+        }
+
         [HttpPost("force-remigrate")]
         public async Task<IActionResult> ForceRemigrate()
         {
@@ -873,6 +940,297 @@ namespace api.Controllers
             }
         }
 
+        [HttpPost("force-alex-data")]
+        public async Task<IActionResult> ForceAlexData()
+        {
+            // Only allow in development
+            if (!HttpContext.RequestServices.GetRequiredService<IWebHostEnvironment>().IsDevelopment())
+            {
+                return NotFound();
+            }
+
+            try
+            {
+                var migrationService = HttpContext.RequestServices.GetRequiredService<DataMigrationService>();
+                await migrationService.EnsureAlexJohnsonDataAsync();
+                await migrationService.CreateAlexNotificationsAsync();
+
+                _loggingService.LogUserAction("DevForceAlexData", null, 
+                    "Force recreated Alex Johnson demo data");
+
+                return Ok(new { 
+                    message = "Alex Johnson demo data force recreated successfully!",
+                    details = "Books, notifications, and ratings recreated for demo purposes"
+                });
+            }
+            catch (Exception ex)
+            {
+                _loggingService.LogError("Error during force Alex data recreation", ex);
+                return StatusCode(500, new { message = "An error occurred during Alex data recreation", details = ex.Message });
+            }
+        }
+
+        [HttpGet("contacted-sellers")]
+        public async Task<IActionResult> GetContactedSellers()
+        {
+            try
+            {
+                var userId = _jwtService.GetUserIdFromToken(User);
+                if (userId <= 0)
+                    return Unauthorized("Invalid token");
+
+                var contactedSellers = await _context.ContactedSellers
+                    .Where(cs => cs.BuyerId == userId && cs.IsActive)
+                    .Include(cs => cs.Seller)
+                    .Include(cs => cs.Buyer)
+                    .Select(cs => new { 
+                        sellerEmail = cs.Seller.Email,
+                        bookId = cs.BookId,
+                        contactKey = $"{cs.Buyer.Email}-{cs.Seller.Email}-{cs.BookId}"
+                    })
+                    .ToListAsync();
+
+                return Ok(contactedSellers.Select(cs => cs.contactKey).ToList());
+            }
+            catch (Exception ex)
+            {
+                _loggingService.LogError("Error retrieving contacted sellers", ex);
+                return StatusCode(500, new { message = "An error occurred while retrieving contacted sellers", details = ex.Message });
+            }
+        }
+
+        [HttpPost("contacted-sellers")]
+        public async Task<IActionResult> AddContactedSeller([FromBody] AddContactedSellerRequest request)
+        {
+            try
+            {
+                var userId = _jwtService.GetUserIdFromToken(User);
+                if (userId <= 0)
+                    return Unauthorized("Invalid token");
+
+                // Get seller by email
+                var seller = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.SellerEmail);
+                if (seller == null)
+                    return NotFound(new { message = "Seller not found" });
+
+                // Check if already contacted for this book
+                var existing = await _context.ContactedSellers
+                    .FirstOrDefaultAsync(cs => cs.BuyerId == userId && cs.SellerId == seller.Id && cs.BookId == request.BookId);
+
+                if (existing == null)
+                {
+                    var contactedSeller = new ContactedSeller
+                    {
+                        BuyerId = userId,
+                        SellerId = seller.Id,
+                        BookId = request.BookId,
+                        DateContacted = DateTime.UtcNow,
+                        IsActive = true
+                    };
+
+                    _context.ContactedSellers.Add(contactedSeller);
+                    await _context.SaveChangesAsync();
+                }
+
+                return Ok(new { message = "Seller added to contacted list" });
+            }
+            catch (Exception ex)
+            {
+                _loggingService.LogError("Error adding contacted seller", ex);
+                return StatusCode(500, new { message = "An error occurred while adding contacted seller", details = ex.Message });
+            }
+        }
+
+        [HttpDelete("contacted-sellers")]
+        public async Task<IActionResult> ClearContactedSellers()
+        {
+            try
+            {
+                var userId = _jwtService.GetUserIdFromToken(User);
+                if (userId <= 0)
+                    return Unauthorized("Invalid token");
+
+                var contactedSellers = await _context.ContactedSellers
+                    .Where(cs => cs.BuyerId == userId)
+                    .ToListAsync();
+
+                _context.ContactedSellers.RemoveRange(contactedSellers);
+                await _context.SaveChangesAsync();
+
+                return Ok(new { message = "Contacted sellers cleared" });
+            }
+            catch (Exception ex)
+            {
+                _loggingService.LogError("Error clearing contacted sellers", ex);
+                return StatusCode(500, new { message = "An error occurred while clearing contacted sellers", details = ex.Message });
+            }
+        }
+
+        [HttpGet("rated-books")]
+        public async Task<IActionResult> GetRatedBooks()
+        {
+            try
+            {
+                var userId = _jwtService.GetUserIdFromToken(User);
+                if (userId <= 0)
+                    return Unauthorized("Invalid token");
+
+                var ratedBooks = await _context.Ratings
+                    .Where(r => r.RaterId == userId && r.IsActive)
+                    .Include(r => r.Rater)
+                    .Include(r => r.RatedUser)
+                    .Select(r => new { 
+                        raterEmail = r.Rater.Email,
+                        sellerEmail = r.RatedUser.Email,
+                        bookId = r.BookId,
+                        ratingKey = $"{r.Rater.Email}-{r.RatedUser.Email}-{r.BookId}"
+                    })
+                    .ToListAsync();
+
+                return Ok(ratedBooks.Select(rb => rb.ratingKey).ToList());
+            }
+            catch (Exception ex)
+            {
+                _loggingService.LogError("Error retrieving rated books", ex);
+                return StatusCode(500, new { message = "An error occurred while retrieving rated books", details = ex.Message });
+            }
+        }
+
+        [HttpPost("rated-books")]
+        public async Task<IActionResult> AddRatedBook([FromBody] AddRatedBookRequest request)
+        {
+            try
+            {
+                var userId = _jwtService.GetUserIdFromToken(User);
+                if (userId <= 0)
+                    return Unauthorized("Invalid token");
+
+                // Check if already rated
+                var existing = await _context.Ratings
+                    .FirstOrDefaultAsync(r => r.RaterId == userId && r.BookId == request.BookId);
+
+                if (existing == null)
+                {
+                    // This would typically be handled by the rating creation endpoint
+                    return BadRequest("Use the rating creation endpoint to add rated books");
+                }
+
+                return Ok(new { message = "Book already rated" });
+            }
+            catch (Exception ex)
+            {
+                _loggingService.LogError("Error adding rated book", ex);
+                return StatusCode(500, new { message = "An error occurred while adding rated book", details = ex.Message });
+            }
+        }
+
+        [HttpGet("prompted-to-rate")]
+        public async Task<IActionResult> GetPromptedToRate()
+        {
+            try
+            {
+                var userId = _jwtService.GetUserIdFromToken(User);
+                if (userId <= 0)
+                    return Unauthorized("Invalid token");
+
+                var promptedToRate = await _context.PromptedToRates
+                    .Where(ptr => ptr.UserId == userId && ptr.IsActive)
+                    .Include(ptr => ptr.User)
+                    .Include(ptr => ptr.Seller)
+                    .Select(ptr => new { 
+                        userEmail = ptr.User.Email,
+                        sellerEmail = ptr.Seller.Email,
+                        bookId = ptr.BookId,
+                        promptKey = $"{ptr.User.Email}-{ptr.Seller.Email}-{ptr.BookId}"
+                    })
+                    .ToListAsync();
+
+                return Ok(promptedToRate.Select(ptr => ptr.promptKey).ToList());
+            }
+            catch (Exception ex)
+            {
+                _loggingService.LogError("Error retrieving prompted to rate", ex);
+                return StatusCode(500, new { message = "An error occurred while retrieving prompted to rate", details = ex.Message });
+            }
+        }
+
+        [HttpPost("prompted-to-rate")]
+        public async Task<IActionResult> AddPromptedToRate([FromBody] AddPromptedToRateRequest request)
+        {
+            try
+            {
+                var userId = _jwtService.GetUserIdFromToken(User);
+                if (userId <= 0)
+                    return Unauthorized("Invalid token");
+
+                // Get seller by email
+                var seller = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.SellerEmail);
+                if (seller == null)
+                    return NotFound(new { message = "Seller not found" });
+
+                // Check if already prompted for this book
+                var existing = await _context.PromptedToRates
+                    .FirstOrDefaultAsync(ptr => ptr.UserId == userId && ptr.SellerId == seller.Id && ptr.BookId == request.BookId);
+
+                if (existing == null)
+                {
+                    var promptedToRate = new PromptedToRate
+                    {
+                        UserId = userId,
+                        SellerId = seller.Id,
+                        BookId = request.BookId,
+                        DatePrompted = DateTime.UtcNow,
+                        IsActive = true
+                    };
+
+                    _context.PromptedToRates.Add(promptedToRate);
+                    await _context.SaveChangesAsync();
+                }
+
+                return Ok(new { message = "Prompted to rate added" });
+            }
+            catch (Exception ex)
+            {
+                _loggingService.LogError("Error adding prompted to rate", ex);
+                return StatusCode(500, new { message = "An error occurred while adding prompted to rate", details = ex.Message });
+            }
+        }
+
+        [HttpPost("test-alex-data")]
+        public async Task<IActionResult> TestAlexData()
+        {
+            try
+            {
+                var alexUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == "alex.johnson@ua.edu");
+                if (alexUser == null)
+                {
+                    return NotFound(new { message = "Alex Johnson user not found" });
+                }
+
+                var alexBooks = await _context.Books.Where(b => b.SellerEmail == "alex.johnson@ua.edu").ToListAsync();
+                var alexNotifications = await _context.Notifications.Where(n => n.UserId == alexUser.Id).ToListAsync();
+                var ratingsForAlex = await _context.Ratings.Where(r => r.RatedUserId == alexUser.Id).ToListAsync();
+                var ratingsByAlex = await _context.Ratings.Where(r => r.RaterId == alexUser.Id).ToListAsync();
+
+                return Ok(new
+                {
+                    alexUser = new { id = alexUser.Id, email = alexUser.Email, firstName = alexUser.FirstName, lastName = alexUser.LastName },
+                    booksCount = alexBooks.Count,
+                    books = alexBooks.Select(b => new { id = b.Id, title = b.Title, price = b.Price }).ToList(),
+                    notificationsCount = alexNotifications.Count,
+                    notifications = alexNotifications.Select(n => new { id = n.Id, message = n.Message, isRead = n.IsRead, dateCreated = n.DateCreated }).ToList(),
+                    ratingsForAlexCount = ratingsForAlex.Count,
+                    ratingsByAlexCount = ratingsByAlex.Count,
+                    ratingsForAlex = ratingsForAlex.Select(r => new { id = r.Id, score = r.Score, comment = r.Comment, raterId = r.RaterId }).ToList(),
+                    ratingsByAlex = ratingsByAlex.Select(r => new { id = r.Id, score = r.Score, comment = r.Comment, ratedUserId = r.RatedUserId }).ToList()
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error testing Alex data", error = ex.Message });
+            }
+        }
+
     }
 
     public class VerifyExistingUserRequest
@@ -898,6 +1256,23 @@ namespace api.Controllers
         public string Email { get; set; } = string.Empty;
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
+    }
+
+    public class AddContactedSellerRequest
+    {
+        public string SellerEmail { get; set; } = string.Empty;
+        public int BookId { get; set; }
+    }
+
+    public class AddRatedBookRequest
+    {
+        public int BookId { get; set; }
+    }
+
+    public class AddPromptedToRateRequest
+    {
+        public string SellerEmail { get; set; } = string.Empty;
+        public int BookId { get; set; }
     }
 
 }
