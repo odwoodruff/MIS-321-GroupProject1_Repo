@@ -118,6 +118,16 @@ function getNotificationsForUser(userEmail) {
   return [];
 }
 
+function initializeTooltips() {
+  // Initialize Bootstrap tooltips for condition badges
+  const tooltipTriggerList = [].slice.call(
+    document.querySelectorAll('[data-bs-toggle="tooltip"]')
+  );
+  tooltipTriggerList.map(function (tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl);
+  });
+}
+
 // Development Helper Functions
 function addDevelopmentHelper() {
   // Add development panel to the page
@@ -295,5 +305,273 @@ async function forceMigrateData() {
   } catch (error) {
     console.error("Error force migrating data:", error);
     showAlert("Error force migrating data", "danger");
+  }
+}
+
+async function setupAlexJohnsonData() {
+  let originalToken = null;
+  try {
+    console.log("Setting up Alex Johnson data...");
+
+    // First, login as alex.johnson@ua.edu to get proper auth headers
+    const loginResponse = await fetch(`${CONFIG.API_BASE_URL}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: "alex.johnson@ua.edu",
+        password: "password123", // Assuming default password
+      }),
+    });
+
+    if (!loginResponse.ok) {
+      console.warn(
+        "Could not login as alex.johnson@ua.edu, using current auth"
+      );
+    } else {
+      const loginResult = await loginResponse.json();
+      // Store the token temporarily for this operation
+      originalToken = localStorage.getItem("authToken");
+      localStorage.setItem("authToken", loginResult.token);
+    }
+
+    // 1. Add AT LEAST 3 book entries for alex.johnson@ua.edu
+    const alexBooks = [
+      {
+        title: "Introduction to Computer Science",
+        author: "John Smith",
+        isbn: "978-0123456789",
+        price: 45.99,
+        condition: "Good",
+        description: "Used textbook with some highlighting",
+        sellerEmail: "alex.johnson@ua.edu",
+      },
+      {
+        title: "Data Structures and Algorithms",
+        author: "Jane Doe",
+        isbn: "978-0987654321",
+        price: 65.5,
+        condition: "Excellent",
+        description: "Like new condition, no marks",
+        sellerEmail: "alex.johnson@ua.edu",
+      },
+      {
+        title: "Database Systems",
+        author: "Bob Wilson",
+        isbn: "978-1122334455",
+        price: 55.0,
+        condition: "Fair",
+        description: "Some wear but all pages intact",
+        sellerEmail: "alex.johnson@ua.edu",
+      },
+      {
+        title: "Software Engineering Principles",
+        author: "Alice Johnson",
+        isbn: "978-1234567890",
+        price: 75.0,
+        condition: "Good",
+        description: "Well-maintained textbook with minimal wear",
+        sellerEmail: "alex.johnson@ua.edu",
+      },
+      {
+        title: "Machine Learning Fundamentals",
+        author: "David Brown",
+        isbn: "978-2345678901",
+        price: 85.0,
+        condition: "Excellent",
+        description: "Brand new condition, never used",
+        sellerEmail: "alex.johnson@ua.edu",
+      },
+    ];
+
+    let booksCreated = 0;
+    for (const book of alexBooks) {
+      try {
+        const bookResponse = await fetch(`${CONFIG.API_BASE_URL}/books`, {
+          method: "POST",
+          headers: getAuthHeaders(),
+          body: JSON.stringify(book),
+        });
+        if (bookResponse.ok) {
+          booksCreated++;
+          console.log(`✅ Created book: ${book.title}`);
+        } else {
+          console.warn(`❌ Failed to create book: ${book.title}`);
+        }
+      } catch (error) {
+        console.warn(`❌ Error creating book ${book.title}:`, error);
+      }
+    }
+
+    // 2. Add 6+ notifications for alex.johnson@ua.edu
+    const notifications = [
+      "New book listing: 'Introduction to Computer Science' is now available",
+      "Book inquiry: Someone is interested in your 'Data Structures' textbook",
+      "Rating received: You got 5 stars for your 'Database Systems' book",
+      "Price update: Consider adjusting your book prices for better visibility",
+      "Weekly summary: 5 books listed, 2 inquiries received",
+      "Reminder: Update your book descriptions for better sales",
+      "New message: Buyer interested in 'Machine Learning' textbook",
+      "System: Your book 'Software Engineering' has been viewed 15 times",
+    ];
+
+    let notificationsCreated = 0;
+    for (const message of notifications) {
+      try {
+        const notifResponse = await fetch(
+          `${CONFIG.API_BASE_URL}/notifications`,
+          {
+            method: "POST",
+            headers: getAuthHeaders(),
+            body: JSON.stringify({
+              userId: "alex.johnson@ua.edu",
+              message: message,
+              type: "info",
+            }),
+          }
+        );
+        if (notifResponse.ok) {
+          notificationsCreated++;
+        } else {
+          console.warn(`❌ Failed to create notification: ${message}`);
+        }
+      } catch (error) {
+        console.warn(`❌ Error creating notification:`, error);
+      }
+    }
+
+    // 3. Add AT LEAST 3 ratings from alex.johnson@ua.edu
+    const alexRatings = [
+      {
+        ratedUserId: "sarah.williams@ua.edu",
+        bookId: 1,
+        score: 5,
+        comment:
+          "Great seller! Book was exactly as described and shipped quickly.",
+      },
+      {
+        ratedUserId: "ccsmith33@crimson.ua.edu",
+        bookId: 2,
+        score: 4,
+        comment: "Good condition book, fair price. Would buy again.",
+      },
+      {
+        ratedUserId: "sarah.williams@ua.edu",
+        bookId: 3,
+        score: 5,
+        comment: "Excellent communication and fast delivery. Highly recommend!",
+      },
+      {
+        ratedUserId: "ccsmith33@crimson.ua.edu",
+        bookId: 4,
+        score: 3,
+        comment: "Book was okay, some highlighting as described.",
+      },
+    ];
+
+    let ratingsCreated = 0;
+    for (const rating of alexRatings) {
+      try {
+        await submitRating(
+          rating.ratedUserId,
+          rating.bookId,
+          rating.score,
+          rating.comment
+        );
+        ratingsCreated++;
+        console.log(`✅ Created rating for user ${rating.ratedUserId}`);
+      } catch (error) {
+        console.warn(`❌ Error creating rating:`, error);
+      }
+    }
+
+    console.log(`Alex Johnson data setup complete!`);
+    console.log(`📚 Books created: ${booksCreated}/${alexBooks.length}`);
+    console.log(
+      `🔔 Notifications created: ${notificationsCreated}/${notifications.length}`
+    );
+    console.log(`⭐ Ratings created: ${ratingsCreated}/${alexRatings.length}`);
+
+    // Show summary alert
+    showAlert(
+      `Alex Johnson setup complete! Books: ${booksCreated}, Notifications: ${notificationsCreated}, Ratings: ${ratingsCreated}`,
+      "success"
+    );
+  } catch (error) {
+    console.error("Error setting up Alex Johnson data:", error);
+    showAlert(
+      "❌ Error setting up Alex Johnson data: " + error.message,
+      "danger"
+    );
+  } finally {
+    // Restore original auth token if we changed it
+    if (originalToken !== null) {
+      localStorage.setItem("authToken", originalToken);
+    }
+  }
+}
+
+async function forceAlexData() {
+  try {
+    const response = await fetch(`${CONFIG.DEV_API_URL}/force-alex-data`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    const result = await response.json();
+
+    if (response.ok) {
+      showAlert(`✅ ${result.message}`, "success");
+      // Auto-test the data after forcing recreation
+      setTimeout(() => {
+        testAlexData();
+      }, 1000);
+    } else {
+      showAlert(`❌ ${result.message}`, "danger");
+    }
+  } catch (error) {
+    console.error("Error forcing Alex data:", error);
+    showAlert("❌ Failed to force Alex data", "danger");
+  }
+}
+
+async function showExistingUsers() {
+  try {
+    const response = await fetch(`${CONFIG.DEV_API_URL}/existing-users`);
+    const users = await response.json();
+
+    if (response.ok) {
+      // Separate admin and regular users
+      const adminEmails = ["ccsmith33@crimson.ua.edu", "dev@crimson.ua.edu"];
+      const adminUsers = users.filter((u) => adminEmails.includes(u.email));
+      const regularUsers = users.filter((u) => !adminEmails.includes(u.email));
+
+      // Format admin users with special styling
+      const adminList = adminUsers
+        .map(
+          (u) =>
+            `👑 <strong>${u.email}</strong> (${u.firstName} ${u.lastName}) - <span class="text-danger">ADMIN</span>`
+        )
+        .join("<br>");
+
+      // Format regular users
+      const regularList = regularUsers
+        .map((u) => `${u.email} (${u.firstName} ${u.lastName})`)
+        .join("<br>");
+
+      // Combine admin and regular users
+      const fullUserList =
+        adminList + (adminList && regularList ? "<br><br>" : "") + regularList;
+
+      // Create a persistent modal instead of using showAlert
+      showPersistentModal(
+        "Existing Users",
+        `<strong>Existing Users:</strong><br><br>${fullUserList}`
+      );
+    } else {
+      showAlert("❌ Failed to load users", "danger");
+    }
+  } catch (error) {
+    console.error("Error loading users:", error);
+    showAlert("❌ Failed to load users", "danger");
   }
 }

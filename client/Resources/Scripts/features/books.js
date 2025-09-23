@@ -1,43 +1,16 @@
 // Book-related functions
 
-// Book rendering and management
-function renderApp() {
-  console.log("Rendering app with books:", books);
-  const app = document.getElementById("app");
-  if (!app) return;
-
-  const currentPage = localStorage.getItem("currentPage");
-  console.log("Current page:", currentPage);
-
-  if (currentPage === "myBooks") {
-    renderMyBooksPage();
-  } else if (currentPage === "contactedBooks") {
-    renderContactedBooksPage();
-  } else if (currentPage === "myRatings") {
-    renderMyRatingsPage();
-  } else if (currentPage === "notifications") {
-    showNotifications();
-  } else if (currentPage === "admin") {
-    showAdminPanel();
-  } else if (currentPage === "profile") {
-    showProfile();
-  } else {
-    renderBooks();
-  }
-}
-
 function renderBooks() {
   // Check if user is authenticated
   if (!currentUser) {
     document.getElementById("app").innerHTML = `
-      <div class="container mt-4">
-        <div class="row justify-content-center">
-          <div class="col-md-8 text-center">
-            <h2>Welcome to Roll Tide Books</h2>
-            <p class="lead">Please sign in to view and manage books</p>
-            <button class="btn btn-primary" onclick="showLoginForm()">Sign In</button>
-          </div>
-        </div>
+      <div class="text-center py-5">
+        <i class="bi bi-lock display-1 text-muted"></i>
+        <h3 class="text-muted mt-3">Please Sign In</h3>
+        <p class="text-muted">You need to sign in to view and buy books</p>
+        <button class="btn btn-crimson" data-bs-toggle="modal" data-bs-target="#loginModal">
+          <i class="bi bi-box-arrow-in-right"></i> Sign In
+        </button>
       </div>
     `;
     return;
@@ -251,43 +224,6 @@ function handleAdClick(adNumber) {
     "Advertisement",
     `This is a placeholder for advertisement #${adNumber}. In a real application, this would link to the advertiser's website or show more details.`
   );
-}
-
-function showCustomAlert(title, message) {
-  // Create custom modal
-  const modalHtml = `
-    <div class="modal fade" id="customAlertModal" tabindex="-1">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">${title}</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-          </div>
-          <div class="modal-body">
-            <p>${message}</p>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
-
-  // Remove existing modal if any
-  const existingModal = document.getElementById("customAlertModal");
-  if (existingModal) {
-    existingModal.remove();
-  }
-
-  // Add modal to DOM
-  document.body.insertAdjacentHTML("beforeend", modalHtml);
-
-  // Show modal
-  const modal = new bootstrap.Modal(
-    document.getElementById("customAlertModal")
-  );
-  modal.show();
 }
 
 // Book form functions
@@ -585,17 +521,21 @@ function filterByCourse(courseFilter = null) {
   renderApp();
 }
 
-function getUniqueCourses() {
-  return [
-    ...new Set(books.map((book) => book.courseCode).filter((code) => code)),
-  ];
-}
-
-let selectedCourse = "";
+// selectedCourse is declared in main.js
 
 async function selectCourse(course) {
   selectedCourse = course;
-  document.getElementById("course-filter").value = course;
+
+  // Update UI
+  const courseButton = document.getElementById("courseDropdown");
+
+  if (course) {
+    courseButton.innerHTML = `<span class="badge bg-secondary me-2">${course}</span><span id="courseText">Select Course</span>`;
+  } else {
+    courseButton.innerHTML = `<span id="courseText">Select Course</span>`;
+  }
+
+  // Re-render the books with the new filter
   renderApp();
 }
 
@@ -612,7 +552,8 @@ function filterCourses() {
 
 async function clearCourseSelection() {
   selectedCourse = "";
-  document.getElementById("course-filter").value = "";
+  const courseButton = document.getElementById("courseDropdown");
+  courseButton.innerHTML = `<span id="courseText">Select Course</span>`;
   renderApp();
 }
 
@@ -703,7 +644,4 @@ function renderMyBooksPage() {
   updateNavigationState("myBooks");
 }
 
-function goBackToBooks() {
-  localStorage.removeItem("currentPage");
-  renderApp();
-}
+// goBackToBooks is defined in navigation.js

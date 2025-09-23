@@ -160,20 +160,37 @@ function updateAuthUI() {
 }
 
 function setupAuthEventListeners() {
+  // Create the login modal first so it's available for Bootstrap data attributes
+  createLoginModal();
+
   // Login form submission
-  document.getElementById("loginForm").addEventListener("submit", (e) => {
-    e.preventDefault(); // Prevent default form submission
-    handleLogin();
-  });
+  const loginForm = document.getElementById("loginForm");
+  if (loginForm) {
+    loginForm.addEventListener("submit", (e) => {
+      e.preventDefault(); // Prevent default form submission
+      handleLogin();
+    });
+  }
 
-  // Sign up form submission
-  document.getElementById("signupForm").addEventListener("submit", (e) => {
-    e.preventDefault(); // Prevent default form submission
-    handleSignup();
-  });
+  // Logout link (if it exists)
+  const logoutLink = document.getElementById("logout-link");
+  if (logoutLink) {
+    logoutLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      logout();
+    });
+  }
+}
 
-  // Logout button
-  document.getElementById("logout-btn").addEventListener("click", logout);
+// Set up signup form event listener when signup modal is created
+function setupSignupEventListeners() {
+  const signupForm = document.getElementById("signupForm");
+  if (signupForm) {
+    signupForm.addEventListener("submit", (e) => {
+      e.preventDefault(); // Prevent default form submission
+      handleSignup();
+    });
+  }
 }
 
 // Logout function
@@ -466,5 +483,97 @@ async function submitNameCollection() {
   } catch (error) {
     console.error("Error updating profile:", error);
     showAlert("Failed to update profile. Please try again.", "danger");
+  }
+}
+
+// Additional functions that are referenced across modules
+async function handleLogin() {
+  const email = document.getElementById("loginEmail").value.trim();
+  const password = document.getElementById("loginPassword").value;
+
+  if (!email || !password) {
+    showAlert("Please fill in all fields", "warning");
+    return;
+  }
+
+  try {
+    const response = await fetch(`${CONFIG.AUTH_API_URL}/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: email,
+        password: password,
+      }),
+    });
+
+    if (response.ok) {
+      const result = await response.json();
+      if (result.requiresVerification) {
+        showVerificationModal(email, result.verificationCode);
+      } else {
+        // Direct login success
+        currentUser = result.user;
+        authToken = result.token;
+        localStorage.setItem("currentUser", JSON.stringify(currentUser));
+        localStorage.setItem("authToken", authToken);
+        updateAuthUI();
+        await loadBooks();
+        renderApp();
+        showAlert("Login successful!", "success");
+      }
+    } else {
+      const errorData = await response.json();
+      showAlert(errorData.message || "Login failed", "danger");
+    }
+  } catch (error) {
+    console.error("Error during login:", error);
+    showAlert("Login failed. Please try again.", "danger");
+  }
+}
+
+async function handleSignup() {
+  const email = document.getElementById("signupEmail").value.trim();
+  const password = document.getElementById("signupPassword").value;
+  const confirmPassword = document.getElementById("confirmPassword").value;
+
+  if (!email || !password || !confirmPassword) {
+    showAlert("Please fill in all fields", "warning");
+    return;
+  }
+
+  if (password !== confirmPassword) {
+    showAlert("Passwords do not match", "warning");
+    return;
+  }
+
+  if (password.length < 6) {
+    showAlert("Password must be at least 6 characters long", "warning");
+    return;
+  }
+
+  try {
+    const response = await fetch(`${CONFIG.AUTH_API_URL}/register`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: email,
+        password: password,
+      }),
+    });
+
+    if (response.ok) {
+      const result = await response.json();
+      showVerificationModal(email, result.verificationCode);
+    } else {
+      const errorData = await response.json();
+      showAlert(errorData.message || "Registration failed", "danger");
+    }
+  } catch (error) {
+    console.error("Error during registration:", error);
+    showAlert("Registration failed. Please try again.", "danger");
   }
 }

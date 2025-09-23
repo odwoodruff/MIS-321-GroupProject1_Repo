@@ -11905,3 +11905,15 @@
 {"Timestamp":"2025-09-23T16:09:49.1525706Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":200,"DurationMs":0,"UserId":null,"Severity":"Info"}
 {"Timestamp":"2025-09-23T16:09:49.1580275Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
 {"Timestamp":"2025-09-23T16:09:49.1587206Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":200,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-23T16:46:07.0481362Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-23T16:46:07.0951978Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":200,"DurationMs":48,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-23T16:46:07.8474011Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-23T16:46:07.8498233Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":200,"DurationMs":2,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-23T16:46:09.2565274Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-23T16:46:09.2607555Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":200,"DurationMs":4,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-23T16:46:11.8566089Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-23T16:46:11.8576844Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":200,"DurationMs":1,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-23T16:48:56.7192679Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-23T16:48:56.7211007Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":200,"DurationMs":1,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-23T16:50:44.292789Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-23T16:50:44.2937944Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":200,"DurationMs":1,"UserId":null,"Severity":"Info"}

@@ -40,27 +40,6 @@ async function loadMyRatings() {
   }
 }
 
-async function loadAllRatings() {
-  try {
-    const response = await fetch(`${CONFIG.RATING_API_URL}/ratings/all`, {
-      headers: {
-        Authorization: `Bearer ${authToken}`,
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (response.ok) {
-      ratings = await response.json();
-    } else {
-      console.error("Failed to load all ratings:", response.status);
-      ratings = [];
-    }
-  } catch (error) {
-    console.error("Error loading all ratings:", error);
-    ratings = [];
-  }
-}
-
 function renderRatingsInAdminPanel() {
   const ratingsList = document.getElementById("ratingsList");
   if (!ratingsList) return;
@@ -644,13 +623,7 @@ async function createSampleRatings() {
 }
 
 // My Ratings page functions
-async function showMyRatings() {
-  const isAuthenticated = await authCheck();
-  if (!isAuthenticated) return;
-
-  localStorage.setItem("currentPage", "myRatings");
-  renderMyRatingsPage();
-}
+// showMyRatings is defined in navigation.js
 
 function renderMyRatingsPage() {
   const app = document.getElementById("app");

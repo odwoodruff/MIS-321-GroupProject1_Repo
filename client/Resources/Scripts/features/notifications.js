@@ -110,13 +110,7 @@ function updateNotificationBadge() {
   }
 }
 
-async function showNotifications() {
-  const isAuthenticated = await authCheck();
-  if (!isAuthenticated) return;
-
-  localStorage.setItem("currentPage", "notifications");
-  renderNotificationsPage();
-}
+// showNotifications is defined in navigation.js
 
 function renderNotificationsPage() {
   const app = document.getElementById("app");

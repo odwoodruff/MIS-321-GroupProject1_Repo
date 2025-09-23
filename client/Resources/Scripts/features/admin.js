@@ -1,17 +1,6 @@
 // Admin panel functions
 
-async function showAdminPanel() {
-  const isAuthenticated = await authCheck();
-  if (!isAuthenticated) return;
-
-  if (!isAdmin()) {
-    showAlert("Access denied. Admin privileges required.", "danger");
-    return;
-  }
-
-  localStorage.setItem("currentPage", "admin");
-  renderAdminPanel();
-}
+// showAdminPanel is defined in navigation.js
 
 function renderAdminPanel() {
   const app = document.getElementById("app");
@@ -237,5 +226,288 @@ function clearContactedSellers() {
     contactedSellers.clear();
     showAlert("Contacted sellers cleared", "success");
     renderApp();
+  }
+}
+
+async function searchUserByUsername() {
+  const username = document.getElementById("usernameSearch").value.trim();
+  if (!username) {
+    showAlert("Please enter a username to search", "warning");
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `${CONFIG.API_BASE_URL.replace(
+        "/api/Book",
+        ""
+      )}/api/Admin/user-by-username/${encodeURIComponent(username)}`,
+      {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        showAlert("User not found", "warning");
+        return;
+      }
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const user = await response.json();
+    const usersList = document.getElementById("usersList");
+
+    const userTable = `
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Name</th>
+            <th>Rating</th>
+            <th>Joined</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>${user.id}</td>
+            <td>${user.username}</td>
+            <td>${user.email}</td>
+            <td>${user.firstName} ${user.lastName}</td>
+            <td>${user.averageRating.toFixed(1)} (${user.ratingCount})</td>
+            <td>${new Date(user.dateCreated).toLocaleDateString()}</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+    usersList.innerHTML = userTable;
+  } catch (error) {
+    console.error("Error searching user:", error);
+    showAlert("Failed to search user", "danger");
+  }
+}
+
+async function checkRateLimit() {
+  const identifier = document
+    .getElementById("rateLimitIdentifier")
+    .value.trim();
+  if (!identifier) {
+    showAlert("Please enter an identifier to check", "warning");
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `${CONFIG.API_BASE_URL.replace(
+        "/api/Book",
+        ""
+      )}/api/Admin/rate-limit-status/${encodeURIComponent(identifier)}`,
+      {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const statusDiv = document.getElementById("rateLimitStatus");
+
+    const alertClass = data.isRateLimited ? "alert-danger" : "alert-success";
+    statusDiv.className = `alert ${alertClass}`;
+    statusDiv.innerHTML = `
+      <h6>Rate Limit Status for: ${data.identifier}</h6>
+      <p><strong>Is Rate Limited:</strong> ${
+        data.isRateLimited ? "Yes" : "No"
+      }</p>
+      <p><strong>Remaining Requests:</strong> ${data.remainingRequests}</p>
+    `;
+  } catch (error) {
+    console.error("Error checking rate limit:", error);
+    showAlert("Failed to check rate limit status", "danger");
+  }
+}
+
+async function resetRateLimit() {
+  const identifier = document
+    .getElementById("rateLimitIdentifier")
+    .value.trim();
+  if (!identifier) {
+    showAlert("Please enter an identifier to reset", "warning");
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `${CONFIG.API_BASE_URL.replace(
+        "/api/Book",
+        ""
+      )}/api/Admin/reset-rate-limit`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          identifier: identifier,
+          actionType: "general",
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    showAlert(data.message, "success");
+
+    // Refresh the rate limit status
+    await checkRateLimit();
+  } catch (error) {
+    console.error("Error resetting rate limit:", error);
+    showAlert("Failed to reset rate limit", "danger");
+  }
+}
+
+async function createBackup() {
+  try {
+    const response = await fetch(
+      `${CONFIG.API_BASE_URL.replace("/api/Book", "")}/api/Backup/create`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    showAlert(data.message, "success");
+
+    // Refresh the backup list
+    await loadBackups();
+  } catch (error) {
+    console.error("Error creating backup:", error);
+    showAlert("Failed to create backup", "danger");
+  }
+}
+
+async function downloadBackup(fileName) {
+  try {
+    const response = await fetch(
+      `${CONFIG.API_BASE_URL.replace(
+        "/api/Book",
+        ""
+      )}/api/Backup/download/${fileName}`,
+      {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  } catch (error) {
+    console.error("Error downloading backup:", error);
+    showAlert("Failed to download backup", "danger");
+  }
+}
+
+async function deleteBackup(fileName) {
+  if (!confirm(`Are you sure you want to delete backup "${fileName}"?`)) {
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `${CONFIG.API_BASE_URL.replace(
+        "/api/Book",
+        ""
+      )}/api/Backup/delete/${fileName}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    showAlert(data.message, "success");
+
+    // Refresh the backup list
+    await loadBackups();
+  } catch (error) {
+    console.error("Error deleting backup:", error);
+    showAlert("Failed to delete backup", "danger");
+  }
+}
+
+async function forceRemigrateData() {
+  if (!confirm("This will delete ALL data and recreate it. Are you sure?")) {
+    return;
+  }
+
+  try {
+    showAlert("🔄 Force remigrating data...", "info");
+
+    const response = await fetch(`${CONFIG.DEV_API_URL}/force-remigrate`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+    });
+
+    const result = await response.json();
+
+    if (response.ok) {
+      showAlert(`✅ ${result.message}`, "success");
+
+      // Add specific data for alex.johnson@ua.edu
+      console.log("Starting Alex Johnson data setup...");
+      await setupAlexJohnsonData();
+      console.log("Alex Johnson data setup completed.");
+
+      // Refresh the page to show new data
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+    } else {
+      showAlert(`❌ ${result.message}`, "danger");
+    }
+  } catch (error) {
+    console.error("Error force remigrating:", error);
+    showAlert("❌ Failed to force remigrate data", "danger");
   }
 }

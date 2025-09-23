@@ -14,7 +14,7 @@
     />
     <link rel="stylesheet" href="./Resources/Styles/index.css" />
   </head>
-  <body onload="handleOnLoad()">
+  <body>
     <!-- Development Warning Banner -->
     <div
       style="
@@ -170,59 +170,8 @@
       </div>
     </div>
 
-    <!-- Login Modal -->
-    <div
-      class="modal fade"
-      id="loginModal"
-      tabindex="-1"
-      aria-labelledby="loginModalLabel"
-      aria-hidden="true"
-    >
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="loginModalLabel">Sign In</h5>
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-            ></button>
-          </div>
-          <div class="modal-body">
-            <form id="loginForm">
-              <div class="mb-3">
-                <label for="loginEmail" class="form-label"
-                  >University Email</label
-                >
-                <input
-                  type="email"
-                  class="form-control"
-                  id="loginEmail"
-                  placeholder="Enter your email"
-                  required
-                />
-                <div class="form-text">
-                  Must be a valid University of Alabama email address
-                </div>
-              </div>
-              <div class="modal-footer">
-                <button
-                  type="button"
-                  class="btn btn-secondary"
-                  data-bs-dismiss="modal"
-                >
-                  Cancel
-                </button>
-                <button type="submit" class="btn btn-primary" id="loginBtn">
-                  Sign In
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
+    <!-- Login Modal - Created dynamically by JavaScript -->
+    <div id="loginModalContainer"></div>
 
     <!-- Alert Container -->
     <div
@@ -254,8 +203,5 @@
 
     <!-- Main coordination script -->
     <script src="./Resources/Scripts/main.js"></script>
-
-    <!-- Original index.js (kept intact) -->
-    <script src="./Resources/Scripts/index.js"></script>
   </body>
 </html>

@@ -1,32 +1,155 @@
 // Modal-related functions
 
-function showAlert(message, type) {
-  const alertContainer = document.getElementById("alertContainer");
-  if (!alertContainer) return;
+function createLoginModal() {
+  const container = document.getElementById("loginModalContainer");
+  if (!container) return;
 
-  const alertId = `alert-${Date.now()}`;
-  const alertHtml = `
-    <div id="${alertId}" class="alert alert-${type} alert-dismissible fade show" role="alert">
-      ${escapeHtml(message)}
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  // Remove existing modal if any
+  container.innerHTML = "";
+
+  const modalHtml = `
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="loginModalLabel">Sign In</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form id="loginForm">
+              <div class="mb-3">
+                <label for="loginEmail" class="form-label">University Email</label>
+                <input
+                  type="email"
+                  class="form-control"
+                  id="loginEmail"
+                  placeholder="Enter your email"
+                  required
+                />
+                <div class="form-text">
+                  Must be a valid University of Alabama email address
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="loginPassword" class="form-label">Password</label>
+                <input
+                  type="password"
+                  class="form-control"
+                  id="loginPassword"
+                  placeholder="Enter your password"
+                  required
+                />
+              </div>
+              <div class="d-flex justify-content-between">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                  Cancel
+                </button>
+                <button type="submit" class="btn btn-primary" id="loginBtn">
+                  Sign In
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
     </div>
   `;
 
-  alertContainer.insertAdjacentHTML("beforeend", alertHtml);
+  container.innerHTML = modalHtml;
+}
 
-  // Auto-remove after 5 seconds
-  setTimeout(() => {
-    const alert = document.getElementById(alertId);
-    if (alert) {
-      alert.remove();
-    }
-  }, 5000);
+function createSignupModal() {
+  const container = document.getElementById("loginModalContainer");
+  if (!container) return;
+
+  // Remove existing modal if any
+  container.innerHTML = "";
+
+  const modalHtml = `
+    <div class="modal fade" id="signupModal" tabindex="-1" aria-labelledby="signupModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="signupModalLabel">Sign Up</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form id="signupForm">
+              <div class="mb-3">
+                <label for="signupEmail" class="form-label">University Email</label>
+                <input
+                  type="email"
+                  class="form-control"
+                  id="signupEmail"
+                  placeholder="Enter your email"
+                  required
+                />
+                <div class="form-text">
+                  Must be a valid University of Alabama email address
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="signupPassword" class="form-label">Password</label>
+                <input
+                  type="password"
+                  class="form-control"
+                  id="signupPassword"
+                  placeholder="Enter your password"
+                  required
+                />
+                <div class="form-text">
+                  Password must be at least 6 characters long
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="confirmPassword" class="form-label">Confirm Password</label>
+                <input
+                  type="password"
+                  class="form-control"
+                  id="confirmPassword"
+                  placeholder="Confirm your password"
+                  required
+                />
+              </div>
+              <div class="d-flex justify-content-between">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                  Cancel
+                </button>
+                <button type="submit" class="btn btn-primary" id="signupBtn">
+                  Sign Up
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  container.innerHTML = modalHtml;
 }
 
 function showLoginForm() {
+  // Create the modal if it doesn't exist
+  createLoginModal();
+
   // Show the login modal
   const loginModal = new bootstrap.Modal(document.getElementById("loginModal"));
   loginModal.show();
+}
+
+function showSignupForm() {
+  // Create the modal if it doesn't exist
+  createSignupModal();
+
+  // Set up event listeners for the signup form
+  setupSignupEventListeners();
+
+  // Show the signup modal
+  const signupModal = new bootstrap.Modal(
+    document.getElementById("signupModal")
+  );
+  signupModal.show();
 }
 
 function showVerificationModal(email, verificationCode = null) {
@@ -276,13 +399,7 @@ function proceedToRating(bookId, sellerName, sellerEmail) {
 }
 
 // Profile page functions
-async function showProfile() {
-  const isAuthenticated = await authCheck();
-  if (!isAuthenticated) return;
-
-  localStorage.setItem("currentPage", "profile");
-  renderProfilePage();
-}
+// showProfile is defined in navigation.js
 
 function renderProfilePage() {
   const app = document.getElementById("app");
@@ -463,4 +580,65 @@ function renderProfilePage() {
 function editProfile() {
   // This would open a profile editing modal
   showAlert("Profile editing feature coming soon!", "info");
+}
+
+function changeEmail() {
+  showAlert("Change Email functionality coming soon!", "info");
+}
+
+function createSupportTicket() {
+  showAlert("Create Support Ticket functionality coming soon!", "info");
+}
+
+function viewSupportTickets() {
+  showAlert("View Support Tickets functionality coming soon!", "info");
+}
+
+function accountSettings() {
+  showAlert("Account Settings functionality coming soon!", "info");
+}
+
+function privacySettings() {
+  showAlert("Privacy Settings functionality coming soon!", "info");
+}
+
+function deleteAccount() {
+  showAlert("Delete Account functionality coming soon!", "info");
+}
+
+function showPersistentModal(title, content) {
+  console.log("Creating modal with title:", title);
+
+  // Remove any existing dev modal
+  const existingModal = document.getElementById("dev-modal");
+  if (existingModal) {
+    existingModal.remove();
+  }
+
+  // Create modal HTML
+  const modalHTML = `
+    <div class="modal fade" id="dev-modal" tabindex="-1" aria-labelledby="devModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="devModalLabel">${title}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            ${content}
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Add modal to body
+  document.body.insertAdjacentHTML("beforeend", modalHTML);
+
+  // Show modal
+  const modal = new bootstrap.Modal(document.getElementById("dev-modal"));
+  modal.show();
 }

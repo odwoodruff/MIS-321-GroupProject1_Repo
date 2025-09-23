@@ -66,100 +66,55 @@ function setupScrollBehavior() {
     });
   });
 
+  // Search bar hide/show on scroll
+  const searchContainer = document.querySelector(".search-container");
+  let lastScrollTop = 0;
+
+  function handleScroll() {
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+    if (scrollTop > lastScrollTop && scrollTop > 100) {
+      // Scrolling down - hide search bar
+      searchContainer.classList.add("hidden");
+    } else {
+      // Scrolling up - show search bar
+      searchContainer.classList.remove("hidden");
+    }
+
+    lastScrollTop = scrollTop;
+  }
+
+  window.addEventListener("scroll", handleScroll);
   console.log("Scroll behavior setup completed");
 }
 
-// Additional functions that are referenced across modules
-async function handleLogin() {
-  const email = document.getElementById("loginEmail").value.trim();
-  const password = document.getElementById("loginPassword").value;
+// Main app rendering function
+function renderApp() {
+  console.log("Rendering app with books:", books);
+  const app = document.getElementById("app");
+  if (!app) return;
 
-  if (!email || !password) {
-    showAlert("Please fill in all fields", "warning");
-    return;
-  }
+  const currentPage = localStorage.getItem("currentPage");
+  console.log("Current page:", currentPage);
 
-  try {
-    const response = await fetch(`${CONFIG.AUTH_API_URL}/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email: email,
-        password: password,
-      }),
-    });
-
-    if (response.ok) {
-      const result = await response.json();
-      if (result.requiresVerification) {
-        showVerificationModal(email, result.verificationCode);
-      } else {
-        // Direct login success
-        currentUser = result.user;
-        authToken = result.token;
-        localStorage.setItem("currentUser", JSON.stringify(currentUser));
-        localStorage.setItem("authToken", authToken);
-        updateAuthUI();
-        await loadBooks();
-        renderApp();
-        showAlert("Login successful!", "success");
-      }
-    } else {
-      const errorData = await response.json();
-      showAlert(errorData.message || "Login failed", "danger");
-    }
-  } catch (error) {
-    console.error("Error during login:", error);
-    showAlert("Login failed. Please try again.", "danger");
+  if (currentPage === "myBooks") {
+    renderMyBooksPage();
+  } else if (currentPage === "contactedBooks") {
+    renderContactedBooksPage();
+  } else if (currentPage === "myRatings") {
+    renderMyRatingsPage();
+  } else if (currentPage === "notifications") {
+    showNotifications();
+  } else if (currentPage === "admin") {
+    showAdminPanel();
+  } else if (currentPage === "profile") {
+    showProfile();
+  } else {
+    renderBooks();
   }
 }
 
-async function handleSignup() {
-  const email = document.getElementById("signupEmail").value.trim();
-  const password = document.getElementById("signupPassword").value;
-  const confirmPassword = document.getElementById("confirmPassword").value;
-
-  if (!email || !password || !confirmPassword) {
-    showAlert("Please fill in all fields", "warning");
-    return;
-  }
-
-  if (password !== confirmPassword) {
-    showAlert("Passwords do not match", "warning");
-    return;
-  }
-
-  if (password.length < 6) {
-    showAlert("Password must be at least 6 characters long", "warning");
-    return;
-  }
-
-  try {
-    const response = await fetch(`${CONFIG.AUTH_API_URL}/register`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email: email,
-        password: password,
-      }),
-    });
-
-    if (response.ok) {
-      const result = await response.json();
-      showVerificationModal(email, result.verificationCode);
-    } else {
-      const errorData = await response.json();
-      showAlert(errorData.message || "Registration failed", "danger");
-    }
-  } catch (error) {
-    console.error("Error during registration:", error);
-    showAlert("Registration failed. Please try again.", "danger");
-  }
-}
+// Additional functions that are referenced across modules are now in auth.js
 
 // Initialize the app when the page loads
 document.addEventListener("DOMContentLoaded", handleOnLoad);
