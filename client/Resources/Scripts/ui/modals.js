@@ -1,194 +1,41 @@
-// Modal-related functions
-
-function createLoginModal() {
-  const container = document.getElementById("loginModalContainer");
-  if (!container) return;
-
-  // Remove existing modal if any
-  container.innerHTML = "";
-
-  const modalHtml = `
-    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="loginModalLabel">Sign In</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <form id="loginForm">
-              <div class="mb-3">
-                <label for="loginEmail" class="form-label">University Email</label>
-                <input
-                  type="email"
-                  class="form-control"
-                  id="loginEmail"
-                  placeholder="Enter your email"
-                  required
-                />
-                <div class="form-text">
-                  Must be a valid University of Alabama email address
-                </div>
-              </div>
-              <div class="mb-3">
-                <label for="loginPassword" class="form-label">Password</label>
-                <input
-                  type="password"
-                  class="form-control"
-                  id="loginPassword"
-                  placeholder="Enter your password"
-                  required
-                />
-              </div>
-              <div class="d-flex justify-content-between">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                  Cancel
-                </button>
-                <button type="submit" class="btn btn-primary" id="loginBtn">
-                  Sign In
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
-
-  container.innerHTML = modalHtml;
-}
-
-function createSignupModal() {
-  const container = document.getElementById("loginModalContainer");
-  if (!container) return;
-
-  // Remove existing modal if any
-  container.innerHTML = "";
-
-  const modalHtml = `
-    <div class="modal fade" id="signupModal" tabindex="-1" aria-labelledby="signupModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="signupModalLabel">Sign Up</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <form id="signupForm">
-              <div class="mb-3">
-                <label for="signupEmail" class="form-label">University Email</label>
-                <input
-                  type="email"
-                  class="form-control"
-                  id="signupEmail"
-                  placeholder="Enter your email"
-                  required
-                />
-                <div class="form-text">
-                  Must be a valid University of Alabama email address
-                </div>
-              </div>
-              <div class="mb-3">
-                <label for="signupPassword" class="form-label">Password</label>
-                <input
-                  type="password"
-                  class="form-control"
-                  id="signupPassword"
-                  placeholder="Enter your password"
-                  required
-                />
-                <div class="form-text">
-                  Password must be at least 6 characters long
-                </div>
-              </div>
-              <div class="mb-3">
-                <label for="confirmPassword" class="form-label">Confirm Password</label>
-                <input
-                  type="password"
-                  class="form-control"
-                  id="confirmPassword"
-                  placeholder="Confirm your password"
-                  required
-                />
-              </div>
-              <div class="d-flex justify-content-between">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                  Cancel
-                </button>
-                <button type="submit" class="btn btn-primary" id="signupBtn">
-                  Sign Up
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
-
-  container.innerHTML = modalHtml;
-}
-
-function showLoginForm() {
-  // Create the modal if it doesn't exist
-  createLoginModal();
-
-  // Show the login modal
-  const loginModal = new bootstrap.Modal(document.getElementById("loginModal"));
-  loginModal.show();
-}
-
-function showSignupForm() {
-  // Create the modal if it doesn't exist
-  createSignupModal();
-
-  // Set up event listeners for the signup form
-  setupSignupEventListeners();
-
-  // Show the signup modal
-  const signupModal = new bootstrap.Modal(
-    document.getElementById("signupModal")
-  );
-  signupModal.show();
-}
-
 function showVerificationModal(email, verificationCode = null) {
   // Hide login modal
-  const loginModal = bootstrap.Modal.getInstance(
-    document.getElementById("loginModal")
-  );
-  if (loginModal) {
-    loginModal.hide();
-  }
+  bootstrap.Modal.getInstance(document.getElementById("loginModal")).hide();
 
   // Create verification modal
   const modalHtml = `
     <div class="modal fade" id="verificationModal" tabindex="-1" aria-labelledby="verificationModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" id="verificationModalLabel">Verify Your Email</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            <p>We've sent a verification code to <strong>${escapeHtml(
-              email
-            )}</strong></p>
-            <p>Please check your email and enter the 6-digit code below:</p>
-            <form id="verificationForm">
+            <p>We've sent a 6-digit verification code to <strong>${email}</strong></p>
+            ${
+              verificationCode
+                ? `
+              <div class="alert alert-info">
+                <strong>Development Mode:</strong> Your verification code is <code>${verificationCode}</code>
+              </div>
+            `
+                : ""
+            }
               <div class="mb-3">
                 <label for="verificationCode" class="form-label">Verification Code</label>
                 <input type="text" class="form-control" id="verificationCode" 
-                       placeholder="Enter 6-digit code" maxlength="6" required>
+                       placeholder="Enter 6-digit code" maxlength="6" pattern="[0-9]{6}">
               </div>
-              <div class="d-flex justify-content-between">
-                <button type="button" class="btn btn-outline-secondary" onclick="resendVerificationCode('${email}')">
-                  Resend Code
-                </button>
-                <button type="button" class="btn btn-primary" onclick="verifyEmailCode('${email}')">
-                  Verify Email
-                </button>
-              </div>
-            </form>
+            <div class="text-center">
+              <button type="button" class="btn btn-outline-secondary" onclick="resendVerificationCode('${email}')">
+                Resend Code
+              </button>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-primary" onclick="verifyEmailCode('${email}')">Verify</button>
           </div>
         </div>
       </div>
@@ -201,7 +48,7 @@ function showVerificationModal(email, verificationCode = null) {
     existingModal.remove();
   }
 
-  // Add modal to DOM
+  // Add modal to body
   document.body.insertAdjacentHTML("beforeend", modalHtml);
 
   // Show modal
@@ -209,139 +56,254 @@ function showVerificationModal(email, verificationCode = null) {
     document.getElementById("verificationModal")
   );
   modal.show();
-
-  // Focus on input
-  setTimeout(() => {
-    const input = document.getElementById("verificationCode");
-    if (input) {
-      input.focus();
-    }
-  }, 500);
 }
 
-async function resendVerificationCode(email) {
-  try {
-    const response = await fetch(`${CONFIG.AUTH_API_URL}/resend-verification`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email }),
-    });
+function showNameCollectionModal() {
+  // Create name collection modal
+  const modalHtml = `
+    <div class="modal fade" id="nameCollectionModal" tabindex="-1" aria-labelledby="nameCollectionModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="nameCollectionModalLabel">Complete Your Profile</h5>
+          </div>
+          <div class="modal-body">
+            <p class="text-muted mb-3">Please provide your first and last name to complete your account setup.</p>
+            <form id="nameCollectionForm">
+              <div class="mb-3">
+                <label for="firstName" class="form-label">First Name</label>
+                <input type="text" class="form-control" id="firstName" required>
+              </div>
+              <div class="mb-3">
+                <label for="lastName" class="form-label">Last Name</label>
+                <input type="text" class="form-control" id="lastName" required>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" onclick="submitNameCollection()">Complete Setup</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
 
-    if (response.ok) {
-      showAlert("Verification code resent successfully!", "success");
-    } else {
-      const errorData = await response.json();
-      showAlert(
-        errorData.message || "Failed to resend verification code",
-        "danger"
-      );
-    }
-  } catch (error) {
-    console.error("Error resending verification code:", error);
-    showAlert("Failed to resend verification code", "danger");
-  }
-}
-
-function handleLogout() {
-  currentUser = null;
-  authToken = null;
-  localStorage.removeItem("currentUser");
-  localStorage.removeItem("authToken");
-  updateAuthUI();
-  renderApp();
-  showAlert("You have been logged out", "info");
-}
-
-// Contact seller modal
-async function contactSeller(bookId) {
-  const book = books.find((b) => b.id === bookId);
-  if (!book) {
-    showAlert("Book not found", "danger");
-    return;
+  // Remove existing modal if any
+  const existingModal = document.getElementById("nameCollectionModal");
+  if (existingModal) {
+    existingModal.remove();
   }
 
+  // Add modal to DOM
+  document.body.insertAdjacentHTML("beforeend", modalHtml);
+
+  // Show modal
+  const modal = new bootstrap.Modal(
+    document.getElementById("nameCollectionModal")
+  );
+  modal.show();
+}
+
+async function showRatingModal(bookId, sellerName, sellerEmail) {
   const isAuthenticated = await authCheck();
   if (!isAuthenticated) return;
 
-  // Check if user is trying to contact themselves
-  if (book.sellerEmail === currentUser.email) {
-    showAlert("You cannot contact yourself about your own book", "warning");
+  // Check if user has contacted this seller for this specific book
+  const contactKey = `${currentUser.email}-${sellerEmail}-${bookId}`;
+  if (!contactedSellers.has(contactKey)) {
+    showAlert(
+      "You must contact the seller first before you can rate them",
+      "warning"
+    );
     return;
   }
 
-  // Check if already contacted
-  const contactKey = `${book.sellerEmail}-${bookId}`;
-  if (contactedSellers.has(contactKey)) {
-    showAlert("You have already contacted this seller", "info");
+  // Get the seller's user ID by looking up their email
+  const sellerUserId = await getUserIdByEmail(sellerEmail);
+
+  if (!sellerUserId) {
+    showAlert("Cannot rate this seller - seller account not found", "warning");
     return;
   }
 
-  try {
-    // Add to contacted sellers via API
-    const response = await fetch(`${CONFIG.DEV_API_URL}/contacted-sellers`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${authToken}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        sellerEmail: book.sellerEmail,
-        bookId: bookId,
-      }),
-    });
+  const modalHTML = `
+    <div class="modal fade" id="ratingModal" tabindex="-1" aria-labelledby="ratingModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="ratingModalLabel">Rate ${sellerName}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form id="ratingForm">
+              <div class="mb-3">
+                <label class="form-label">Rating (1-5 stars)</label>
+                <div class="rating-input">
+                  <div class="star-rating" id="starRating">
+                    <i class="bi bi-star" data-rating="1"></i>
+                    <i class="bi bi-star" data-rating="2"></i>
+                    <i class="bi bi-star" data-rating="3"></i>
+                    <i class="bi bi-star" data-rating="4"></i>
+                    <i class="bi bi-star" data-rating="5"></i>
+                  </div>
+                  <input type="hidden" id="ratingScore" value="0">
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="ratingComment" class="form-label">Comment (optional)</label>
+                <textarea class="form-control" id="ratingComment" rows="3" placeholder="Share your experience..."></textarea>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-primary" onclick="handleRatingSubmit(${bookId}, ${sellerUserId})">Submit Rating</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
 
-    if (response.ok) {
-      // Add to local set
-      contactedSellers.add(contactKey);
-
-      // Show success message
-      showAlert(
-        `Contact request sent to ${book.sellerName}! They will be notified.`,
-        "success"
-      );
-
-      // Show rating prompt modal after a short delay
-      setTimeout(() => {
-        showRatingPromptModal(book);
-      }, 1500);
-    } else {
-      const errorData = await response.json();
-      showAlert(errorData.message || "Failed to contact seller", "danger");
-    }
-  } catch (error) {
-    console.error("Error contacting seller:", error);
-    showAlert("Failed to contact seller", "danger");
+  // Remove existing modal if any
+  const existingModal = document.getElementById("ratingModal");
+  if (existingModal) {
+    existingModal.remove();
   }
+
+  // Add modal to body
+  document.body.insertAdjacentHTML("beforeend", modalHTML);
+
+  // Show modal
+  const modal = new bootstrap.Modal(document.getElementById("ratingModal"));
+  modal.show();
+
+  // Setup star rating interaction
+  setupStarRating();
+}
+
+function showAdminRatingModal(rating) {
+  console.log("showAdminRatingModal called with:", rating); // Debug log
+
+  // Ensure we have valid rating data
+  const safeRating = {
+    id: rating.id || 0,
+    score: rating.score || 1,
+    comment: rating.comment || "",
+    raterId: rating.raterId || 0,
+    ratedUserId: rating.ratedUserId || 0,
+    bookId: rating.bookId || 0,
+    dateCreated: rating.dateCreated || new Date().toISOString(),
+  };
+
+  console.log("Safe rating data:", safeRating); // Debug log
+
+  const modalHTML = `
+    <div class="modal fade" id="adminRatingModal" tabindex="-1" aria-labelledby="adminRatingModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="adminRatingModalLabel">Edit Rating (Admin)</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form id="adminRatingForm">
+              <div class="mb-3">
+                <label class="form-label">Rating (1-5 stars)</label>
+                <div class="rating-input">
+                  <div class="star-rating" id="adminStarRating">
+                    <i class="bi bi-star" data-rating="1"></i>
+                    <i class="bi bi-star" data-rating="2"></i>
+                    <i class="bi bi-star" data-rating="3"></i>
+                    <i class="bi bi-star" data-rating="4"></i>
+                    <i class="bi bi-star" data-rating="5"></i>
+                  </div>
+                  <input type="hidden" id="adminRatingScore" value="${
+                    safeRating.score
+                  }">
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="adminRatingComment" class="form-label">Comment</label>
+                <textarea class="form-control" id="adminRatingComment" rows="3">${
+                  safeRating.comment
+                }</textarea>
+              </div>
+              <div class="mb-3">
+                <small class="text-muted">
+                  <strong>Rater:</strong> User ID ${safeRating.raterId}<br>
+                  <strong>Rated User:</strong> User ID ${
+                    safeRating.ratedUserId
+                  }<br>
+                  <strong>Book ID:</strong> ${safeRating.bookId}<br>
+                  <strong>Date:</strong> ${new Date(
+                    safeRating.dateCreated
+                  ).toLocaleString()}
+                </small>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-primary" onclick="handleAdminRatingSubmit(${
+              safeRating.id
+            })">Update Rating</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Remove existing modal if any
+  const existingModal = document.getElementById("adminRatingModal");
+  if (existingModal) {
+    existingModal.remove();
+  }
+
+  // Add modal to body
+  document.body.insertAdjacentHTML("beforeend", modalHTML);
+
+  // Show modal
+  const modal = new bootstrap.Modal(
+    document.getElementById("adminRatingModal")
+  );
+  modal.show();
+
+  // Setup star rating interaction
+  setupAdminStarRating(safeRating.score);
 }
 
 async function showRatingPromptModal(book) {
   const modalHTML = `
     <div class="modal fade" id="ratingPromptModal" tabindex="-1" aria-labelledby="ratingPromptModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="ratingPromptModalLabel">Rate Your Experience</h5>
+            <h5 class="modal-title" id="ratingPromptModalLabel">Thank You!</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
-          <div class="modal-body">
-            <p>How was your experience with <strong>${escapeHtml(
+          <div class="modal-body text-center">
+            <div class="mb-3">
+              <i class="bi bi-check-circle-fill text-success" style="font-size: 3rem;"></i>
+            </div>
+            <h4 class="mb-3">Interest sent to ${escapeHtml(
               book.sellerName
-            )}</strong>?</p>
-            <p class="text-muted">Your feedback helps other students make informed decisions.</p>
-            <div class="d-flex gap-2">
-              <button class="btn btn-primary" onclick="proceedToRating(${
-                book.id
-              }, '${escapeHtml(book.sellerName)}', '${escapeHtml(
+            )}!</h4>
+            <p class="mb-4">They'll be notified about your interest in "${escapeHtml(
+              book.title
+            )}".</p>
+            <p class="mb-4">Would you like to rate this seller now?</p>
+          </div>
+          <div class="modal-footer justify-content-center">
+            <button type="button" class="btn btn-outline-secondary me-2" data-bs-dismiss="modal">
+              <i class="bi bi-x-circle"></i> Not Now
+            </button>
+            <button type="button" class="btn btn-warning" onclick="proceedToRating(${
+              book.id
+            }, '${escapeHtml(book.sellerName)}', '${escapeHtml(
     book.sellerEmail
   )}')">
-                <i class="bi bi-star"></i> Rate Now
-              </button>
-              <button class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                Maybe Later
-              </button>
-            </div>
+              <i class="bi bi-star"></i> Yes, Rate Now
+            </button>
           </div>
         </div>
       </div>
@@ -354,16 +316,10 @@ async function showRatingPromptModal(book) {
     existingModal.remove();
   }
 
-  // Add modal to DOM
+  // Add modal to body
   document.body.insertAdjacentHTML("beforeend", modalHTML);
 
-  // Show modal
-  const modal = new bootstrap.Modal(
-    document.getElementById("ratingPromptModal")
-  );
-  modal.show();
-
-  // Add to prompted to rate
+  // Track that user has been prompted to rate this book via API
   try {
     const response = await fetch(`${CONFIG.DEV_API_URL}/prompted-to-rate`, {
       method: "POST",
@@ -378,11 +334,27 @@ async function showRatingPromptModal(book) {
     });
 
     if (response.ok) {
-      promptedToRate.add(`${book.sellerEmail}-${book.id}`);
+      promptedToRate.add(`${currentUser.email}-${book.sellerEmail}-${book.id}`);
+      console.log("Added prompted to rate via API");
+    } else {
+      console.warn("Failed to add prompted to rate via API");
+      // Fallback to local set
+      promptedToRate.add(`${currentUser.email}-${book.sellerEmail}-${book.id}`);
     }
   } catch (error) {
     console.error("Error adding prompted to rate:", error);
+    // Fallback to local set
+    promptedToRate.add(`${currentUser.email}-${book.sellerEmail}-${book.id}`);
   }
+
+  // Show modal
+  const modal = new bootstrap.Modal(
+    document.getElementById("ratingPromptModal")
+  );
+  modal.show();
+
+  // Re-render to show the contacted button and rate button if prompted
+  renderApp();
 }
 
 function proceedToRating(bookId, sellerName, sellerEmail) {
@@ -398,247 +370,47 @@ function proceedToRating(bookId, sellerName, sellerEmail) {
   showRatingModal(bookId, sellerName, sellerEmail);
 }
 
-// Profile page functions
-// showProfile is defined in navigation.js
-
-function renderProfilePage() {
-  const app = document.getElementById("app");
-
-  if (!currentUser) {
-    app.innerHTML = `
-      <div class="container mt-4">
-        <div class="row justify-content-center">
-          <div class="col-md-6 text-center">
-            <h2>Authentication Required</h2>
-            <p>Please sign in to view your profile.</p>
-            <button class="btn btn-primary" onclick="showLoginForm()">Sign In</button>
-          </div>
-        </div>
-      </div>
-    `;
+function createLoginModal() {
+  // Check if login modal already exists
+  if (document.getElementById("loginModal")) {
     return;
   }
 
-  // Calculate average rating
-  const userRatings = ratings.filter(
-    (r) => r.sellerEmail === currentUser.email
-  );
-  const averageRating =
-    userRatings.length > 0
-      ? userRatings.reduce((sum, r) => sum + r.score, 0) / userRatings.length
-      : 0;
-
-  app.innerHTML = `
-    <div class="container mt-4">
-      <div class="row">
-        <div class="col-12">
-          <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>My Profile</h2>
-            <button class="btn btn-outline-secondary" onclick="goBackToBooks()">
-              <i class="bi bi-arrow-left"></i> Back to Books
-            </button>
-          </div>
-          
-          <div class="row">
-            <div class="col-md-4">
-              <div class="card">
-                <div class="card-body text-center">
-                  <div class="profile-avatar mb-3">
-                    <i class="bi bi-person-circle" style="font-size: 4rem; color: #6c757d;"></i>
-                  </div>
-                  <h5>${escapeHtml(
-                    currentUser.firstName || "Student"
-                  )} ${escapeHtml(currentUser.lastName || "User")}</h5>
-                  <p class="text-muted">${escapeHtml(currentUser.email)}</p>
-                  <div class="rating-display mb-3">
-                    ${
-                      averageRating > 0
-                        ? `
-                      <div class="d-flex justify-content-center align-items-center">
-                        <span class="me-2">${averageRating.toFixed(1)}</span>
-                        <div class="star-rating">
-                          ${generateStarRating(averageRating)}
-                        </div>
-                        <span class="ms-2 text-muted">(${
-                          userRatings.length
-                        } reviews)</span>
-                      </div>
-                    `
-                        : `
-                      <p class="text-muted">No ratings yet</p>
-                    `
-                    }
-                  </div>
-                  <button class="btn btn-outline-primary btn-sm" onclick="editProfile()">
-                    <i class="bi bi-pencil"></i> Edit Profile
-                  </button>
-                </div>
-              </div>
-            </div>
-            
-            <div class="col-md-8">
-              <div class="card">
-                <div class="card-header">
-                  <h5 class="mb-0">Personal Information</h5>
-                </div>
-                <div class="card-body">
-                  <div class="row">
-                    <div class="col-sm-6">
-                      <p><strong>First Name:</strong> ${escapeHtml(
-                        currentUser.firstName || "Not set"
-                      )}</p>
-                    </div>
-                    <div class="col-sm-6">
-                      <p><strong>Last Name:</strong> ${escapeHtml(
-                        currentUser.lastName || "Not set"
-                      )}</p>
-                    </div>
-                  </div>
-                  <div class="row">
-                    <div class="col-sm-6">
-                      <p><strong>Email:</strong> ${escapeHtml(
-                        currentUser.email
-                      )}</p>
-                    </div>
-                    <div class="col-sm-6">
-                      <p><strong>Username:</strong> ${escapeHtml(
-                        currentUser.username || "Not set"
-                      )}</p>
-                    </div>
-                  </div>
-                  <div class="row">
-                    <div class="col-sm-6">
-                      <p><strong>Member Since:</strong> ${new Date(
-                        currentUser.dateCreated
-                      ).toLocaleDateString()}</p>
-                    </div>
-                    <div class="col-sm-6">
-                      <p><strong>Account Type:</strong> ${
-                        currentUser.isAdmin ? "Administrator" : "Student"
-                      }</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <div class="card mt-3">
-                <div class="card-header">
-                  <h5 class="mb-0">Account Statistics</h5>
-                </div>
-                <div class="card-body">
-                  <div class="row">
-                    <div class="col-sm-4 text-center">
-                      <h4 class="text-primary">${
-                        books.filter((b) => b.sellerEmail === currentUser.email)
-                          .length
-                      }</h4>
-                      <p class="text-muted">Books Listed</p>
-                    </div>
-                    <div class="col-sm-4 text-center">
-                      <h4 class="text-success">${userRatings.length}</h4>
-                      <p class="text-muted">Reviews Received</p>
-                    </div>
-                    <div class="col-sm-4 text-center">
-                      <h4 class="text-info">${contactedSellers.size}</h4>
-                      <p class="text-muted">Books Contacted</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <div class="card mt-3">
-                <div class="card-header">
-                  <h5 class="mb-0">Account Actions</h5>
-                </div>
-                <div class="card-body">
-                  <div class="d-grid gap-2">
-                    <button class="btn btn-outline-primary" onclick="showMyBooks()">
-                      <i class="bi bi-book"></i> View My Books
-                    </button>
-                    <button class="btn btn-outline-info" onclick="showMyRatings()">
-                      <i class="bi bi-star"></i> View My Ratings
-                    </button>
-                    <button class="btn btn-outline-warning" onclick="showContactedBooks()">
-                      <i class="bi bi-envelope"></i> View Contacted Books
-                    </button>
-                    <button class="btn btn-outline-secondary" onclick="showNotifications()">
-                      <i class="bi bi-bell"></i> View Notifications
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
-
-  updateNavigationState("profile");
-}
-
-function editProfile() {
-  // This would open a profile editing modal
-  showAlert("Profile editing feature coming soon!", "info");
-}
-
-function changeEmail() {
-  showAlert("Change Email functionality coming soon!", "info");
-}
-
-function createSupportTicket() {
-  showAlert("Create Support Ticket functionality coming soon!", "info");
-}
-
-function viewSupportTickets() {
-  showAlert("View Support Tickets functionality coming soon!", "info");
-}
-
-function accountSettings() {
-  showAlert("Account Settings functionality coming soon!", "info");
-}
-
-function privacySettings() {
-  showAlert("Privacy Settings functionality coming soon!", "info");
-}
-
-function deleteAccount() {
-  showAlert("Delete Account functionality coming soon!", "info");
-}
-
-function showPersistentModal(title, content) {
-  console.log("Creating modal with title:", title);
-
-  // Remove any existing dev modal
-  const existingModal = document.getElementById("dev-modal");
-  if (existingModal) {
-    existingModal.remove();
-  }
-
-  // Create modal HTML
   const modalHTML = `
-    <div class="modal fade" id="dev-modal" tabindex="-1" aria-labelledby="devModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-lg">
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="devModalLabel">${title}</h5>
+            <h5 class="modal-title" id="loginModalLabel">Sign In to Roll Tide Books</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            ${content}
+            <form id="loginForm">
+              <div class="mb-3">
+                <label for="loginEmail" class="form-label">University Email Address</label>
+                <input type="email" class="form-control" id="loginEmail" 
+                       placeholder="your.email@crimson.ua.edu" required>
+                <div class="form-text">
+                  Use your @crimson.ua.edu or @ua.edu email address
+                </div>
+              </div>
+            </form>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-primary" id="loginBtn">Sign In</button>
           </div>
         </div>
       </div>
     </div>
   `;
 
-  // Add modal to body
-  document.body.insertAdjacentHTML("beforeend", modalHTML);
-
-  // Show modal
-  const modal = new bootstrap.Modal(document.getElementById("dev-modal"));
-  modal.show();
+  // Add modal to the login modal container
+  const container = document.getElementById("loginModalContainer");
+  if (container) {
+    container.innerHTML = modalHTML;
+  } else {
+    // Fallback: add to body
+    document.body.insertAdjacentHTML("beforeend", modalHTML);
+  }
 }
