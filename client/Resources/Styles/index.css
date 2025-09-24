@@ -18,7 +18,7 @@
   --warning: #ffc107;
   --danger: #dc3545;
   --info: #17a2b8;
-  
+
   /* Light theme variables */
   --bg-primary: #ffffff;
   --bg-secondary: #f8f9fa;
@@ -58,7 +58,8 @@ body {
   background-color: var(--bg-secondary);
   border-color: var(--border-color);
   color: var(--text-primary);
-  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+  transition: background-color 0.3s ease, border-color 0.3s ease,
+    color 0.3s ease;
 }
 
 .card-body {
@@ -72,7 +73,42 @@ body {
   background-color: var(--bg-secondary);
   color: var(--text-primary);
   border-color: var(--border-color);
-  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  transition: background-color 0.3s ease, color 0.3s ease,
+    border-color 0.3s ease;
+}
+
+/* Theme support for specific page content areas only */
+.page-content-container {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.page-content-row {
+  background-color: transparent;
+  color: var(--text-primary);
+}
+
+/* Theme support for headings and text elements */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: var(--text-primary);
+}
+
+.text-muted {
+  color: var(--text-muted) !important;
+}
+
+.text-primary {
+  color: var(--text-primary) !important;
+}
+
+.text-secondary {
+  color: var(--text-secondary) !important;
 }
 
 .modal-header {
@@ -100,6 +136,7 @@ body {
   font-weight: 800;
   font-size: 2.5rem;
   margin: 0;
+  color: var(--white);
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
@@ -107,13 +144,15 @@ body {
   font-size: 1.1rem;
   opacity: 0.9;
   margin: 0.5rem 0 0 0;
+  color: var(--white);
 }
 
 /* Navigation Bar */
 .navbar-custom {
-  background-color: var(--white);
+  background-color: var(--bg-primary);
   border-bottom: 3px solid var(--crimson);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px var(--shadow);
+  transition: background-color 0.3s ease;
 }
 
 /* Navigation links - consistent styling for all nav items */
@@ -141,7 +180,7 @@ body {
 }
 
 .nav-link.inactive {
-  color: var(--gray-500) !important;
+  color: var(--text-muted) !important;
   font-size: 1rem;
   font-weight: 500;
   transform: scale(1);
@@ -149,15 +188,16 @@ body {
 
 /* Search Bar */
 .search-container {
-  background-color: var(--white);
+  background-color: var(--bg-secondary);
   padding: 1.5rem;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px var(--shadow);
   margin-bottom: 2rem;
   position: sticky;
   top: 0;
   z-index: 1000;
   transition: transform 0.3s ease-in-out;
+  border: 1px solid var(--border-color);
 }
 
 .search-container.hidden {
@@ -195,8 +235,8 @@ body {
 
 /* Book List Items - Compact Row Style */
 .book-card {
-  background: var(--white);
-  border: 1px solid var(--gray-300);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   transition: all 0.3s ease;
   overflow: hidden;
@@ -206,11 +246,12 @@ body {
   display: flex;
   align-items: center;
   gap: 1rem;
+  color: var(--text-primary);
 }
 
 .book-card:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px var(--shadow-hover);
   border-color: var(--crimson);
 }
 
@@ -247,7 +288,7 @@ body {
 .book-title {
   font-size: 1.1rem;
   font-weight: 600;
-  color: var(--gray-800);
+  color: var(--text-primary);
   margin-bottom: 0.25rem;
   line-height: 1.3;
   white-space: nowrap;
@@ -256,7 +297,7 @@ body {
 }
 
 .book-author {
-  color: var(--gray-600);
+  color: var(--text-secondary);
   font-size: 0.9rem;
   margin-bottom: 0.25rem;
   white-space: nowrap;
@@ -265,7 +306,7 @@ body {
 }
 
 .book-author strong {
-  color: var(--gray-700);
+  color: var(--text-primary);
   font-weight: 600;
 }
 
@@ -274,11 +315,11 @@ body {
   gap: 1rem;
   align-items: center;
   font-size: 0.85rem;
-  color: var(--gray-600);
+  color: var(--text-secondary);
 }
 
 .book-meta strong {
-  color: var(--gray-700);
+  color: var(--text-primary);
   font-weight: 600;
 }
 
@@ -340,7 +381,7 @@ body {
 
 .book-seller {
   font-size: 0.85rem;
-  color: var(--gray-600);
+  color: var(--text-secondary);
   white-space: nowrap;
 }
 
@@ -380,10 +421,10 @@ body {
 
 /* Form Styles */
 .form-container {
-  background: var(--white);
+  background: var(--bg-secondary);
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  border: 1px solid var(--gray-300);
+  box-shadow: 0 4px 12px var(--shadow);
+  border: 1px solid var(--border-color);
 }
 
 .form-container .card-body {
@@ -434,12 +475,13 @@ body {
 
 /* Stats Cards */
 .stats-card {
-  background: var(--white);
+  background: var(--bg-secondary);
   border-radius: 8px;
   padding: 1.5rem;
   text-align: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px var(--shadow);
   border-left: 4px solid var(--crimson);
+  border: 1px solid var(--border-color);
 }
 
 .stats-number {
@@ -450,7 +492,7 @@ body {
 }
 
 .stats-label {
-  color: var(--gray-600);
+  color: var(--text-secondary);
   font-size: 0.9rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -548,9 +590,7 @@ body {
   font-weight: 500;
 }
 
-.text-muted {
-  color: #6c757d !important;
-}
+/* Removed duplicate text-muted - now handled above with theme support */
 
 .bi {
   margin-right: 0.25rem;
@@ -617,27 +657,30 @@ body {
 
 #user-menu .btn {
   opacity: 1 !important;
-  background-color: black !important;
-  border: 2px solid black !important;
-  color: white !important;
+  background-color: var(--bg-primary) !important;
+  border: 2px solid var(--crimson) !important;
+  color: var(--crimson) !important;
   transition: all 0.3s ease;
 }
 
 #user-menu .btn:hover {
-  background-color: #333 !important;
-  border-color: #333 !important;
+  background-color: var(--crimson) !important;
+  border-color: var(--crimson) !important;
+  color: var(--white) !important;
   transform: translateY(-1px);
 }
 
 #user-menu .btn:focus {
-  background-color: #333 !important;
-  border-color: #333 !important;
-  box-shadow: 0 0 0 0.2rem rgba(0, 0, 0, 0.25) !important;
+  background-color: var(--crimson) !important;
+  border-color: var(--crimson) !important;
+  color: var(--white) !important;
+  box-shadow: 0 0 0 0.2rem rgba(158, 27, 50, 0.25) !important;
 }
 
 #user-menu .dropdown-menu {
-  border: none;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 12px var(--shadow);
   border-radius: 8px;
   z-index: 1001;
 }
@@ -645,28 +688,33 @@ body {
 #user-menu .dropdown-item {
   padding: 0.75rem 1rem;
   transition: all 0.2s ease;
+  color: var(--text-primary);
+  background-color: var(--bg-secondary);
 }
 
 #user-menu .dropdown-item:hover {
   background-color: var(--crimson);
-  color: white;
+  color: var(--white);
 }
 
 /* Notification Styles */
 .notification-item {
   padding: 1rem;
-  border-bottom: 1px solid var(--gray-300);
+  border-bottom: 1px solid var(--border-color);
   cursor: pointer;
   transition: background-color 0.2s ease;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
 }
 
 .notification-item:hover {
-  background-color: var(--gray-100);
+  background-color: var(--bg-tertiary);
 }
 
 .notification-item.unread {
-  background-color: #e3f2fd;
+  background-color: var(--bg-tertiary);
   border-left: 4px solid var(--crimson);
+  color: var(--text-primary);
 }
 
 .notification-item.read {
@@ -683,10 +731,13 @@ body {
 }
 
 .notifications-container {
-  background: white;
+  background: var(--bg-secondary);
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px var(--shadow);
   overflow: hidden;
+  border: 1px solid var(--border-color);
+  transition: background-color 0.3s ease, border-color 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .notification-item:last-child {
@@ -736,20 +787,23 @@ body {
 
 /* Admin Rating Management Styles */
 .admin-ratings-container {
-  background: white;
+  background: var(--bg-secondary);
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px var(--shadow);
   overflow: hidden;
+  border: 1px solid var(--border-color);
 }
 
 .rating-item {
   padding: 1.5rem;
-  border-bottom: 1px solid var(--gray-300);
+  border-bottom: 1px solid var(--border-color);
   transition: background-color 0.2s ease;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
 }
 
 .rating-item:hover {
-  background-color: var(--gray-100);
+  background-color: var(--bg-tertiary);
 }
 
 .rating-item:last-child {
@@ -761,7 +815,7 @@ body {
 }
 
 .rating-details {
-  color: var(--gray-600);
+  color: var(--text-secondary);
   font-size: 0.85rem;
 }
 
@@ -833,13 +887,13 @@ body {
 
 /* Inline Advertisement Styles */
 .ad-card {
-  background: var(--white);
+  background: var(--bg-secondary);
   border: 2px solid var(--crimson);
   border-radius: 8px;
   margin-bottom: 0.5rem;
   overflow: hidden;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px var(--shadow);
 }
 
 .ad-card:hover {
@@ -882,7 +936,7 @@ body {
 
 .ad-description {
   font-size: 0.9rem;
-  color: var(--gray-700);
+  color: var(--text-secondary);
   margin: 0;
   line-height: 1.4;
 }

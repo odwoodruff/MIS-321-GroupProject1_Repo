@@ -3376,19 +3376,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\cwbru\\.nuget\\packages\\": {}
+    "C:\\Users\\clays\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\cwbru\\OneDrive\\Documents\\321\\MIS-321-GroupProject1_Repo\\api\\api\\api.csproj",
+      "projectUniqueName": "C:\\Users\\clays\\Desktop\\MIS-321-GroupProject1_Repo\\api\\api\\api.csproj",
       "projectName": "api",
-      "projectPath": "C:\\Users\\cwbru\\OneDrive\\Documents\\321\\MIS-321-GroupProject1_Repo\\api\\api\\api.csproj",
-      "packagesPath": "C:\\Users\\cwbru\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\cwbru\\OneDrive\\Documents\\321\\MIS-321-GroupProject1_Repo\\api\\api\\obj\\",
+      "projectPath": "C:\\Users\\clays\\Desktop\\MIS-321-GroupProject1_Repo\\api\\api\\api.csproj",
+      "packagesPath": "C:\\Users\\clays\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\clays\\Desktop\\MIS-321-GroupProject1_Repo\\api\\api\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\cwbru\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "C:\\Users\\clays\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net8.0"
@@ -3469,7 +3469,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.404/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.401/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

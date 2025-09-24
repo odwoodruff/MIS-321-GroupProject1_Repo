@@ -4,8 +4,8 @@ function renderAdminPanel() {
 
   // Create comprehensive admin panel
   const adminPanelHTML = `
-    <div class="container mt-4">
-      <div class="row">
+    <div class="container mt-4 page-content-container">
+      <div class="row page-content-row">
         <div class="col-12">
           <div class="d-flex justify-content-between align-items-center mb-4">
             <h2><i class="bi bi-gear"></i> Admin Panel</h2>
@@ -221,8 +221,8 @@ function renderMyBooksPage() {
 
   if (myBooks.length === 0) {
     app.innerHTML = `
-      <div class="container mt-4">
-        <div class="row">
+      <div class="container mt-4 page-content-container">
+        <div class="row page-content-row">
           <div class="col-12">
             <div class="text-center py-5">
               <i class="bi bi-book display-1 text-muted"></i>
@@ -288,8 +288,8 @@ function renderMyBooksPage() {
     .join("");
 
   app.innerHTML = `
-    <div class="container mt-4">
-      <div class="row">
+    <div class="container mt-4 page-content-container">
+      <div class="row page-content-row">
         <div class="col-12">
           <div class="d-flex justify-content-between align-items-center mb-4">
             <h2><i class="bi bi-book"></i> My Books (${myBooks.length})</h2>
@@ -343,8 +343,8 @@ function renderContactedBooksPage() {
 
   if (contactedBooks.length === 0) {
     app.innerHTML = `
-      <div class="container mt-4">
-        <div class="row">
+      <div class="container mt-4 page-content-container">
+        <div class="row page-content-row">
           <div class="col-12">
             <div class="text-center py-5">
               <i class="bi bi-envelope display-1 text-muted"></i>
@@ -421,8 +421,8 @@ function renderContactedBooksPage() {
     .join("");
 
   app.innerHTML = `
-    <div class="container mt-4">
-      <div class="row">
+    <div class="container mt-4 page-content-container">
+      <div class="row page-content-row">
         <div class="col-12">
           <div class="d-flex justify-content-between align-items-center mb-4">
             <h2><i class="bi bi-envelope"></i> Contacted Books</h2>
@@ -450,8 +450,8 @@ function renderMyRatingsPage() {
 
   if (myRatings.length === 0) {
     app.innerHTML = `
-      <div class="container mt-4">
-        <div class="row">
+      <div class="container mt-4 page-content-container">
+        <div class="row page-content-row">
           <div class="col-12">
             <div class="text-center py-5">
               <i class="bi bi-star display-1 text-muted"></i>
@@ -516,8 +516,8 @@ function renderMyRatingsPage() {
     .join("");
 
   app.innerHTML = `
-    <div class="container mt-4">
-      <div class="row">
+    <div class="container mt-4 page-content-container">
+      <div class="row page-content-row">
         <div class="col-12">
           <div class="d-flex justify-content-between align-items-center mb-4">
             <h2><i class="bi bi-star"></i> My Ratings (${myRatings.length})</h2>
@@ -543,8 +543,8 @@ function renderProfilePage() {
   // Check if user is authenticated
   if (!currentUser) {
     app.innerHTML = `
-      <div class="container mt-4">
-        <div class="row">
+      <div class="container mt-4 page-content-container">
+        <div class="row page-content-row">
           <div class="col-12">
             <div class="text-center py-5">
               <i class="bi bi-exclamation-triangle display-1 text-warning"></i>
@@ -588,8 +588,8 @@ function renderProfilePage() {
       : "No ratings yet";
 
   app.innerHTML = `
-    <div class="container mt-4">
-      <div class="row">
+    <div class="container mt-4 page-content-container">
+      <div class="row page-content-row">
         <div class="col-12">
           <div class="d-flex justify-content-between align-items-center mb-4">
             <h2><i class="bi bi-person-circle"></i> My Profile</h2>
@@ -787,8 +787,8 @@ function renderNotificationsPage() {
 
   if (notifications.length === 0) {
     app.innerHTML = `
-      <div class="container mt-4">
-        <div class="row">
+      <div class="container mt-4 page-content-container">
+        <div class="row page-content-row">
           <div class="col-12">
             <div class="text-center py-5">
               <i class="bi bi-bell display-1 text-muted"></i>
@@ -835,8 +835,8 @@ function renderNotificationsPage() {
     .join("");
 
   app.innerHTML = `
-    <div class="container mt-4">
-      <div class="row">
+    <div class="container mt-4 page-content-container">
+      <div class="row page-content-row">
         <div class="col-12">
           <div class="d-flex justify-content-between align-items-center mb-4">
             <h2><i class="bi bi-bell"></i> Your Notifications</h2>
