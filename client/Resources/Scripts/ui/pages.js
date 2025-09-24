@@ -26,11 +26,13 @@ function renderAdminPanel() {
                 <i class="bi bi-star-half"></i> Ratings
               </button>
             </li>
+            <!-- HIDDEN FOR COLIN'S UI BRANCH - Rate limits tab disabled
             <li class="nav-item" role="presentation">
               <button class="nav-link" id="rate-limits-tab" data-bs-toggle="tab" data-bs-target="#rate-limits" type="button" role="tab">
                 <i class="bi bi-speedometer2"></i> Rate Limits
               </button>
             </li>
+            -->
             <li class="nav-item" role="presentation">
               <button class="nav-link" id="backup-tab" data-bs-toggle="tab" data-bs-target="#backup" type="button" role="tab">
                 <i class="bi bi-download"></i> Backup
@@ -88,7 +90,7 @@ function renderAdminPanel() {
               </div>
             </div>
 
-            <!-- Rate Limits Tab -->
+            <!-- HIDDEN FOR COLIN'S UI BRANCH - Rate Limits Tab disabled
             <div class="tab-pane fade" id="rate-limits" role="tabpanel">
               <div class="card">
                 <div class="card-header">
@@ -116,6 +118,7 @@ function renderAdminPanel() {
                 </div>
               </div>
             </div>
+            -->
 
             <!-- Backup Tab -->
             <div class="tab-pane fade" id="backup" role="tabpanel">

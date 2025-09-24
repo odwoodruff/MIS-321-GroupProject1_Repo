@@ -110,16 +110,17 @@ async function handleOnLoad() {
     // Add development helper if in development mode
     console.log("Current hostname:", window.location.hostname);
     console.log("Current protocol:", window.location.protocol);
-    if (
-      window.location.hostname === "localhost" ||
-      window.location.hostname === "127.0.0.1" ||
-      window.location.protocol === "file:"
-    ) {
-      console.log("Adding development helper...");
-      addDevelopmentHelper();
-    } else {
-      console.log("Not in development mode, skipping development helper");
-    }
+    // HIDDEN FOR COLIN'S UI BRANCH - Dev helper disabled
+    // if (
+    //   window.location.hostname === "localhost" ||
+    //   window.location.hostname === "127.0.0.1" ||
+    //   window.location.protocol === "file:"
+    // ) {
+    //   console.log("Adding development helper...");
+    //   addDevelopmentHelper();
+    // } else {
+    //   console.log("Not in development mode, skipping development helper");
+    // }
   } catch (error) {
     console.error("Error during initialization:", error);
     // Render app even if books fail to load
