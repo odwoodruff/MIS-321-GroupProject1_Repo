@@ -12612,3 +12612,5 @@
 {"Timestamp":"2025-09-24T00:36:38.7557482Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":200,"DurationMs":4,"UserId":null,"Severity":"Info"}
 {"Timestamp":"2025-09-24T00:37:07.44169Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
 {"Timestamp":"2025-09-24T00:37:07.4483878Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":200,"DurationMs":6,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-24T00:37:32.9948601Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-24T00:37:32.9967351Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":200,"DurationMs":1,"UserId":null,"Severity":"Info"}
