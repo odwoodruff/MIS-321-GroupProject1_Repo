@@ -135,3 +135,34 @@ async function handleOnLoad() {
 
 // Initialize the app when the page loads
 window.addEventListener("DOMContentLoaded", handleOnLoad);
+
+// Theme management
+let currentTheme = localStorage.getItem('theme') || 'light';
+
+// Initialize theme on page load
+document.addEventListener('DOMContentLoaded', function() {
+  initializeTheme();
+});
+
+function initializeTheme() {
+  document.documentElement.setAttribute('data-theme', currentTheme);
+  updateThemeIcon();
+}
+
+function toggleTheme() {
+  currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', currentTheme);
+  localStorage.setItem('theme', currentTheme);
+  updateThemeIcon();
+}
+
+function updateThemeIcon() {
+  const themeIcon = document.getElementById('theme-icon');
+  if (themeIcon) {
+    if (currentTheme === 'light') {
+      themeIcon.className = 'bi bi-moon';
+    } else {
+      themeIcon.className = 'bi bi-sun';
+    }
+  }
+}

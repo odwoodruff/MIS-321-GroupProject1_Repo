@@ -1,0 +1,10 @@
+[33m95fd395[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfeature/colin-ui-styling[m[33m, [m[1;31morigin/sql-frontend-refactor[m[33m, [m[1;32mmain[m[33m)[m workingggg
+[33md5c7f0f[m Fix profile page authentication check and add hardcoded ratings for Alex Johnson in SQL
+[33maeb57b2[m Add SQL models and migration for notifications and tracking - Complete SQL migration setup with new models: Notification, ContactedSeller, RatedBook, PromptedToRate - Updated DataMigrationService to populate all new tables - Added comprehensive data population during migration - Removed localStorage notification creation from frontend - All business data now stored in SQL instead of localStorage
+[33m66f6851[m[33m ([m[1;31morigin/experimental[m[33m)[m Hide books from unauthenticated users and move sign-in button to main content area
+[33m59005ca[m Fix book update 400 error - correct data structure mismatch between frontend and API
+[33mdcc8e5b[m Fix high priority security and performance issues
+[33mf4028bd[m[33m ([m[1;31morigin/feature/development-updates[m[33m)[m Add authentication system, database migrations, and cleanup testapp directory
+[33m8c0d271[m[33m ([m[1;31morigin/feature/updated-api[m[33m)[m safety + SQL
+[33mdee018a[m[33m ([m[1;32mfeature/updated-api[m[33m)[m Add updated API with database migration, new services, and enhanced features
+[33m672cd22[m final before SQL
