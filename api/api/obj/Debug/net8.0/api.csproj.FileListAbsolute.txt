@@ -169,7 +169,6 @@ C:\Users\clays\Desktop\MIS-321-GroupProject1_Repo\api\api\obj\Debug\net8.0\api.p
 C:\Users\clays\Desktop\MIS-321-GroupProject1_Repo\api\api\obj\Debug\net8.0\api.genruntimeconfig.cache
 C:\Users\clays\Desktop\MIS-321-GroupProject1_Repo\api\api\obj\Debug\net8.0\ref\api.dll
 C:\Users\clays\Desktop\MIS-321-GroupProject1_Repo\api\api\bin\Debug\net8.0\BCrypt.Net-Next.dll
-C:\Users\clays\Desktop\MIS-321-GroupProject1_Repo\api\api\bin\Debug\net8.0\backups\backup_20250922_221201.json
 C:\Users\cwbru\OneDrive\Documents\321\MIS-321-GroupProject1_Repo\api\api\bin\Debug\net8.0\appsettings.Development.json
 C:\Users\cwbru\OneDrive\Documents\321\MIS-321-GroupProject1_Repo\api\api\bin\Debug\net8.0\appsettings.json
 C:\Users\cwbru\OneDrive\Documents\321\MIS-321-GroupProject1_Repo\api\api\bin\Debug\net8.0\backups\backup_20250922_221201.json

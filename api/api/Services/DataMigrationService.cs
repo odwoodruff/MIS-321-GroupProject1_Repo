@@ -31,7 +31,10 @@ namespace api.Services
 
                 Console.WriteLine("Creating initial data in SQLite database...");
 
-                // Create sample admin user
+                // Create admin user first
+                await CreateAdminUserAsync();
+
+                // Create sample users
                 await CreateSampleUsersAsync();
                 Console.WriteLine("Sample users created successfully.");
 
@@ -88,6 +91,34 @@ namespace api.Services
             await _context.SaveChangesAsync();
         }
 
+        private async Task CreateAdminUserAsync()
+        {
+            // Check if admin user already exists
+            var existingAdmin = await _context.Users.FirstOrDefaultAsync(u => u.Email == "ccsmith33@crimson.ua.edu");
+            if (existingAdmin == null)
+            {
+                var adminUser = new User
+                {
+                    Username = "ccsmith33",
+                    Email = "ccsmith33@crimson.ua.edu",
+                    FirstName = "Clayton",
+                    LastName = "Smith",
+                    DateCreated = DateTime.Parse("2025-09-01 08:00:00"), // Admin created first
+                    IsActive = true,
+                    AverageRating = 5.0, // Perfect admin rating
+                    RatingCount = 0
+                };
+
+                _context.Users.Add(adminUser);
+                await _context.SaveChangesAsync();
+                Console.WriteLine("Admin user Clayton Smith created successfully");
+            }
+            else
+            {
+                Console.WriteLine("Admin user already exists");
+            }
+        }
+
         private async Task CreateSampleUsersAsync()
         {
             // Check if users already exist to avoid unique constraint violations
@@ -112,7 +143,21 @@ namespace api.Services
                                   "Walker", "Young", "Allen", "King", "Wright", "Scott", "Torres", "Nguyen", "Hill", "Flores",
                                   "Green", "Adams", "Nelson", "Baker", "Hall", "Rivera", "Campbell", "Mitchell", "Carter", "Roberts" };
 
-            // Admin user is ccsmith33@crimson.ua.edu - no need to create here
+            // Create admin user first
+            if (!existingUsernames.Contains("ccsmith33") && !existingEmails.Contains("ccsmith33@crimson.ua.edu"))
+            {
+                usersToCreate.Add(new User
+                {
+                    Username = "ccsmith33",
+                    Email = "ccsmith33@crimson.ua.edu",
+                    FirstName = "Clayton",
+                    LastName = "Smith",
+                    DateCreated = DateTime.Parse("2025-09-01 08:00:00"), // Admin created first
+                    IsActive = true,
+                    AverageRating = 5.0, // Perfect admin rating
+                    RatingCount = 0
+                });
+            }
 
             // Create 55 random users (including the book sellers)
             var bookSellerEmails = new[] { "alex.johnson@ua.edu", "sarah.williams@ua.edu" };
@@ -274,7 +319,7 @@ namespace api.Services
                         SellerEmail = seller.Email,
                         CourseCode = bookData.CourseCode,
                         Professor = bookData.Professor,
-                        IsAvailable = true,
+                        IsAvailable = random.NextDouble() > 0.2, // 20% chance of being sold
                         DatePosted = DateTime.Parse(bookData.DatePosted),
                         SellerRating = seller.AverageRating,
                         SellerRatingCount = seller.RatingCount
@@ -433,6 +478,9 @@ namespace api.Services
                 // Clear existing data
                 await ClearAllDataAsync();
 
+                // Create admin user first
+                await CreateAdminUserAsync();
+
                 // Create new data
                 await CreateSampleUsersAsync();
                 Console.WriteLine("Sample users created successfully.");
@@ -506,7 +554,8 @@ namespace api.Services
                             CourseCode = "CS101",
                             Professor = "Dr. Smith",
                             DatePosted = DateTime.UtcNow,
-                            IsActive = true
+                            IsActive = true,
+                            IsAvailable = true
                         },
                         new Book
                         {
@@ -522,7 +571,8 @@ namespace api.Services
                             CourseCode = "CS201",
                             Professor = "Dr. Doe",
                             DatePosted = DateTime.UtcNow,
-                            IsActive = true
+                            IsActive = true,
+                            IsAvailable = true
                         },
                         new Book
                         {
@@ -538,7 +588,8 @@ namespace api.Services
                             CourseCode = "CS301",
                             Professor = "Dr. Wilson",
                             DatePosted = DateTime.UtcNow,
-                            IsActive = true
+                            IsActive = true,
+                            IsAvailable = false // This one is sold
                         },
                         new Book
                         {
@@ -554,7 +605,8 @@ namespace api.Services
                             CourseCode = "CS401",
                             Professor = "Dr. Johnson",
                             DatePosted = DateTime.UtcNow,
-                            IsActive = true
+                            IsActive = true,
+                            IsAvailable = true
                         },
                         new Book
                         {
@@ -570,7 +622,8 @@ namespace api.Services
                             CourseCode = "CS501",
                             Professor = "Dr. Brown",
                             DatePosted = DateTime.UtcNow,
-                            IsActive = true
+                            IsActive = true,
+                            IsAvailable = false // This one is also sold
                         }
                     };
 

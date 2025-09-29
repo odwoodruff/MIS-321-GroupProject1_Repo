@@ -42,6 +42,7 @@ namespace api.Services
             return await _context.Books.FirstOrDefaultAsync(b => b.Id == id && b.IsActive).ConfigureAwait(false);
         }
 
+
         public async Task<Book> CreateBookAsync(Book book)
         {
             _context.Books.Add(book);
@@ -98,31 +99,17 @@ namespace api.Services
         public async Task<List<Book>> SearchBooksAsync(string searchTerm)
         {
             if (string.IsNullOrEmpty(searchTerm))
-                return await GetBooksAsync();
+                return await GetAllBooksAsync();
 
-            // Use EF.Functions.Like for parameterized queries to prevent SQL injection
-            var filteredBooks = await _context.Books
-                .Where(b => b.IsActive && (
-                    EF.Functions.Like(b.Title, $"%{searchTerm}%") ||
-                    EF.Functions.Like(b.Author, $"%{searchTerm}%") ||
-                    EF.Functions.Like(b.Genre, $"%{searchTerm}%") ||
-                    EF.Functions.Like(b.CourseCode, $"%{searchTerm}%") ||
-                    EF.Functions.Like(b.Professor, $"%{searchTerm}%") ||
-                    EF.Functions.Like(b.SellerName, $"%{searchTerm}%")))
-                .Include(b => b.Seller) // Load seller data in single query
-                .ToListAsync().ConfigureAwait(false);
-
-            // Update seller rating information from the loaded seller data
-            foreach (var book in filteredBooks)
-            {
-                if (book.Seller != null)
-                {
-                    book.SellerRating = book.Seller.AverageRating;
-                    book.SellerRatingCount = book.Seller.RatingCount;
-                }
-            }
-            
-            return filteredBooks;
+            var searchTermLower = searchTerm.ToLower();
+            return await _context.Books
+                .Where(b => b.IsActive && 
+                    (b.Title.ToLower().Contains(searchTermLower) || 
+                     b.Author.ToLower().Contains(searchTermLower) ||
+                     b.SellerName.ToLower().Contains(searchTermLower)))
+                .Include(b => b.Seller)
+                .OrderByDescending(b => b.DatePosted)
+                .ToListAsync();
         }
 
         // Note: Legacy synchronous methods removed to avoid async/sync pattern confusion
@@ -131,7 +118,25 @@ namespace api.Services
         // Admin method to get all books including inactive ones
         public async Task<List<Book>> GetAllBooksAsync()
         {
-            return await _context.Books.ToListAsync().ConfigureAwait(false);
+            return await _context.Books
+                .Where(b => b.IsActive)
+                .Include(b => b.Seller)
+                .OrderByDescending(b => b.DatePosted)
+                .ToListAsync();
+        }
+
+        public async Task<List<Book>> SearchBooksByIdAsync(string idPrefix)
+        {
+            if (string.IsNullOrEmpty(idPrefix) || !int.TryParse(idPrefix, out _))
+            {
+                return new List<Book>();
+            }
+
+            return await _context.Books
+                .Where(b => b.Id.ToString().StartsWith(idPrefix) && b.IsActive)
+                .Include(b => b.Seller)
+                .OrderBy(b => b.Id)
+                .ToListAsync();
         }
     }
 }

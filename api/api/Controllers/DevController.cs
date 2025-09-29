@@ -439,7 +439,7 @@ namespace api.Controllers
                         SellerEmail = seller.Email,
                         CourseCode = course.CourseCode,
                         Professor = course.Professor,
-                        IsAvailable = true,
+                        IsAvailable = random.NextDouble() > 0.25, // 25% chance of being sold
                         DatePosted = DateTime.Now.AddDays(-random.Next(30)), // Random posting date within last 30 days
                         SellerRating = 0.0,
                         SellerRatingCount = 0
@@ -1235,6 +1235,240 @@ namespace api.Controllers
             }
         }
 
+        [HttpPost("create-support-tickets-table")]
+        public async Task<IActionResult> CreateSupportTicketsTable()
+        {
+            try
+            {
+                // Only allow in development
+                if (!HttpContext.RequestServices.GetRequiredService<IWebHostEnvironment>().IsDevelopment())
+                {
+                    return NotFound();
+                }
+
+                // Create the SupportTickets table using raw SQL
+                var createTableSql = @"
+                    CREATE TABLE IF NOT EXISTS SupportTickets (
+                        Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        UserId INTEGER NOT NULL,
+                        Subject TEXT NOT NULL,
+                        Description TEXT NOT NULL,
+                        Status TEXT NOT NULL DEFAULT 'Open',
+                        Priority TEXT NOT NULL DEFAULT 'Medium',
+                        DateCreated DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                        DateUpdated DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                        FOREIGN KEY (UserId) REFERENCES Users(Id)
+                    );";
+
+                await _context.Database.ExecuteSqlRawAsync(createTableSql);
+
+                _loggingService.LogUserAction("SupportTickets table created successfully");
+                return Ok(new { message = "SupportTickets table created successfully" });
+            }
+            catch (Exception ex)
+            {
+                _loggingService.LogError("Error creating SupportTickets table", ex);
+                return StatusCode(500, new { message = "Error creating SupportTickets table", details = ex.Message });
+            }
+        }
+
+        [HttpPost("create-sample-support-tickets")]
+        public async Task<IActionResult> CreateSampleSupportTickets()
+        {
+            try
+            {
+                // Only allow in development
+                if (!HttpContext.RequestServices.GetRequiredService<IWebHostEnvironment>().IsDevelopment())
+                {
+                    return NotFound();
+                }
+
+                // Get real users from the database
+                var users = await _context.Users.Where(u => u.IsActive).Take(10).ToListAsync();
+                if (users.Count == 0)
+                {
+                    return BadRequest(new { message = "No active users found in database. Create some users first." });
+                }
+
+                _loggingService.LogUserAction("SampleSupportTicketsStart", null, 
+                    $"Found {users.Count} active users for sample ticket creation");
+
+                var supportTicketService = HttpContext.RequestServices.GetRequiredService<SupportTicketService>();
+                var sampleTickets = new List<object>();
+
+                // Sample ticket subjects and messages
+                var ticketData = new[]
+                {
+                    new { Subject = "Account Issues", Message = "I'm having trouble logging into my account. It keeps saying my password is incorrect even though I'm sure it's right." },
+                    new { Subject = "Book Listing Problems", Message = "I tried to list a book but it's not showing up in the search results. Can you help me figure out what went wrong?" },
+                    new { Subject = "Payment Issues", Message = "I'm trying to contact a seller about a book but I can't find their contact information. How do I get in touch with them?" },
+                    new { Subject = "Technical Problems", Message = "The website is running very slowly for me. Is there a known issue or is it just on my end?" },
+                    new { Subject = "Report User", Message = "I had a bad experience with a seller. They were unresponsive and rude when I tried to ask questions about a book." },
+                    new { Subject = "Report Book", Message = "I found a book listing that seems to be a duplicate or has incorrect information. The price seems too good to be true." },
+                    new { Subject = "General Question", Message = "How do I change my profile information? I can't find the settings page." },
+                    new { Subject = "Feature Request", Message = "It would be great if we could filter books by condition or price range. Any plans to add this feature?" },
+                    new { Subject = "Bug Report", Message = "When I try to upload a book image, it sometimes fails and I have to try multiple times. This is frustrating." },
+                    new { Subject = "Other", Message = "I have a question about the book trading policies. Can someone explain the rules about returns and refunds?" }
+                };
+
+                var statuses = new[] { "Open", "In Progress", "Resolved", "Closed" };
+                var random = new Random();
+
+                // Create 15-20 sample tickets
+                var ticketCount = random.Next(15, 21);
+                _loggingService.LogUserAction("SampleTicketCount", null, 
+                    $"Creating {ticketCount} sample tickets");
+                
+                for (int i = 0; i < ticketCount; i++)
+                {
+                    try
+                    {
+                        _loggingService.LogUserAction("TicketLoop", (i + 1).ToString(), 
+                            $"Creating ticket {i + 1} of {ticketCount}");
+                            
+                        var user = users[random.Next(users.Count)];
+                        var ticketInfo = ticketData[random.Next(ticketData.Length)];
+                        var status = statuses[random.Next(statuses.Length)];
+                        
+                        // Create the ticket
+                        _loggingService.LogUserAction("CreatingTicket", user.Id.ToString(), 
+                            $"Creating ticket for user {user.Email} with subject: {ticketInfo.Subject}");
+                        
+                        var ticket = await supportTicketService.CreateSupportTicketAsync(
+                            user.Id, 
+                            ticketInfo.Subject, 
+                            ticketInfo.Message
+                        );
+                        
+                        _loggingService.LogUserAction("TicketCreated", ticket.Id.ToString(), 
+                            $"Successfully created ticket {ticket.Id} for user {user.Email}");
+
+                        // Randomly update some tickets to different statuses
+                        if (status != "Open")
+                        {
+                            var adminResponse = status switch
+                            {
+                                "In Progress" => "Thank you for contacting us. We're looking into this issue and will get back to you soon.",
+                                "Resolved" => "This issue has been resolved. Please let us know if you need any further assistance.",
+                                "Closed" => "This ticket has been closed. If you have additional questions, please create a new ticket.",
+                                _ => null
+                            };
+
+                            await supportTicketService.UpdateSupportTicketAsync(ticket.Id, status, adminResponse);
+                        }
+
+                        sampleTickets.Add(new
+                        {
+                            id = ticket.Id,
+                            subject = ticket.Subject,
+                            user = new { id = user.Id, name = $"{user.FirstName} {user.LastName}", email = user.Email },
+                            status = status,
+                            dateCreated = ticket.DateCreated
+                        });
+                        
+                        _loggingService.LogUserAction("TicketAddedToList", ticket.Id.ToString(), 
+                            $"Added ticket {ticket.Id} to sample tickets list. Total so far: {sampleTickets.Count}");
+                    }
+                    catch (Exception ex)
+                    {
+                        _loggingService.LogError($"Error creating ticket {i + 1} of {ticketCount}", ex);
+                        // Continue with the next ticket instead of stopping the entire process
+                    }
+                }
+
+                _loggingService.LogUserAction("SampleSupportTicketsCreated", null, 
+                    $"Created {sampleTickets.Count} sample support tickets from real users (requested {ticketCount})");
+
+                return Ok(new { 
+                    message = $"Successfully created {sampleTickets.Count} sample support tickets (requested {ticketCount})", 
+                    tickets = sampleTickets,
+                    requested = ticketCount,
+                    created = sampleTickets.Count
+                });
+            }
+            catch (Exception ex)
+            {
+                _loggingService.LogError("Error creating sample support tickets", ex);
+                return StatusCode(500, new { message = "Error creating sample support tickets", details = ex.Message });
+            }
+        }
+
+        [HttpPost("add-test-support-tickets")]
+        public async Task<IActionResult> AddTestSupportTickets()
+        {
+            try
+            {
+                // Only allow in development
+                if (!HttpContext.RequestServices.GetRequiredService<IWebHostEnvironment>().IsDevelopment())
+                {
+                    return NotFound();
+                }
+
+                var supportTicketService = HttpContext.RequestServices.GetRequiredService<SupportTicketService>();
+                var testTickets = new List<object>();
+
+                // Get a real user from the database
+                var user = await _context.Users.Where(u => u.IsActive).FirstOrDefaultAsync();
+                if (user == null)
+                {
+                    return BadRequest(new { message = "No active users found in database" });
+                }
+
+                // Create 5 test tickets
+                var testData = new[]
+                {
+                    new { Subject = "Login Issues", Message = "I can't log into my account. It keeps saying invalid credentials." },
+                    new { Subject = "Book Not Showing", Message = "I listed a book but it's not appearing in the search results." },
+                    new { Subject = "Payment Problem", Message = "I'm having trouble contacting sellers about books I want to buy." },
+                    new { Subject = "Website Slow", Message = "The website is running very slowly for me today." },
+                    new { Subject = "Account Settings", Message = "How do I change my profile picture and update my information?" }
+                };
+
+                for (int i = 0; i < testData.Length; i++)
+                {
+                    var ticketData = testData[i];
+                    var status = i < 2 ? "Open" : (i < 4 ? "In Progress" : "Resolved");
+                    
+                    var ticket = await supportTicketService.CreateSupportTicketAsync(
+                        user.Id, 
+                        ticketData.Subject, 
+                        ticketData.Message
+                    );
+
+                    // Update status if not Open
+                    if (status != "Open")
+                    {
+                        var adminResponse = status == "In Progress" 
+                            ? "We're looking into this issue and will get back to you soon."
+                            : "This issue has been resolved. Please let us know if you need any further assistance.";
+                            
+                        await supportTicketService.UpdateSupportTicketAsync(ticket.Id, status, adminResponse);
+                    }
+
+                    testTickets.Add(new
+                    {
+                        id = ticket.Id,
+                        subject = ticket.Subject,
+                        user = new { id = user.Id, name = $"{user.FirstName} {user.LastName}", email = user.Email },
+                        status = status,
+                        dateCreated = ticket.DateCreated
+                    });
+                }
+
+                _loggingService.LogUserAction("TestSupportTicketsCreated", null, 
+                    $"Created {testTickets.Count} test support tickets for user {user.Email}");
+
+                return Ok(new { 
+                    message = $"Successfully created {testTickets.Count} test support tickets", 
+                    tickets = testTickets 
+                });
+            }
+            catch (Exception ex)
+            {
+                _loggingService.LogError("Error creating test support tickets", ex);
+                return StatusCode(500, new { message = "Error creating test support tickets", details = ex.Message });
+            }
+        }
     }
 
     public class VerifyExistingUserRequest
@@ -1262,5 +1496,5 @@ namespace api.Controllers
         public string LastName { get; set; } = string.Empty;
     }
 
+    }
 
-}

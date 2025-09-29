@@ -35,6 +35,8 @@ builder.Services.AddSingleton<LoggingService>();
 builder.Services.AddScoped<BackupService>();
 builder.Services.AddSingleton<RateLimitingService>();
 builder.Services.AddHostedService<RateLimitCleanupService>();
+builder.Services.AddScoped<UserStatisticsService>();
+builder.Services.AddScoped<SupportTicketService>();
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -147,8 +149,10 @@ using (var scope = app.Services.CreateScope())
     {
         logger.LogInformation("Starting database initialization...");
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        
+        // Use EnsureCreatedAsync for existing database compatibility
         await context.Database.EnsureCreatedAsync();
-        logger.LogInformation("Database created successfully");
+        logger.LogInformation("Database migrations applied successfully");
         
         var migrationService = scope.ServiceProvider.GetRequiredService<DataMigrationService>();
         await migrationService.MigrateCsvToSqliteAsync();

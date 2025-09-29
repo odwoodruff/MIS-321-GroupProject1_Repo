@@ -370,6 +370,124 @@ namespace api.Controllers
             return errors;
         }
 
+        // PUT: api/Book/{id}/sold
+        [HttpPut("{id}/sold")]
+        [Authorize]
+        public async Task<IActionResult> MarkBookAsSold(int id)
+        {
+            try
+            {
+                var userEmail = _jwtService.GetUserEmailFromToken(User);
+                if (string.IsNullOrEmpty(userEmail))
+                    return Unauthorized("Invalid token");
+
+                var existingBook = await _bookService.GetBookAsync(id);
+                if (existingBook == null)
+                    return NotFound("Book not found");
+
+                // Check if user owns the book or is admin
+                if (existingBook.SellerEmail != userEmail && !_adminService.IsAdminUser(userEmail))
+                {
+                    _loggingService.LogSecurityEvent("UnauthorizedAccess", 
+                        $"User {userEmail} attempted to mark book {id} as sold (owned by {existingBook.SellerEmail})", 
+                        null, GetClientIpAddress());
+                    return Unauthorized("You can only mark your own books as sold");
+                }
+
+                // Check if book is already sold
+                if (!existingBook.IsAvailable)
+                {
+                    return BadRequest("Book is already marked as sold");
+                }
+
+                // Mark book as sold
+                existingBook.IsAvailable = false;
+                await _bookService.UpdateBookAsync(id, existingBook);
+
+                _loggingService.LogUserAction("BookMarkedAsSold", null, 
+                    $"Book {id} '{existingBook.Title}' marked as sold by {userEmail}");
+
+                return Ok(new { message = "Book marked as sold successfully", bookId = id });
+            }
+            catch (Exception ex)
+            {
+                _loggingService.LogError("Error marking book as sold", ex);
+                return StatusCode(500, "An error occurred while marking the book as sold");
+            }
+        }
+
+        // GET: api/Book/all (Admin only)
+        [HttpGet("all")]
+        [Authorize]
+        public async Task<IActionResult> GetAllBooks()
+        {
+            try
+            {
+                // Check if current user is admin
+                var userEmail = _jwtService.GetUserEmailFromToken(User);
+                if (string.IsNullOrEmpty(userEmail) || !_adminService.IsAdminUser(userEmail))
+                {
+                    return Unauthorized(new { message = "Admin access required" });
+                }
+
+                var books = await _bookService.GetAllBooksAsync();
+                return Ok(books);
+            }
+            catch (Exception ex)
+            {
+                _loggingService.LogError("Error getting all books", ex);
+                return StatusCode(500, new { message = "An error occurred while getting books" });
+            }
+        }
+
+        // GET: api/Book/search (Admin only)
+        [HttpGet("search")]
+        [Authorize]
+        public async Task<IActionResult> SearchBooks([FromQuery] string term)
+        {
+            try
+            {
+                // Check if current user is admin
+                var userEmail = _jwtService.GetUserEmailFromToken(User);
+                if (string.IsNullOrEmpty(userEmail) || !_adminService.IsAdminUser(userEmail))
+                {
+                    return Unauthorized(new { message = "Admin access required" });
+                }
+
+                var books = await _bookService.SearchBooksAsync(term);
+                return Ok(books);
+            }
+            catch (Exception ex)
+            {
+                _loggingService.LogError("Error searching books", ex);
+                return StatusCode(500, new { message = "An error occurred while searching books" });
+            }
+        }
+
+        // GET: api/Book/search-by-id/{idPrefix} (Admin only)
+        [HttpGet("search-by-id/{idPrefix}")]
+        [Authorize]
+        public async Task<IActionResult> SearchBooksById(string idPrefix)
+        {
+            try
+            {
+                // Check if current user is admin
+                var userEmail = _jwtService.GetUserEmailFromToken(User);
+                if (string.IsNullOrEmpty(userEmail) || !_adminService.IsAdminUser(userEmail))
+                {
+                    return Unauthorized(new { message = "Admin access required" });
+                }
+
+                var books = await _bookService.SearchBooksByIdAsync(idPrefix);
+                return Ok(books);
+            }
+            catch (Exception ex)
+            {
+                _loggingService.LogError("Error searching books by ID", ex);
+                return StatusCode(500, new { message = "An error occurred while searching books by ID" });
+            }
+        }
+
         private string GetClientIpAddress()
         {
             var forwardedFor = Request.Headers["X-Forwarded-For"].FirstOrDefault();

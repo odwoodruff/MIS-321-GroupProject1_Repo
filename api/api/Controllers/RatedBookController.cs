@@ -37,6 +37,71 @@ namespace api.Controllers
             }
         }
 
+        [HttpGet("search")]
+        public async Task<IActionResult> SearchRatings([FromQuery] string comment)
+        {
+            try
+            {
+                var userId = int.Parse(User.FindFirst("UserId")?.Value ?? "0");
+                if (userId <= 0)
+                    return Unauthorized("Invalid user ID");
+
+                var searchResults = await _ratedBookService.SearchRatingsByCommentAsync(comment);
+                return Ok(searchResults);
+            }
+            catch (Exception ex)
+            {
+                _loggingService.LogError("Error searching ratings", ex);
+                return StatusCode(500, new { message = "An error occurred while searching ratings" });
+            }
+        }
+
+        [HttpGet("search-by-id/{idPrefix}")]
+        public async Task<IActionResult> SearchRatingsById(string idPrefix)
+        {
+            try
+            {
+                var userId = int.Parse(User.FindFirst("UserId")?.Value ?? "0");
+                if (userId <= 0)
+                    return Unauthorized("Invalid user ID");
+
+                var searchResults = await _ratedBookService.SearchRatingsByIdAsync(idPrefix);
+                return Ok(searchResults);
+            }
+            catch (Exception ex)
+            {
+                _loggingService.LogError("Error searching ratings by ID", ex);
+                return StatusCode(500, new { message = "An error occurred while searching ratings by ID" });
+            }
+        }
+
+        [HttpDelete("{ratingId}")]
+        public async Task<IActionResult> DeleteRating(int ratingId)
+        {
+            try
+            {
+                var userId = int.Parse(User.FindFirst("UserId")?.Value ?? "0");
+                if (userId <= 0)
+                    return Unauthorized("Invalid user ID");
+
+                var success = await _ratedBookService.SoftDeleteRatingAsync(ratingId);
+                if (!success)
+                {
+                    return NotFound(new { message = "Rating not found" });
+                }
+
+                _loggingService.LogUserAction("DeleteRating", userId.ToString(), 
+                    $"User {userId} deleted rating {ratingId}");
+
+                return Ok(new { message = "Rating deleted successfully" });
+            }
+            catch (Exception ex)
+            {
+                _loggingService.LogError("Error deleting rating", ex);
+                return StatusCode(500, new { message = "An error occurred while deleting rating" });
+            }
+        }
+
         [HttpPost]
         public async Task<IActionResult> AddRatedBook([FromBody] AddRatedBookRequest request)
         {

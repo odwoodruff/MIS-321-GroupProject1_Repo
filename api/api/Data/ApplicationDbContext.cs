@@ -17,6 +17,7 @@ namespace api.Data
         public DbSet<ContactedSeller> ContactedSellers { get; set; }
         public DbSet<RatedBook> RatedBooks { get; set; }
         public DbSet<PromptedToRate> PromptedToRates { get; set; }
+        public DbSet<SupportTicket> SupportTickets { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -228,6 +229,26 @@ namespace api.Data
                 entity.HasIndex(e => e.UserId);
                 entity.HasIndex(e => e.BookId);
                 entity.HasIndex(e => e.SellerId);
+            });
+
+            // Configure SupportTicket entity
+            modelBuilder.Entity<SupportTicket>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Subject).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.Message).IsRequired().HasMaxLength(2000);
+                entity.Property(e => e.Status).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.AdminResponse).HasMaxLength(2000);
+                
+                entity.HasOne(e => e.User)
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                
+                // Add indexes for performance
+                entity.HasIndex(e => e.UserId);
+                entity.HasIndex(e => e.Status);
+                entity.HasIndex(e => e.DateCreated);
             });
         }
     }
