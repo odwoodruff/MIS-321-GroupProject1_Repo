@@ -104,6 +104,300 @@ async function loadAllRatings() {
   }
 }
 
+// Debounced search functionality for ratings
+let ratingSearchTimeout;
+
+function handleRatingSearchInput() {
+  // Clear existing timeout
+  if (ratingSearchTimeout) {
+    clearTimeout(ratingSearchTimeout);
+  }
+
+  // Set new timeout for 1 second
+  ratingSearchTimeout = setTimeout(() => {
+    const searchTerm = document.getElementById("ratingSearch").value.trim();
+    if (searchTerm === "") {
+      // Empty search shows all ratings
+      loadAllRatings();
+    } else {
+      // Search for ratings containing the term
+      searchRatings();
+    }
+  }, 1000);
+}
+
+// Handle rating ID search input
+let ratingIdSearchTimeout;
+
+function handleRatingIdSearchInput() {
+  // Clear existing timeout
+  if (ratingIdSearchTimeout) {
+    clearTimeout(ratingIdSearchTimeout);
+  }
+
+  // Set new timeout for 1 second
+  ratingIdSearchTimeout = setTimeout(() => {
+    const searchTerm = document.getElementById("ratingIdSearch").value.trim();
+    if (searchTerm === "") {
+      // Empty search shows all ratings
+      loadAllRatings();
+    } else {
+      // Search for rating by ID
+      searchRatingById();
+    }
+  }, 1000);
+}
+
+async function searchRatingById() {
+  const ratingId = document.getElementById("ratingIdSearch").value.trim();
+  if (!ratingId) {
+    loadAllRatings();
+    return;
+  }
+
+  if (isNaN(ratingId)) {
+    showAlert("Please enter a valid rating ID", "warning");
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `${CONFIG.API_BASE_URL.replace("/api/Book", "")}/api/Rating/${ratingId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        const ratingsList = document.getElementById("ratingsList");
+        ratingsList.innerHTML = `<p class="text-muted">No rating found with ID ${ratingId}</p>`;
+        return;
+      }
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const rating = await response.json();
+    const ratingsList = document.getElementById("ratingsList");
+
+    const ratingsHtml = `
+      <div class="admin-rating-item">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <h6 class="mb-1">${rating.bookTitle} by ${rating.bookAuthor}</h6>
+            <p class="mb-1 text-muted">Rated by: ${rating.raterName} (${
+      rating.raterEmail
+    })</p>
+            <p class="mb-1">${rating.comment}</p>
+            <small class="text-muted">Date: ${new Date(
+              rating.dateCreated
+            ).toLocaleDateString()}</small>
+          </div>
+          <div class="text-end">
+            <div class="rating-display">
+              ${"★".repeat(rating.rating)}${"☆".repeat(5 - rating.rating)}
+            </div>
+            <small class="text-muted">${rating.rating}/5</small>
+            <div class="mt-2">
+              <button class="btn btn-sm btn-outline-danger" onclick="deleteRating(${
+                rating.id
+              })">
+                <i class="bi bi-trash"></i> Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    ratingsList.innerHTML = `
+      <div class="admin-ratings-container">
+        ${ratingsHtml}
+      </div>
+      <p class="text-muted mt-3">Found rating with ID ${ratingId}</p>
+    `;
+  } catch (error) {
+    console.error("Error searching rating by ID:", error);
+    showAlert("Failed to search rating by ID", "danger");
+  }
+}
+
+async function searchRatings() {
+  const searchTerm = document.getElementById("ratingSearch").value.trim();
+  if (!searchTerm) {
+    // This shouldn't happen with the debounced function, but just in case
+    loadAllRatings();
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `${CONFIG.API_BASE_URL.replace(
+        "/api/Book",
+        ""
+      )}/api/RatedBook/search?comment=${encodeURIComponent(searchTerm)}`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const searchResults = await response.json();
+    const ratingsList = document.getElementById("ratingsList");
+
+    if (searchResults && searchResults.length > 0) {
+      const ratingsHtml = searchResults
+        .map(
+          (rating) => `
+        <div class="admin-rating-item">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <h6 class="mb-1">${rating.bookTitle} by ${rating.bookAuthor}</h6>
+              <p class="mb-1 text-muted">Rated by: ${rating.raterName} (${
+            rating.raterEmail
+          })</p>
+              <p class="mb-1">${rating.comment}</p>
+              <small class="text-muted">Date: ${new Date(
+                rating.dateCreated
+              ).toLocaleDateString()}</small>
+            </div>
+            <div class="text-end">
+              <div class="rating-display">
+                ${"★".repeat(rating.rating)}${"☆".repeat(5 - rating.rating)}
+              </div>
+              <small class="text-muted">${rating.rating}/5</small>
+              <div class="mt-2">
+                <button class="btn btn-sm btn-outline-danger" onclick="deleteRating(${
+                  rating.id
+                })">
+                  <i class="bi bi-trash"></i> Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `
+        )
+        .join("");
+
+      ratingsList.innerHTML = `
+        <div class="admin-ratings-container">
+          ${ratingsHtml}
+        </div>
+        <p class="text-muted mt-3">Found ${searchResults.length} rating(s)</p>
+      `;
+    } else {
+      ratingsList.innerHTML =
+        '<p class="text-muted">No ratings found matching your search</p>';
+    }
+  } catch (error) {
+    console.error("Error searching ratings:", error);
+    showAlert("Failed to search ratings", "danger");
+  }
+}
+
+function filterRatingsByScore() {
+  const selectedScore = document.getElementById("ratingScoreFilter").value;
+  const ratingsList = document.getElementById("ratingsList");
+
+  if (!selectedScore) {
+    // Show all ratings
+    renderRatingsInAdminPanel();
+    return;
+  }
+
+  const score = parseInt(selectedScore);
+  const filteredRatings = ratings.filter((rating) => rating.rating === score);
+
+  if (filteredRatings.length > 0) {
+    const ratingsHtml = filteredRatings
+      .map(
+        (rating) => `
+      <div class="admin-rating-item">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <h6 class="mb-1">${rating.bookTitle} by ${rating.bookAuthor}</h6>
+            <p class="mb-1 text-muted">Rated by: ${rating.raterName} (${
+          rating.raterEmail
+        })</p>
+            <p class="mb-1">${rating.comment}</p>
+            <small class="text-muted">Date: ${new Date(
+              rating.dateCreated
+            ).toLocaleDateString()}</small>
+          </div>
+          <div class="text-end">
+            <div class="rating-display">
+              ${"★".repeat(rating.rating)}${"☆".repeat(5 - rating.rating)}
+            </div>
+            <small class="text-muted">${rating.rating}/5</small>
+            <div class="mt-2">
+              <button class="btn btn-sm btn-outline-danger" onclick="deleteRating(${
+                rating.id
+              })">
+                <i class="bi bi-trash"></i> Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `
+      )
+      .join("");
+
+    ratingsList.innerHTML = `
+      <div class="admin-ratings-container">
+        ${ratingsHtml}
+      </div>
+      <p class="text-muted mt-3">Found ${filteredRatings.length} rating(s) with ${score} star(s)</p>
+    `;
+  } else {
+    ratingsList.innerHTML = `<p class="text-muted">No ratings found with ${score} star(s)</p>`;
+  }
+}
+
+async function deleteRating(ratingId) {
+  if (
+    confirm(
+      "Are you sure you want to delete this rating? This action cannot be undone."
+    )
+  ) {
+    try {
+      const response = await fetch(
+        `${CONFIG.API_BASE_URL.replace(
+          "/api/Book",
+          ""
+        )}/api/Rating/${ratingId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      showAlert("Rating deleted successfully", "success");
+      loadAllRatings(); // Refresh the list
+    } catch (error) {
+      console.error("Error deleting rating:", error);
+      showAlert("Failed to delete rating", "danger");
+    }
+  }
+}
+
 async function loadRatedBooks() {
   if (!currentUser) {
     console.log("No current user, skipping loadRatedBooks");

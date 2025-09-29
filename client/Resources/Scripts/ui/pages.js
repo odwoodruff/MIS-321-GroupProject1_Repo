@@ -17,13 +17,18 @@ function renderAdminPanel() {
           <!-- Admin Navigation Tabs -->
           <ul class="nav nav-tabs mb-4" id="adminTabs" role="tablist">
             <li class="nav-item" role="presentation">
-              <button class="nav-link active" id="users-tab" data-bs-toggle="tab" data-bs-target="#users" type="button" role="tab">
+              <button class="nav-link active" id="users-tab" data-bs-toggle="tab" data-bs-target="#users" type="button" role="tab" onclick="loadAllUsers()">
                 <i class="bi bi-people"></i> Users
               </button>
             </li>
             <li class="nav-item" role="presentation">
-              <button class="nav-link" id="ratings-tab" data-bs-toggle="tab" data-bs-target="#ratings" type="button" role="tab">
+              <button class="nav-link" id="ratings-tab" data-bs-toggle="tab" data-bs-target="#ratings" type="button" role="tab" onclick="loadAllRatings()">
                 <i class="bi bi-star-half"></i> Ratings
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="books-tab" data-bs-toggle="tab" data-bs-target="#books" type="button" role="tab" onclick="loadAllBooks()">
+                <i class="bi bi-book"></i> Books
               </button>
             </li>
             <!-- HIDDEN FOR COLIN'S UI BRANCH - Rate limits tab disabled
@@ -34,8 +39,13 @@ function renderAdminPanel() {
             </li>
             -->
             <li class="nav-item" role="presentation">
-              <button class="nav-link" id="backup-tab" data-bs-toggle="tab" data-bs-target="#backup" type="button" role="tab">
+              <button class="nav-link" id="backup-tab" data-bs-toggle="tab" data-bs-target="#backup" type="button" role="tab" onclick="loadBackups()">
                 <i class="bi bi-download"></i> Backup
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="support-tickets-tab" data-bs-toggle="tab" data-bs-target="#support-tickets" type="button" role="tab" onclick="loadSupportTickets()">
+                <i class="bi bi-ticket-perforated"></i> Support Tickets
               </button>
             </li>
           </ul>
@@ -44,28 +54,36 @@ function renderAdminPanel() {
           <div class="tab-content" id="adminTabContent">
             <!-- Users Tab -->
             <div class="tab-pane fade show active" id="users" role="tabpanel">
-              <div class="card">
-                <div class="card-header">
+              <div class="card admin-card">
+                <div class="card-header admin-card-header">
                   <h5><i class="bi bi-people"></i> User Management</h5>
                 </div>
-                <div class="card-body">
+                <div class="card-body admin-card-body">
                   <div class="row mb-3">
-                    <div class="col-md-6">
+                    <div class="col-md-3">
                       <button class="btn btn-primary" onclick="loadAllUsers()">
                         <i class="bi bi-arrow-clockwise"></i> Refresh Users
                       </button>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                       <div class="input-group">
-                        <input type="text" class="form-control" id="usernameSearch" placeholder="Search by username...">
-                        <button class="btn btn-outline-secondary" onclick="searchUserByUsername()">
-                          <i class="bi bi-search"></i> Search
-                        </button>
+                        <input type="text" class="form-control admin-input" id="usernameSearch" placeholder="Search by username..." oninput="handleUserSearchInput()">
+                        <span class="input-group-text admin-input-group-text">
+                          <i class="bi bi-search"></i>
+                        </span>
+                      </div>
+                    </div>
+                    <div class="col-md-5">
+                      <div class="input-group">
+                        <input type="number" class="form-control admin-input" id="userIdSearch" placeholder="Search by user ID..." oninput="handleUserIdSearchInput()">
+                        <span class="input-group-text admin-input-group-text">
+                          <i class="bi bi-hash"></i>
+                        </span>
                       </div>
                     </div>
                   </div>
-                  <div id="usersList" class="table-responsive">
-                    <p class="text-muted">Click "Refresh Users" to load user list</p>
+                  <div id="usersList" class="table-responsive admin-table-container">
+                    <p class="text-muted">Loading users...</p>
                   </div>
                 </div>
               </div>
@@ -73,18 +91,85 @@ function renderAdminPanel() {
 
             <!-- Ratings Tab -->
             <div class="tab-pane fade" id="ratings" role="tabpanel">
-              <div class="card">
-                <div class="card-header">
+              <div class="card admin-card">
+                <div class="card-header admin-card-header">
                   <h5><i class="bi bi-star-half"></i> Rating Management</h5>
                 </div>
-                <div class="card-body">
-                  <div class="mb-3">
-                    <button class="btn btn-primary" onclick="loadAllRatings()">
-                      <i class="bi bi-arrow-clockwise"></i> Refresh Ratings
-                    </button>
+                <div class="card-body admin-card-body">
+                  <div class="row mb-3">
+                    <div class="col-md-3">
+                      <button class="btn btn-primary" onclick="loadAllRatings()">
+                        <i class="bi bi-arrow-clockwise"></i> Refresh Ratings
+                      </button>
+                    </div>
+                    <div class="col-md-3">
+                      <div class="input-group">
+                        <input type="text" class="form-control admin-input" id="ratingSearch" placeholder="Search by comment..." oninput="handleRatingSearchInput()">
+                        <span class="input-group-text admin-input-group-text">
+                          <i class="bi bi-search"></i>
+                        </span>
+                      </div>
+                    </div>
+                    <div class="col-md-3">
+                      <div class="input-group">
+                        <input type="number" class="form-control admin-input" id="ratingIdSearch" placeholder="Search by rating ID..." oninput="handleRatingIdSearchInput()">
+                        <span class="input-group-text admin-input-group-text">
+                          <i class="bi bi-hash"></i>
+                        </span>
+                      </div>
+                    </div>
+                    <div class="col-md-3">
+                      <div class="input-group">
+                        <select class="form-select admin-input" id="ratingScoreFilter" onchange="filterRatingsByScore()">
+                          <option value="">All Scores</option>
+                          <option value="5">5 Stars</option>
+                          <option value="4">4 Stars</option>
+                          <option value="3">3 Stars</option>
+                          <option value="2">2 Stars</option>
+                          <option value="1">1 Star</option>
+                        </select>
+                      </div>
+                    </div>
                   </div>
                   <div id="ratingsList" class="admin-ratings-container">
-                    <p class="text-muted">Click "Refresh Ratings" to load ratings</p>
+                    <p class="text-muted">Loading ratings...</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Books Tab -->
+            <div class="tab-pane fade" id="books" role="tabpanel">
+              <div class="card admin-card">
+                <div class="card-header admin-card-header">
+                  <h5><i class="bi bi-book"></i> Book Management</h5>
+                </div>
+                <div class="card-body admin-card-body">
+                  <div class="row mb-3">
+                    <div class="col-md-3">
+                      <button class="btn btn-primary" onclick="loadAllBooks()">
+                        <i class="bi bi-arrow-clockwise"></i> Refresh Books
+                      </button>
+                    </div>
+                    <div class="col-md-4">
+                      <div class="input-group">
+                        <input type="text" class="form-control admin-input" id="bookSearch" placeholder="Search by title or author..." oninput="handleBookSearchInput()">
+                        <span class="input-group-text admin-input-group-text">
+                          <i class="bi bi-search"></i>
+                        </span>
+                      </div>
+                    </div>
+                    <div class="col-md-5">
+                      <div class="input-group">
+                        <input type="number" class="form-control admin-input" id="bookIdSearch" placeholder="Search by book ID..." oninput="handleBookIdSearchInput()">
+                        <span class="input-group-text admin-input-group-text">
+                          <i class="bi bi-hash"></i>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div id="booksList" class="table-responsive admin-table-container">
+                    <p class="text-muted">Loading books...</p>
                   </div>
                 </div>
               </div>
@@ -122,11 +207,11 @@ function renderAdminPanel() {
 
             <!-- Backup Tab -->
             <div class="tab-pane fade" id="backup" role="tabpanel">
-              <div class="card">
-                <div class="card-header">
+              <div class="card admin-card">
+                <div class="card-header admin-card-header">
                   <h5><i class="bi bi-download"></i> Backup Management</h5>
                 </div>
-                <div class="card-body">
+                <div class="card-body admin-card-body">
                   <div class="mb-3">
                     <button class="btn btn-success" onclick="createBackup()">
                       <i class="bi bi-plus"></i> Create Backup
@@ -135,8 +220,33 @@ function renderAdminPanel() {
                       <i class="bi bi-arrow-clockwise"></i> Refresh Backups
                     </button>
                   </div>
-                  <div id="backupsList">
-                    <p class="text-muted">Click "Refresh Backups" to load backup list</p>
+                  <div id="backupsList" class="admin-table-container">
+                    <p class="text-muted">Loading backups...</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Support Tickets Tab -->
+            <div class="tab-pane fade" id="support-tickets" role="tabpanel">
+              <div class="card admin-card">
+                <div class="card-header admin-card-header">
+                  <h5><i class="bi bi-ticket-perforated"></i> Support Tickets Management</h5>
+                </div>
+                <div class="card-body admin-card-body">
+                  <div class="mb-3">
+                    <button class="btn btn-primary" onclick="loadSupportTickets()">
+                      <i class="bi bi-arrow-clockwise"></i> Refresh Tickets
+                    </button>
+                    <button class="btn btn-warning" onclick="createSampleSupportTickets()">
+                      <i class="bi bi-plus-circle"></i> Create Sample Tickets
+                    </button>
+                    <button class="btn btn-info" onclick="addTestSupportTickets()">
+                      <i class="bi bi-bug"></i> Add Test Tickets
+                    </button>
+                  </div>
+                  <div id="supportTicketsContainer" class="admin-table-container">
+                    <p class="text-muted">Loading support tickets...</p>
                   </div>
                 </div>
               </div>
@@ -148,6 +258,11 @@ function renderAdminPanel() {
   `;
 
   app.innerHTML = adminPanelHTML;
+
+  // Auto-load users tab content when admin panel opens
+  setTimeout(() => {
+    loadAllUsers();
+  }, 100);
 }
 
 function renderRatingsInAdminPanel() {
@@ -194,10 +309,15 @@ function renderRatingsInAdminPanel() {
             </div>
           </div>
           <div class="rating-actions">
-            <button class="btn btn-outline-primary btn-sm" onclick="editRating(${
+            <button class="btn btn-outline-primary btn-sm me-2" onclick="editRating(${
               rating.id
             })">
               <i class="bi bi-pencil"></i> Edit
+            </button>
+            <button class="btn btn-outline-danger btn-sm" onclick="deleteRating(${
+              rating.id
+            })">
+              <i class="bi bi-trash"></i> Delete
             </button>
           </div>
         </div>
@@ -252,7 +372,9 @@ function renderMyBooksPage() {
     .map(
       (book) => `
     <div class="col-md-6 col-lg-4 mb-4">
-      <div class="card h-100 book-card">
+      <div class="card h-100 book-card ${
+        !book.isAvailable ? "opacity-75" : ""
+      }">
         <div class="card-body d-flex flex-column">
           <h5 class="card-title">${book.title}</h5>
           <p class="card-text text-muted">by ${book.author}</p>
@@ -262,22 +384,34 @@ function renderMyBooksPage() {
               <span class="badge bg-${getConditionColor(
                 book.condition
               )} ms-2">${book.condition}</span>
+              ${
+                !book.isAvailable
+                  ? '<span class="badge bg-success ms-2">SOLD</span>'
+                  : ""
+              }
             </p>
             <p class="card-text small text-muted">
               ${book.courseCode ? `Course: ${book.courseCode}` : ""}
               ${book.professor ? ` | Professor: ${book.professor}` : ""}
             </p>
             <div class="d-flex gap-2">
-              <button class="btn btn-outline-primary btn-sm" onclick="editBook(${
-                book.id
-              })">
-                <i class="bi bi-pencil"></i> Edit
-              </button>
-              <button class="btn btn-outline-danger btn-sm" onclick="confirmDelete(${
-                book.id
-              }, '${book.title}')">
-                <i class="bi bi-trash"></i> Delete
-              </button>
+              ${
+                book.isAvailable
+                  ? `
+                <button class="btn btn-outline-primary btn-sm" onclick="editBook(${book.id})">
+                  <i class="bi bi-pencil"></i> Edit
+                </button>
+                <button class="btn btn-outline-success btn-sm" onclick="markAsSold(${book.id}, '${book.title}')">
+                  <i class="bi bi-check-circle"></i> Mark as Sold
+                </button>
+                <button class="btn btn-outline-danger btn-sm" onclick="confirmDelete(${book.id}, '${book.title}')">
+                  <i class="bi bi-trash"></i> Delete
+                </button>
+              `
+                  : `
+                <span class="text-muted small">This book has been sold</span>
+              `
+              }
             </div>
           </div>
         </div>
@@ -536,7 +670,7 @@ function renderMyRatingsPage() {
 
 // Duplicate renderRatingsInAdminPanel() removed - using version from line 258
 
-function renderProfilePage() {
+async function renderProfilePage() {
   const app = document.getElementById("app");
   if (!app) return;
 
@@ -561,32 +695,7 @@ function renderProfilePage() {
     return;
   }
 
-  // Calculate user statistics
-  const userBooks = books.filter(
-    (book) => book.sellerEmail === currentUser.email
-  );
-  const userRatings = ratings.filter(
-    (rating) => rating.raterId === currentUser.id
-  );
-  const userRatedBy = ratings.filter(
-    (rating) => rating.ratedUserId === currentUser.id
-  );
-  const userNotifications = notifications.filter(
-    (notif) => notif.relatedUserId === currentUser.id
-  );
-  const userContactedBooks = Array.from(contactedSellers).filter((contact) =>
-    contact.startsWith(currentUser.email)
-  );
-
-  // Calculate average rating
-  const avgRating =
-    userRatedBy.length > 0
-      ? (
-          userRatedBy.reduce((sum, rating) => sum + rating.score, 0) /
-          userRatedBy.length
-        ).toFixed(1)
-      : "No ratings yet";
-
+  // Show loading state
   app.innerHTML = `
     <div class="container mt-4 page-content-container">
       <div class="row page-content-row">
@@ -601,128 +710,204 @@ function renderProfilePage() {
       </div>
       
       <div class="row">
-        <!-- Profile Information Card -->
-        <div class="col-md-6 mb-4">
-          <div class="card h-100">
-            <div class="card-header bg-crimson text-white">
-              <h5 class="card-title mb-0"><i class="bi bi-person"></i> Personal Information</h5>
+        <div class="col-12">
+          <div class="text-center py-5">
+            <div class="spinner-border text-crimson" role="status">
+              <span class="visually-hidden">Loading...</span>
             </div>
-            <div class="card-body" style="background-color: white;">
-              <div class="row mb-3">
-                <div class="col-sm-4"><strong>Name:</strong></div>
-                <div class="col-sm-8">${currentUser.firstName} ${
-    currentUser.lastName
-  }</div>
-              </div>
-              <div class="row mb-3">
-                <div class="col-sm-4"><strong>Email:</strong></div>
-                <div class="col-sm-8">${currentUser.email}</div>
-              </div>
-              <div class="row mb-3">
-                <div class="col-sm-4"><strong>Member Since:</strong></div>
-                <div class="col-sm-8">${new Date(
-                  currentUser.dateCreated
-                ).toLocaleDateString()}</div>
-              </div>
-              <div class="row mb-3">
-                <div class="col-sm-4"><strong>Account Status:</strong></div>
-                <div class="col-sm-8">
-                  <span class="badge bg-success">Active</span>
-                </div>
-              </div>
-              <hr>
-              <div class="d-grid gap-2">
-                <button class="btn btn-outline-primary" onclick="editProfile()">
-                  <i class="bi bi-pencil"></i> Edit Profile
-                </button>
-                <button class="btn btn-outline-warning" onclick="changeEmail()">
-                  <i class="bi bi-envelope"></i> Change Email
-                </button>
-              </div>
+            <p class="mt-3 text-muted">Loading your profile...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  try {
+    // Load user statistics
+    const stats = await loadUserStatistics();
+    renderProfileContent(stats);
+  } catch (error) {
+    console.error("Error loading profile:", error);
+    app.innerHTML = `
+      <div class="container mt-4 page-content-container">
+        <div class="row page-content-row">
+          <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+              <h2><i class="bi bi-person-circle"></i> My Profile</h2>
+              <button class="btn btn-outline-secondary" onclick="renderApp()">
+                <i class="bi bi-arrow-left"></i> Back to Books
+              </button>
             </div>
           </div>
         </div>
-
-        <!-- Statistics Card -->
-        <div class="col-md-6 mb-4">
-          <div class="card h-100">
-            <div class="card-header bg-primary text-white">
-              <h5 class="card-title mb-0"><i class="bi bi-graph-up"></i> Your Statistics</h5>
+        
+        <div class="row">
+          <div class="col-12">
+            <div class="alert alert-danger">
+              <i class="bi bi-exclamation-triangle"></i>
+              <strong>Error loading profile:</strong> ${error.message}
             </div>
-            <div class="card-body">
-              <div class="row text-center mb-3">
-                <div class="col-6">
-                  <div class="border-end">
-                    <h3 class="text-crimson">${userBooks.length}</h3>
-                    <small class="text-muted">Books Listed</small>
-                  </div>
-                </div>
-                <div class="col-6">
-                  <h3 class="text-crimson">${userContactedBooks.length}</h3>
-                  <small class="text-muted">Books Contacted</small>
-                </div>
-              </div>
-              <div class="row text-center mb-3">
-                <div class="col-6">
-                  <div class="border-end">
-                    <h3 class="text-crimson">${userRatings.length}</h3>
-                    <small class="text-muted">Ratings Given</small>
-                  </div>
-                </div>
-                <div class="col-6">
-                  <h3 class="text-crimson">${userRatedBy.length}</h3>
-                  <small class="text-muted">Times Rated</small>
-                </div>
-              </div>
-              <div class="row text-center">
-                <div class="col-12">
-                  <h3 class="text-crimson">${avgRating}/5</h3>
-                  <small class="text-muted">Average Rating</small>
-                  <div class="mt-2">
-                    ${generateStarRating(parseFloat(avgRating))}
-                  </div>
-                </div>
-              </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+}
+
+async function loadUserStatistics() {
+  const response = await fetch(
+    `${CONFIG.API_BASE_URL.replace("/api/Book", "")}/api/profile/statistics`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to load user statistics");
+  }
+
+  return await response.json();
+}
+
+function renderProfileContent(stats) {
+  const app = document.getElementById("app");
+  if (!app) return;
+
+  app.innerHTML = `
+    <div class="container mt-4 page-content-container">
+      <div class="row page-content-row">
+        <div class="col-12">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="bi bi-person-circle"></i> My Profile</h2>
+            <button class="btn btn-outline-secondary" onclick="renderApp()">
+              <i class="bi bi-arrow-left"></i> Back to Books
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- User Statistics Cards -->
+      <div class="row mb-4">
+        <div class="col-md-3 col-sm-6 mb-3">
+          <div class="card h-100 profile-stat-card">
+            <div class="card-body text-center">
+              <i class="bi bi-book display-4 text-crimson mb-2"></i>
+              <h3 class="text-crimson">${stats.booksListed}</h3>
+              <p class="text-muted mb-0">Books Listed</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+          <div class="card h-100 profile-stat-card">
+            <div class="card-body text-center">
+              <i class="bi bi-check-circle display-4 text-success mb-2"></i>
+              <h3 class="text-success">${stats.booksSold}</h3>
+              <p class="text-muted mb-0">Books Sold</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+          <div class="card h-100 profile-stat-card">
+            <div class="card-body text-center">
+              <i class="bi bi-envelope display-4 text-primary mb-2"></i>
+              <h3 class="text-primary">${stats.booksContacted}</h3>
+              <p class="text-muted mb-0">Books Contacted</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+          <div class="card h-100 profile-stat-card">
+            <div class="card-body text-center">
+              <i class="bi bi-currency-dollar display-4 text-success mb-2"></i>
+              <h3 class="text-success">$${stats.totalSales.toFixed(2)}</h3>
+              <p class="text-muted mb-0">Total Sales</p>
             </div>
           </div>
         </div>
       </div>
 
+      <!-- Rating Statistics Row -->
+      <div class="row mb-4">
+        <div class="col-md-3 col-sm-6 mb-3">
+          <div class="card h-100 profile-stat-card">
+            <div class="card-body text-center">
+              <i class="bi bi-star display-4 text-warning mb-2"></i>
+              <h3 class="text-warning">${stats.ratingsGiven}</h3>
+              <p class="text-muted mb-0">Ratings Given</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+          <div class="card h-100 profile-stat-card">
+            <div class="card-body text-center">
+              <i class="bi bi-star-fill display-4 text-warning mb-2"></i>
+              <h3 class="text-warning">${stats.averageRatingGiven}/5</h3>
+              <p class="text-muted mb-0">Avg Rating Given</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+          <div class="card h-100 profile-stat-card">
+            <div class="card-body text-center">
+              <i class="bi bi-star-half display-4 text-info mb-2"></i>
+              <h3 class="text-info">${stats.ratingsReceived}</h3>
+              <p class="text-muted mb-0">Ratings Received</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+          <div class="card h-100 profile-stat-card">
+            <div class="card-body text-center">
+              <i class="bi bi-star-fill display-4 text-success mb-2"></i>
+              <h3 class="text-success">${stats.averageRatingReceived}/5</h3>
+              <p class="text-muted mb-0">Avg Rating Received</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Support & Account Management -->
       <div class="row">
-        <!-- Support & Settings Card -->
-        <div class="col-12 mb-4">
-          <div class="card">
-            <div class="card-header bg-warning text-dark">
-              <h5 class="card-title mb-0"><i class="bi bi-headset"></i> Support & Settings</h5>
+        <div class="col-md-6 mb-4">
+          <div class="card h-100">
+            <div class="card-header bg-crimson text-white">
+              <h5 class="card-title mb-0"><i class="bi bi-headset"></i> Support</h5>
             </div>
             <div class="card-body">
-              <div class="row">
-                <div class="col-md-6">
-                  <div class="d-grid gap-2">
-                    <button class="btn btn-outline-primary" onclick="createSupportTicket()">
-                      <i class="bi bi-ticket"></i> Create Support Ticket
-                    </button>
-                    <button class="btn btn-outline-info" onclick="viewSupportTickets()">
-                      <i class="bi bi-list-ul"></i> View My Tickets
-                    </button>
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="d-grid gap-2">
-                    <button class="btn btn-outline-secondary" onclick="accountSettings()">
-                      <i class="bi bi-gear"></i> Account Settings
-                    </button>
-                    <button class="btn btn-outline-dark" onclick="privacySettings()">
-                      <i class="bi bi-shield"></i> Privacy Settings
-                    </button>
-                  </div>
-                </div>
-              </div>
-              <hr>
+              <button class="btn btn-outline-primary w-100 mb-3" onclick="showSupportTicketModal()">
+                <i class="bi bi-ticket"></i> Create Support Ticket
+              </button>
+              <button class="btn btn-outline-info w-100 mb-3" onclick="showMyTickets()">
+                <i class="bi bi-list-ul"></i> View My Tickets
+              </button>
               <div class="text-center">
-                <button class="btn btn-outline-danger" onclick="deleteAccount()">
-                  <i class="bi bi-trash"></i> Delete Account
-                </button>
+                <small class="text-muted">Need help? Contact our support team!</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+          <div class="card h-100">
+            <div class="card-header bg-danger text-white">
+              <h5 class="card-title mb-0"><i class="bi bi-exclamation-triangle"></i> Account Management</h5>
+            </div>
+            <div class="card-body">
+              <div class="alert alert-warning">
+                <i class="bi bi-info-circle"></i>
+                <strong>Member since:</strong> ${new Date(
+                  stats.memberSince
+                ).toLocaleDateString()}
+              </div>
+              <button class="btn btn-outline-danger w-100" onclick="showDeleteAccountModal()">
+                <i class="bi bi-trash"></i> Delete Account
+              </button>
+              <div class="text-center mt-2">
+                <small class="text-muted">This action cannot be undone!</small>
               </div>
             </div>
           </div>
@@ -730,6 +915,345 @@ function renderProfilePage() {
       </div>
     </div>
   `;
+}
+
+// Support Ticket Modal
+function showSupportTicketModal() {
+  console.log("showSupportTicketModal called");
+  const modalHtml = `
+    <div class="modal fade" id="supportTicketModal" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header bg-crimson text-white">
+            <h5 class="modal-title"><i class="bi bi-ticket"></i> Create Support Ticket</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <form id="supportTicketForm">
+              <div class="mb-3">
+                <label for="ticketSubject" class="form-label">Subject</label>
+                <select class="form-select" id="ticketSubject" required>
+                  <option value="">Select a subject...</option>
+                  <option value="Account Issues">Account Issues</option>
+                  <option value="Book Listing Problems">Book Listing Problems</option>
+                  <option value="Technical Problems">Technical Problems</option>
+                  <option value="Report User">Report User</option>
+                  <option value="Report Book">Report Book</option>
+                  <option value="General Question">General Question</option>
+                  <option value="Feature Request">Feature Request</option>
+                  <option value="Bug Report">Bug Report</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label for="ticketMessage" class="form-label">Message</label>
+                <textarea class="form-control" id="ticketMessage" rows="6" 
+                  placeholder="Please describe your issue or question in detail..." required></textarea>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-crimson" onclick="submitSupportTicket()">
+              <i class="bi bi-send"></i> Submit Ticket
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Remove existing modal if any
+  const existingModal = document.getElementById("supportTicketModal");
+  if (existingModal) {
+    existingModal.remove();
+  }
+
+  // Add modal to body
+  document.body.insertAdjacentHTML("beforeend", modalHtml);
+
+  // Show modal
+  const modal = new bootstrap.Modal(
+    document.getElementById("supportTicketModal")
+  );
+  modal.show();
+}
+
+async function submitSupportTicket() {
+  const subject = document.getElementById("ticketSubject").value;
+  const message = document.getElementById("ticketMessage").value;
+
+  if (!subject || !message) {
+    if (typeof showAlert === "function") {
+      showAlert("Please fill in all fields", "warning");
+    } else {
+      alert("Please fill in all fields");
+    }
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `${CONFIG.API_BASE_URL.replace(
+        "/api/Book",
+        ""
+      )}/api/profile/support-ticket`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ subject, message }),
+      }
+    );
+
+    if (response.ok) {
+      if (typeof showAlert === "function") {
+        showAlert("Support ticket created successfully!", "success");
+      } else {
+        alert("Support ticket created successfully!");
+      }
+      bootstrap.Modal.getInstance(
+        document.getElementById("supportTicketModal")
+      ).hide();
+      document.getElementById("supportTicketForm").reset();
+    } else {
+      throw new Error("Failed to create support ticket");
+    }
+  } catch (error) {
+    console.error("Error creating support ticket:", error);
+    if (typeof showAlert === "function") {
+      showAlert("Error creating support ticket. Please try again.", "danger");
+    } else {
+      alert("Error creating support ticket. Please try again.");
+    }
+  }
+}
+
+async function showMyTickets() {
+  console.log("showMyTickets called");
+  try {
+    const response = await fetch(
+      `${CONFIG.API_BASE_URL.replace(
+        "/api/Book",
+        ""
+      )}/api/profile/support-tickets`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to load support tickets");
+    }
+
+    const tickets = await response.json();
+    renderTicketsModal(tickets);
+  } catch (error) {
+    console.error("Error loading support tickets:", error);
+    if (typeof showAlert === "function") {
+      showAlert("Error loading support tickets. Please try again.", "danger");
+    } else {
+      alert("Error loading support tickets. Please try again.");
+    }
+  }
+}
+
+function renderTicketsModal(tickets) {
+  const modalHtml = `
+    <div class="modal fade" id="ticketsModal" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title"><i class="bi bi-list-ul"></i> My Support Tickets</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            ${
+              tickets.length === 0
+                ? '<div class="text-center py-4"><i class="bi bi-inbox display-4 text-muted"></i><p class="text-muted mt-2">No support tickets found</p></div>'
+                : tickets
+                    .map(
+                      (ticket) => `
+                <div class="card mb-3">
+                  <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                      <div>
+                        <h6 class="card-title">${ticket.subject}</h6>
+                        <p class="card-text text-muted">${ticket.message}</p>
+                        <small class="text-muted">Created: ${new Date(
+                          ticket.dateCreated
+                        ).toLocaleString()}</small>
+                      </div>
+                      <span class="badge bg-${getStatusColor(ticket.status)}">${
+                        ticket.status
+                      }</span>
+                    </div>
+                    ${
+                      ticket.adminResponse
+                        ? `
+                      <div class="mt-3 p-3 bg-light rounded">
+                        <strong>Admin Response:</strong>
+                        <p class="mb-0">${ticket.adminResponse}</p>
+                      </div>
+                    `
+                        : ""
+                    }
+                  </div>
+                </div>
+              `
+                    )
+                    .join("")
+            }
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Remove existing modal if any
+  const existingModal = document.getElementById("ticketsModal");
+  if (existingModal) {
+    existingModal.remove();
+  }
+
+  // Add modal to body
+  document.body.insertAdjacentHTML("beforeend", modalHtml);
+
+  // Show modal
+  const modal = new bootstrap.Modal(document.getElementById("ticketsModal"));
+  modal.show();
+}
+
+function getStatusColor(status) {
+  switch (status.toLowerCase()) {
+    case "open":
+      return "primary";
+    case "in progress":
+      return "warning";
+    case "resolved":
+      return "success";
+    case "closed":
+      return "secondary";
+    default:
+      return "secondary";
+  }
+}
+
+// Delete Account Modal
+function showDeleteAccountModal() {
+  const modalHtml = `
+    <div class="modal fade" id="deleteAccountModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header bg-danger text-white">
+            <h5 class="modal-title"><i class="bi bi-exclamation-triangle"></i> Delete Account</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <div class="alert alert-danger">
+              <h6><i class="bi bi-exclamation-triangle"></i> Warning!</h6>
+              <p>This action will permanently delete your account and all associated data including:</p>
+              <ul>
+                <li>All your book listings</li>
+                <li>All your ratings and reviews</li>
+                <li>All your support tickets</li>
+                <li>All your notifications</li>
+                <li>All your contact history</li>
+              </ul>
+              <p><strong>This action cannot be undone!</strong></p>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="confirmDelete">
+              <label class="form-check-label" for="confirmDelete">
+                I understand that this action cannot be undone
+              </label>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-danger" onclick="confirmDeleteAccount()" disabled id="deleteAccountBtn">
+              <i class="bi bi-trash"></i> Delete Account
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Remove existing modal if any
+  const existingModal = document.getElementById("deleteAccountModal");
+  if (existingModal) {
+    existingModal.remove();
+  }
+
+  // Add modal to body
+  document.body.insertAdjacentHTML("beforeend", modalHtml);
+
+  // Show modal
+  const modal = new bootstrap.Modal(
+    document.getElementById("deleteAccountModal")
+  );
+  modal.show();
+
+  // Enable delete button when checkbox is checked
+  document
+    .getElementById("confirmDelete")
+    .addEventListener("change", function () {
+      document.getElementById("deleteAccountBtn").disabled = !this.checked;
+    });
+}
+
+async function confirmDeleteAccount() {
+  if (!document.getElementById("confirmDelete").checked) {
+    showAlert("Please confirm that you understand the consequences", "warning");
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `${CONFIG.API_BASE_URL.replace("/api/Book", "")}/api/profile/account`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (response.ok) {
+      showAlert(
+        "Account deleted successfully. You will be logged out.",
+        "success"
+      );
+      bootstrap.Modal.getInstance(
+        document.getElementById("deleteAccountModal")
+      ).hide();
+
+      // Clear user data and redirect to login
+      localStorage.removeItem("authToken");
+      localStorage.removeItem("currentUser");
+      currentUser = null;
+
+      setTimeout(() => {
+        showLoginForm();
+      }, 2000);
+    } else {
+      throw new Error("Failed to delete account");
+    }
+  } catch (error) {
+    console.error("Error deleting account:", error);
+    showAlert("Error deleting account. Please try again.", "danger");
+  }
 }
 
 // Duplicate renderRatingsInAdminPanel() removed - using version from line 258

@@ -2,7 +2,7 @@
 async function authCheck(showAlert = true) {
   // Check if user is logged in
   if (!currentUser) {
-    if (showAlert) {
+    if (showAlert && typeof showAlert === "function") {
       showAlert("Please sign in to continue", "warning");
     }
     showLoginForm();
@@ -12,7 +12,7 @@ async function authCheck(showAlert = true) {
   // Check if JWT token exists and is valid
   const token = localStorage.getItem("authToken");
   if (!token) {
-    if (showAlert) {
+    if (typeof showAlert === "function") {
       showAlert("Session expired. Please sign in again.", "warning");
     }
     logout();
@@ -31,7 +31,7 @@ async function authCheck(showAlert = true) {
 
     if (!response.ok) {
       if (response.status === 401) {
-        if (showAlert) {
+        if (typeof showAlert === "function") {
           showAlert("Session expired. Please sign in again.", "warning");
         }
         logout();
@@ -43,7 +43,7 @@ async function authCheck(showAlert = true) {
     return true;
   } catch (error) {
     console.error("Token validation error:", error);
-    if (showAlert) {
+    if (typeof showAlert === "function") {
       showAlert("Authentication error. Please sign in again.", "warning");
     }
     logout();
@@ -116,6 +116,7 @@ function updateAuthUI() {
   const userMenu = document.getElementById("user-menu");
   const userName = document.getElementById("user-name");
   const adminPanelLink = document.getElementById("admin-panel-link");
+  const devMenuLink = document.getElementById("dev-menu-link");
 
   if (currentUser) {
     if (authButtons) authButtons.classList.add("d-none");
@@ -128,10 +129,18 @@ function updateAuthUI() {
     } else if (adminPanelLink) {
       adminPanelLink.classList.add("d-none");
     }
+
+    // Show dev menu for admin users
+    if (isAdmin() && devMenuLink) {
+      devMenuLink.classList.remove("d-none");
+    } else if (devMenuLink) {
+      devMenuLink.classList.add("d-none");
+    }
   } else {
     if (authButtons) authButtons.classList.remove("d-none");
     if (userMenu) userMenu.classList.add("d-none");
     if (adminPanelLink) adminPanelLink.classList.add("d-none");
+    if (devMenuLink) devMenuLink.classList.add("d-none");
   }
 }
 
@@ -165,17 +174,21 @@ async function handleLogin() {
   const email = document.getElementById("loginEmail").value.trim();
 
   if (!email) {
-    showAlert("Please enter your university email", "warning");
+    if (typeof showAlert === "function") {
+      showAlert("Please enter your university email", "warning");
+    }
     bootstrap.Modal.getInstance(document.getElementById("loginModal")).hide();
     return;
   }
 
   // Validate email domain
   if (!email.endsWith("@crimson.ua.edu") && !email.endsWith("@ua.edu")) {
-    showAlert(
-      "Please use a valid University of Alabama email address (@crimson.ua.edu or @ua.edu)",
-      "warning"
-    );
+    if (typeof showAlert === "function") {
+      showAlert(
+        "Please use a valid University of Alabama email address (@crimson.ua.edu or @ua.edu)",
+        "warning"
+      );
+    }
     bootstrap.Modal.getInstance(document.getElementById("loginModal")).hide();
     return;
   }
@@ -194,13 +207,22 @@ async function handleLogin() {
 
     if (response.ok) {
       showVerificationModal(email, result.verificationCode);
-      showAlert("Verification code sent to your email", "success");
+      if (typeof showAlert === "function") {
+        showAlert("Verification code sent to your email", "success");
+      }
     } else {
-      showAlert(result.message || "Failed to send verification code", "danger");
+      if (typeof showAlert === "function") {
+        showAlert(
+          result.message || "Failed to send verification code",
+          "danger"
+        );
+      }
     }
   } catch (error) {
     console.error("Login error:", error);
-    showAlert("Login failed. Please try again.", "danger");
+    if (typeof showAlert === "function") {
+      showAlert("Login failed. Please try again.", "danger");
+    }
   }
 }
 
@@ -217,16 +239,22 @@ async function resendVerificationCode(email) {
     const result = await response.json();
 
     if (response.ok) {
-      showAlert("Verification code resent", "success");
+      if (typeof showAlert === "function") {
+        showAlert("Verification code resent", "success");
+      }
     } else {
-      showAlert(
-        result.message || "Failed to resend verification code",
-        "danger"
-      );
+      if (typeof showAlert === "function") {
+        showAlert(
+          result.message || "Failed to resend verification code",
+          "danger"
+        );
+      }
     }
   } catch (error) {
     console.error("Resend error:", error);
-    showAlert("Failed to resend verification code", "danger");
+    if (typeof showAlert === "function") {
+      showAlert("Failed to resend verification code", "danger");
+    }
   }
 }
 
@@ -234,7 +262,9 @@ async function verifyEmailCode(email) {
   const code = document.getElementById("verificationCode").value.trim();
 
   if (!code || code.length !== 6) {
-    showAlert("Please enter a valid 6-digit verification code", "warning");
+    if (typeof showAlert === "function") {
+      showAlert("Please enter a valid 6-digit verification code", "warning");
+    }
     return;
   }
 
@@ -288,14 +318,23 @@ async function verifyEmailCode(email) {
         setTimeout(() => {
           showNameCollectionModal();
         }, 1000); // Small delay to let the UI settle
+      } else {
+        // Existing user - show dark mode suggestion
+        setTimeout(() => {
+          showDarkModeSuggestion();
+        }, 2000); // Small delay to let the UI settle
       }
     } else {
       console.error("Verification failed:", result.message);
-      showAlert(result.message || "Invalid verification code", "danger");
+      if (typeof showAlert === "function") {
+        showAlert(result.message || "Invalid verification code", "danger");
+      }
     }
   } catch (error) {
     console.error("Verification error:", error);
-    showAlert("Verification failed. Please try again.", "danger");
+    if (typeof showAlert === "function") {
+      showAlert("Verification failed. Please try again.", "danger");
+    }
   }
 }
 
@@ -307,7 +346,9 @@ function handleLogout() {
   updateAuthUI();
   // Re-render the app to hide edit/delete buttons
   renderApp();
-  showAlert("Logged out successfully", "info");
+  if (typeof showAlert === "function") {
+    showAlert("Logged out successfully", "info");
+  }
 }
 
 function showLoginForm() {
@@ -321,7 +362,9 @@ async function submitNameCollection() {
   const lastName = document.getElementById("lastName").value.trim();
 
   if (!firstName || !lastName) {
-    showAlert("Please enter both first and last name", "warning");
+    if (typeof showAlert === "function") {
+      showAlert("Please enter both first and last name", "warning");
+    }
     return;
   }
 
@@ -354,7 +397,12 @@ async function submitNameCollection() {
       }
 
       // User is already logged in, just reload the data to reflect the updated profile
-      showAlert("Profile updated successfully!", "success");
+      if (typeof showAlert === "function") {
+        showAlert("Profile updated successfully!", "success");
+      }
+
+      // Show dark mode suggestion for new users
+      showDarkModeSuggestion();
 
       // Reload authenticated data to reflect the updated profile
       try {
@@ -372,11 +420,15 @@ async function submitNameCollection() {
       }
     } else {
       const result = await response.json();
-      showAlert(result.message || "Failed to update profile", "danger");
+      if (typeof showAlert === "function") {
+        showAlert(result.message || "Failed to update profile", "danger");
+      }
     }
   } catch (error) {
     console.error("Error updating profile:", error);
-    showAlert("Failed to update profile. Please try again.", "danger");
+    if (typeof showAlert === "function") {
+      showAlert("Failed to update profile. Please try again.", "danger");
+    }
   }
 }
 
@@ -385,7 +437,9 @@ async function completeUserLogin() {
   updateAuthUI();
 
   // Show success message immediately
-  showAlert("Email verified! Welcome to Roll Tide Books!", "success");
+  if (typeof showAlert === "function") {
+    showAlert("Email verified! Welcome to Roll Tide Books!", "success");
+  }
 
   // Load only non-authenticated data
   try {
@@ -404,7 +458,9 @@ async function completeUserLoginWithAuth() {
   updateAuthUI();
 
   // Show success message immediately
-  showAlert("Profile updated! Welcome to Roll Tide Books!", "success");
+  if (typeof showAlert === "function") {
+    showAlert("Profile updated! Welcome to Roll Tide Books!", "success");
+  }
 
   // Add a delay to let the API process everything
   console.log("Waiting 2 seconds for API to process...");
@@ -464,3 +520,106 @@ async function completeUserLoginWithAuth() {
   // Start notification polling now that user is authenticated
   setupNotificationPolling();
 }
+
+// Show dark mode suggestion notification
+function showDarkModeSuggestion() {
+  console.log("showDarkModeSuggestion called");
+
+  // Check if user has already seen the dark mode suggestion
+  if (localStorage.getItem("darkModeSuggestionShown")) {
+    console.log("Dark mode suggestion already shown, skipping");
+    return;
+  }
+
+  console.log("Showing dark mode suggestion");
+
+  // Create a small notification in the corner
+  const notification = document.createElement("div");
+  notification.id = "darkModeSuggestion";
+  notification.className = "position-fixed";
+  notification.style.cssText = `
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    background: var(--crimson);
+    color: white;
+    padding: 12px 16px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    font-size: 14px;
+    max-width: 200px;
+    animation: slideInRight 0.3s ease-out;
+  `;
+
+  notification.innerHTML = `
+    <div class="d-flex align-items-center">
+      <i class="bi bi-moon-stars me-2"></i>
+      <div>
+        <div class="fw-bold">Try Dark Mode!</div>
+        <small>Click the moon icon above</small>
+      </div>
+      <button type="button" class="btn-close btn-close-white ms-2" onclick="dismissDarkModeSuggestion()" style="font-size: 10px;"></button>
+    </div>
+  `;
+
+  // Add animation keyframes if not already added
+  if (!document.getElementById("darkModeAnimation")) {
+    const style = document.createElement("style");
+    style.id = "darkModeAnimation";
+    style.textContent = `
+      @keyframes slideInRight {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+      }
+      @keyframes slideOutRight {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  document.body.appendChild(notification);
+
+  // Add click listener to dismiss on any button click
+  const dismissOnClick = (event) => {
+    if (event.target.tagName === "BUTTON" || event.target.closest("button")) {
+      dismissDarkModeSuggestion();
+      document.removeEventListener("click", dismissOnClick);
+    }
+  };
+  document.addEventListener("click", dismissOnClick);
+
+  // Auto-dismiss after 8 seconds
+  setTimeout(() => {
+    dismissDarkModeSuggestion();
+    document.removeEventListener("click", dismissOnClick);
+  }, 8000);
+}
+
+// Dismiss dark mode suggestion
+function dismissDarkModeSuggestion() {
+  const notification = document.getElementById("darkModeSuggestion");
+  if (notification) {
+    notification.style.animation = "slideOutRight 0.3s ease-out";
+    setTimeout(() => {
+      notification.remove();
+    }, 300);
+  }
+
+  // Clean up any remaining click listeners
+  const dismissOnClick = (event) => {
+    if (event.target.tagName === "BUTTON" || event.target.closest("button")) {
+      dismissDarkModeSuggestion();
+      document.removeEventListener("click", dismissOnClick);
+    }
+  };
+  document.removeEventListener("click", dismissOnClick);
+
+  // Mark as shown so it doesn't appear again
+  localStorage.setItem("darkModeSuggestionShown", "true");
+}
+
+// Make functions globally available
+window.showDarkModeSuggestion = showDarkModeSuggestion;
+window.dismissDarkModeSuggestion = dismissDarkModeSuggestion;

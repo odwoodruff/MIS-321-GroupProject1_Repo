@@ -56,6 +56,20 @@ function showVerificationModal(email, verificationCode = null) {
     document.getElementById("verificationModal")
   );
   modal.show();
+
+  // Add Enter key event listener to verification code input
+  const verificationInput = document.getElementById("verificationCode");
+  if (verificationInput) {
+    verificationInput.addEventListener("keypress", function (event) {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        verifyEmailCode(email);
+      }
+    });
+
+    // Focus on the input field when modal is shown
+    verificationInput.focus();
+  }
 }
 
 function showNameCollectionModal() {

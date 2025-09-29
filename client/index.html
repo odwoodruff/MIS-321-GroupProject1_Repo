@@ -15,28 +15,6 @@
     <link rel="stylesheet" href="./Resources/Styles/index.css" />
   </head>
   <body>
-    <!-- HIDDEN FOR COLIN'S UI BRANCH - Development Warning Banner disabled
-    <div
-      style="
-        background: #ff4444;
-        color: white;
-        text-align: center;
-        padding: 8px;
-        font-weight: bold;
-        font-size: 16px;
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        z-index: 9999;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-      "
-    >
-      ⚠️ DEVELOPMENT MODE: Rate limiting is DISABLED! Remember to re-enable
-      before deployment! ⚠️
-    </div>
-    -->
-
     <!-- Header -->
     <div class="marketplace-header">
       <div class="container">
@@ -153,6 +131,11 @@
                   <li class="d-none" id="admin-panel-link">
                     <a class="dropdown-item" href="#" onclick="showAdminPanel()"
                       ><i class="bi bi-gear"></i> Admin Panel</a
+                    >
+                  </li>
+                  <li class="d-none" id="dev-menu-link">
+                    <a class="dropdown-item" href="#" onclick="showDevMenu()"
+                      ><i class="bi bi-tools"></i> Development Tools</a
                     >
                   </li>
                   <li><hr class="dropdown-divider" /></li>
