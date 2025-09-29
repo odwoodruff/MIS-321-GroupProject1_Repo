@@ -1,0 +1,31 @@
+{
+  "name": "roll-tide-books-client",
+  "version": "1.0.0",
+  "description": "Alabama Student Book Marketplace Frontend",
+  "main": "index.html",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "@testing-library/jest-dom": "^6.1.4",
+    "@testing-library/dom": "^9.3.4"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "setupFilesAfterEnv": [
+      "<rootDir>/tests/setup.js"
+    ],
+    "testMatch": [
+      "**/tests/**/*.test.js"
+    ],
+    "collectCoverageFrom": [
+      "Resources/Scripts/**/*.js",
+      "!Resources/Scripts/tests/**",
+      "!**/node_modules/**"
+    ]
+  }
+}

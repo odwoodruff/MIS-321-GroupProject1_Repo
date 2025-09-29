@@ -29,48 +29,95 @@ namespace api.Services
 
                 // Get books listed by user
                 _logger.LogInformation("Getting books listed for user {UserId}", userId);
-                var booksListed = await _context.Books
-                    .Where(b => b.SellerEmail == user.Email && b.IsActive)
-                    .CountAsync();
+                int booksListed = 0;
+                try
+                {
+                    booksListed = await _context.Books
+                        .Where(b => b.SellerEmail == user.Email && b.IsActive)
+                        .CountAsync();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error getting books listed for user {UserId}: {ErrorMessage}", userId, ex.Message);
+                    booksListed = 0;
+                }
 
-                // Get books contacted by user
+                // Get books contacted by user - with error handling
                 _logger.LogInformation("Getting books contacted for user {UserId}", userId);
-                var booksContacted = await _context.ContactedSellers
-                    .Where(c => c.BuyerId == userId && c.IsActive)
-                    .CountAsync();
+                int booksContacted = 0;
+                try
+                {
+                    booksContacted = await _context.ContactedSellers
+                        .Where(c => c.BuyerId == userId && c.IsActive)
+                        .CountAsync();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error getting books contacted for user {UserId}: {ErrorMessage}", userId, ex.Message);
+                    booksContacted = 0; // Default to 0 if there's an error
+                }
 
                 // Get ratings given by user
                 _logger.LogInformation("Getting ratings given for user {UserId}", userId);
-                var ratingsGivenList = await _context.Ratings
-                    .Where(r => r.RaterId == userId && r.IsActive)
-                    .ToListAsync();
-                var ratingsGiven = ratingsGivenList.Count;
-
-                // Calculate average rating given
-                var averageRatingGiven = ratingsGivenList.Any() 
-                    ? ratingsGivenList.Average(r => r.Score) 
-                    : 0.0;
+                var ratingsGivenList = new List<Rating>();
+                int ratingsGiven = 0;
+                double averageRatingGiven = 0.0;
+                try
+                {
+                    ratingsGivenList = await _context.Ratings
+                        .Where(r => r.RaterId == userId && r.IsActive)
+                        .ToListAsync();
+                    ratingsGiven = ratingsGivenList.Count;
+                    averageRatingGiven = ratingsGivenList.Any() 
+                        ? ratingsGivenList.Average(r => r.Score) 
+                        : 0.0;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error getting ratings given for user {UserId}: {ErrorMessage}", userId, ex.Message);
+                    ratingsGiven = 0;
+                    averageRatingGiven = 0.0;
+                }
 
                 // Get ratings received by user
                 _logger.LogInformation("Getting ratings received for user {UserId}", userId);
-                var ratingsReceived = await _context.Ratings
-                    .Where(r => r.RatedUserId == userId && r.IsActive)
-                    .ToListAsync();
-
-                // Calculate average rating received
-                var averageRatingReceived = ratingsReceived.Any() 
-                    ? ratingsReceived.Average(r => r.Score) 
-                    : 0.0;
+                var ratingsReceived = new List<Rating>();
+                int ratingsReceivedCount = 0;
+                double averageRatingReceived = 0.0;
+                try
+                {
+                    ratingsReceived = await _context.Ratings
+                        .Where(r => r.RatedUserId == userId && r.IsActive)
+                        .ToListAsync();
+                    ratingsReceivedCount = ratingsReceived.Count;
+                    averageRatingReceived = ratingsReceived.Any() 
+                        ? ratingsReceived.Average(r => r.Score) 
+                        : 0.0;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error getting ratings received for user {UserId}: {ErrorMessage}", userId, ex.Message);
+                    ratingsReceivedCount = 0;
+                    averageRatingReceived = 0.0;
+                }
 
                 // Get books marked as sold (no longer available)
                 _logger.LogInformation("Getting books sold for user {UserId}", userId);
-                var booksSoldQuery = _context.Books
-                    .Where(b => b.SellerEmail == user.Email && !b.IsAvailable && b.IsActive);
-                var booksSold = booksSoldQuery.Count();
-
-                // Get total sales value
-                _logger.LogInformation("Getting total sales for user {UserId}", userId);
-                var totalSales = booksSoldQuery.Any() ? booksSoldQuery.Sum(b => b.Price) : 0.0m;
+                int booksSold = 0;
+                decimal totalSales = 0.0m;
+                try
+                {
+                    var booksSoldQuery = _context.Books
+                        .Where(b => b.SellerEmail == user.Email && !b.IsAvailable && b.IsActive);
+                    booksSold = booksSoldQuery.Count();
+                    totalSales = booksSoldQuery.Any() ? booksSoldQuery.Sum(b => b.Price) : 0.0m;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error getting books sold for user {UserId}: {ErrorMessage}", userId, ex.Message);
+                    booksSold = 0;
+                    totalSales = 0.0m;
+                }
 
                 return new UserStatistics
                 {
@@ -83,7 +130,7 @@ namespace api.Services
                     // Rating statistics
                     RatingsGiven = ratingsGiven,
                     AverageRatingGiven = Math.Round(averageRatingGiven, 1),
-                    RatingsReceived = ratingsReceived.Count,
+                    RatingsReceived = ratingsReceivedCount,
                     AverageRatingReceived = Math.Round(averageRatingReceived, 1),
                     // Account info
                     MemberSince = user.DateCreated,
