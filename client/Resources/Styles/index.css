@@ -1908,6 +1908,11 @@ input[type="number"] {
   color: #e9ecef !important;
 }
 
+/* Fix form-text visibility in dark mode */
+[data-bs-theme="dark"] .form-text {
+  color: #adb5bd !important;
+}
+
 /* Ultra-specific ticket card dark mode - This WILL work */
 [data-bs-theme="dark"] div.ticket-card {
   background-color: #343a40 !important;

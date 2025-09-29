@@ -46,13 +46,12 @@ namespace api.Services
         {
             try
             {
-                // Temporarily disabled - SupportTickets table not available
-                /*
+                
                 return await _context.SupportTickets
                     .Where(t => t.UserId == userId && t.IsActive)
                     .OrderByDescending(t => t.DateCreated)
                     .ToListAsync();
-                */
+                
                 return new List<SupportTicket>(); // Temporary placeholder
             }
             catch (Exception ex)
@@ -66,11 +65,10 @@ namespace api.Services
         {
             try
             {
-                // Temporarily disabled - SupportTickets table not available
-                /*
+                
                 return await _context.SupportTickets
                     .FirstOrDefaultAsync(t => t.Id == ticketId && t.UserId == userId && t.IsActive);
-                */
+                
                 return null; // Temporary placeholder
             }
             catch (Exception ex)

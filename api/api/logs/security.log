@@ -17711,3 +17711,64 @@
 {"Timestamp":"2025-09-29T14:28:05.6257037Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Admin/users","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
 {"Timestamp":"2025-09-29T14:28:05.6297769Z","EventType":"UserAction","Action":"AdminUsersList","UserId":null,"Details":"Admin ccsmith33@crimson.ua.edu requested all users list - 58 users returned","Severity":"Info"}
 {"Timestamp":"2025-09-29T14:28:05.6311819Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Admin/users","StatusCode":200,"DurationMs":5,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:39:32.6897299Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:39:32.7583518Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":200,"DurationMs":70,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:15.9985367Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Auth/send-verification","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:16.0027752Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Auth/send-verification","StatusCode":204,"DurationMs":4,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:16.0115902Z","EventType":"ApiCall","Method":"POST","Endpoint":"/api/Auth/send-verification","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:16.4997221Z","EventType":"UserAction","Action":"VerificationCodeGenerated","UserId":null,"Details":"Verification code generated for ccsmith33@crimson.ua.edu","Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:16.5037354Z","EventType":"UserAction","Action":"EmailSent","UserId":null,"Details":"Verification code 293102 sent to ccsmith33@crimson.ua.edu","Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:16.614984Z","EventType":"UserAction","Action":"VerificationCodeRequested","UserId":null,"Details":"Verification code requested for ccsmith33@crimson.ua.edu","Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:16.6253584Z","EventType":"ApiCall","Method":"POST","Endpoint":"/api/Auth/send-verification","StatusCode":200,"DurationMs":613,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:20.7451289Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Auth/verify","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:20.7462672Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Auth/verify","StatusCode":204,"DurationMs":1,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:20.7497449Z","EventType":"ApiCall","Method":"POST","Endpoint":"/api/Auth/verify","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:20.892449Z","EventType":"UserAction","Action":"EmailVerified","UserId":null,"Details":"Email verified for ccsmith33@crimson.ua.edu","Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:20.9743362Z","EventType":"UserAction","Action":"UserLogin","UserId":"1","Details":"User ccsmith33@crimson.ua.edu logged in successfully","Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:21.0121544Z","EventType":"ApiCall","Method":"POST","Endpoint":"/api/Auth/verify","StatusCode":200,"DurationMs":262,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:23.029297Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:23.1622117Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":200,"DurationMs":132,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:23.1696032Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Notification","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:23.1703371Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Notification","StatusCode":204,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:23.1726924Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Notification","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:23.2372352Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Notification","StatusCode":200,"DurationMs":64,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:23.2441751Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Dev/contacted-sellers","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:23.2450111Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Dev/contacted-sellers","StatusCode":204,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:23.2533491Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Dev/contacted-sellers","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:23.2830917Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Dev/contacted-sellers","StatusCode":200,"DurationMs":29,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:23.2885908Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Dev/rated-books","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:23.2893595Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Dev/rated-books","StatusCode":204,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:23.2922478Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Dev/rated-books","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:23.3113469Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Dev/rated-books","StatusCode":200,"DurationMs":19,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:23.3165622Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Dev/prompted-to-rate","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:23.317223Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Dev/prompted-to-rate","StatusCode":204,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:23.3200714Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Dev/prompted-to-rate","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:23.3379405Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Dev/prompted-to-rate","StatusCode":200,"DurationMs":17,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:40.347771Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:40.3496669Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/config/port","StatusCode":200,"DurationMs":1,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:40.3571735Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Book","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:40.3579345Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Book","StatusCode":204,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:40.3615086Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:40.3762929Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":200,"DurationMs":14,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:40.3821653Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:40.3928043Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book","StatusCode":200,"DurationMs":10,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:40.4135248Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Book/ratings/all","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:40.416274Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Book/ratings/all","StatusCode":204,"DurationMs":2,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:40.4219727Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book/ratings/all","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:40.453411Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Book/ratings/all","StatusCode":200,"DurationMs":31,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:40.4620951Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Dev/contacted-sellers","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:40.4627166Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Dev/contacted-sellers","StatusCode":204,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:40.4657579Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Dev/contacted-sellers","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:40.469087Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Dev/contacted-sellers","StatusCode":200,"DurationMs":3,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:40.4753457Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Dev/rated-books","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:40.4759723Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Dev/rated-books","StatusCode":204,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:40.4793547Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Dev/rated-books","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:40.4822604Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Dev/rated-books","StatusCode":200,"DurationMs":2,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:40.4888842Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Dev/prompted-to-rate","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:40.4895264Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Dev/prompted-to-rate","StatusCode":204,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:40.4920979Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Dev/prompted-to-rate","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:40.495212Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Dev/prompted-to-rate","StatusCode":200,"DurationMs":3,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:40.5005702Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Notification","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:40.5012753Z","EventType":"ApiCall","Method":"OPTIONS","Endpoint":"/api/Notification","StatusCode":204,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:40.5034922Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Notification","StatusCode":0,"DurationMs":0,"UserId":null,"Severity":"Info"}
+{"Timestamp":"2025-09-29T14:40:40.5081385Z","EventType":"ApiCall","Method":"GET","Endpoint":"/api/Notification","StatusCode":200,"DurationMs":4,"UserId":null,"Severity":"Info"}

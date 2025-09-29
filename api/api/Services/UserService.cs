@@ -210,8 +210,7 @@ namespace api.Services
                     notification.IsActive = false;
                 }
 
-                // Soft delete all support tickets - temporarily disabled
-                /*
+                
                 var supportTickets = await _context.SupportTickets
                     .Where(st => st.UserId == userId)
                     .ToListAsync();
@@ -219,7 +218,7 @@ namespace api.Services
                 {
                     ticket.IsActive = false;
                 }
-                */
+                
 
                 await _context.SaveChangesAsync();
                 return true;

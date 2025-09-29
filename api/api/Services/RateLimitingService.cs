@@ -16,9 +16,6 @@ namespace api.Services
 
         public bool IsRateLimited(string identifier, string actionType = "general")
         {
-            // DEVELOPMENT: Comment out the return false line below to re-enable rate limiting
-            return false; // Rate limiting disabled for development
-            
             var now = DateTime.UtcNow;
             var key = $"{identifier}_{actionType}";
 
